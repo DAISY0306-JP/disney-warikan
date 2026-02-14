@@ -363,7 +363,7 @@ input[type="file"] { display: none; }
 <label>金額</label>
 <input type="number" id="depositAmount" placeholder="0" min="0" max="10000000">
 </div>
-<div class="currency-toggle">
+<div class="currency-toggle" id="depositCurrencyToggle">
 <button class="currency-btn active" onclick="setDepositCurrency('JPY')">円</button>
 <button class="currency-btn" onclick="setDepositCurrency('USD')">ドル</button>
 </div>
@@ -382,7 +382,7 @@ input[type="file"] { display: none; }
 
 <div class="card">
 <h2>💰 支払い記録</h2>
-<div class="currency-toggle">
+<div class="currency-toggle" id="expenseCurrencyToggle">
 <button class="currency-btn active" onclick="setCurrency('JPY')">円</button>
 <button class="currency-btn" onclick="setCurrency('USD')">ドル</button>
 </div>
@@ -463,8 +463,8 @@ function addCategory(){if(categories.length>=MAX_CATEGORIES){alert(`最大${MAX_
 function removeCategory(c){if(confirm(`削除しますか？`)){categories=categories.filter(x=>x!==c);updateCategoryList();updateCategorySelect();saveData()}}
 function updateCategoryList(){const d=document.getElementById('categoryList');d.innerHTML='';categories.forEach(c=>{const div=document.createElement('div');div.className='category-tag';const span=document.createElement('span');span.textContent=c;div.appendChild(span);const btn=document.createElement('button');btn.textContent='×';btn.onclick=()=>removeCategory(c);div.appendChild(btn);d.appendChild(div)})}
 function updateCategorySelect(){const s=document.getElementById('expenseCategory');s.innerHTML='';categories.forEach(c=>{const opt=document.createElement('option');opt.value=c;opt.textContent=c;s.appendChild(opt)})}
-function setCurrency(c){currentCurrency=c;document.querySelectorAll('.card:nth-of-type(4) .currency-toggle .currency-btn').forEach((b,i)=>{b.classList.toggle('active',(c==='JPY'&&i===0)||(c==='USD'&&i===1))})}
-function setDepositCurrency(c){currentDepositCurrency=c;document.querySelectorAll('.card:nth-child(2) .currency-toggle .currency-btn').forEach((b,i)=>{b.classList.toggle('active',(c==='JPY'&&i===0)||(c==='USD'&&i===1))})}
+function setCurrency(c){currentCurrency=c;document.querySelectorAll('#expenseCurrencyToggle .currency-btn').forEach((b,i)=>{b.classList.remove('active');if((c==='JPY'&&i===0)||(c==='USD'&&i===1))b.classList.add('active')})}
+function setDepositCurrency(c){currentDepositCurrency=c;document.querySelectorAll('#depositCurrencyToggle .currency-btn').forEach((b,i)=>{b.classList.remove('active');if((c==='JPY'&&i===0)||(c==='USD'&&i===1))b.classList.add('active')})}
 function addDeposit(){if(deposits.length>=MAX_DEPOSITS){alert(`最大${MAX_DEPOSITS}件まで`);return}const h=parseInt(document.getElementById('depositHolder').value);const f=parseInt(document.getElementById('depositFrom').value);const a=validateNum(document.getElementById('depositAmount').value);if(isNaN(h)||isNaN(f)||!a){alert('全て入力してください');return}if(h===f){alert('別の人を選択');return}deposits.push({holder:h,from:f,amount:a,currency:currentDepositCurrency,timestamp:new Date().toISOString()});document.getElementById('depositHolder').value='';document.getElementById('depositFrom').value='';document.getElementById('depositAmount').value='';saveData();updateDisplay();displayDeposits()}
 function deleteDeposit(i){if(confirm('削除しますか？')){deposits.splice(i,1);saveData();updateDisplay();displayDeposits()}}
 function displayDeposits(){const d=document.getElementById('depositsList');if(!deposits.length){d.innerHTML='';return}const h3=document.createElement('h3');h3.style.cssText='margin-bottom:10px;font-size:14px;font-weight:600;';h3.textContent='一覧';d.innerHTML='';d.appendChild(h3);deposits.forEach((dep,i)=>{const div=document.createElement('div');div.className='settlement-item';const sp1=document.createElement('span');sp1.textContent=`${sanitize(members[dep.holder]||`メンバー${dep.holder+1}`)}が${sanitize(members[dep.from]||`メンバー${dep.from+1}`)}から`;const sp2=document.createElement('span');sp2.style.cssText='font-weight:700;color:#d97706;';sp2.textContent=dep.currency==='JPY'?`¥${dep.amount.toLocaleString()}`:`$${dep.amount.toFixed(2)}`;const btn=document.createElement('button');btn.className='btn btn-danger';btn.style.cssText='padding:8px 12px;font-size:12px;min-height:auto;';btn.textContent='削除';btn.onclick=()=>deleteDeposit(i);const wrap=document.createElement('div');wrap.style.cssText='display:flex;align-items:center;gap:10px;';wrap.appendChild(sp2);wrap.appendChild(btn);div.appendChild(sp1);div.appendChild(wrap);d.appendChild(div)})}
