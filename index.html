@@ -551,9 +551,10 @@
 
         <!-- 預かり金 -->
         <div class="card">
-            <h2>💵 預かり金</h2>
+            <h2>💵 預かり金（事前集金）</h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">メンバーから事前に集めたお金を記録します。精算時にあなたの負担が増えます。</p>
             <div class="input-group">
-                <label>メンバー</label>
+                <label>誰から預かった？</label>
                 <select id="depositMember">
                     <option value="">選択してください</option>
                 </select>
@@ -853,7 +854,7 @@
             return;
         }
 
-        div.innerHTML = '<h3 style="margin-bottom: 10px; font-size: 14px;">預かり金一覧</h3>' +
+        div.innerHTML = '<h3 style="margin-bottom: 10px; font-size: 14px;">預かり金一覧（あなたが返す必要がある金額）</h3>' +
             deposits.map((dep, idx) => {
                 const memberName = members[dep.member] || 'メンバー' + (dep.member + 1);
                 const amountDisplay = dep.currency === 'JPY' 
@@ -862,7 +863,7 @@
                 
                 return `
                     <div class="settlement-item" style="margin-bottom: 8px;">
-                        <span>${memberName}</span>
+                        <span>${memberName}から預かった</span>
                         <span style="font-weight: 700; color: #d97706;">${amountDisplay}</span>
                     </div>
                 `;
@@ -1053,7 +1054,7 @@
         const depositJPY = Array(members.length).fill(0);
         const depositUSD = Array(members.length).fill(0);
 
-        // 預かり金を計算
+        // 預かり金を計算（預かった人の負担を増やす）
         deposits.forEach(dep => {
             if (dep.currency === 'JPY') {
                 depositJPY[dep.member] += dep.amount;
@@ -1073,7 +1074,7 @@
             });
         });
 
-        // 預かり金を差し引く
+        // 預かり金を加算（預かった人は返す義務があるので負担増）
         for (let i = 0; i < members.length; i++) {
             balanceJPY[i] -= depositJPY[i];
             balanceUSD[i] -= depositUSD[i];
@@ -1153,13 +1154,13 @@
             return;
         }
 
-        let html = '<div class="deposit-section"><h3 style="margin-bottom: 10px; color: #92400e;">💵 預かり金合計</h3>';
+        let html = '<div class="deposit-section"><h3 style="margin-bottom: 10px; color: #92400e;">💵 事前集金（あなたが返す必要がある金額）</h3>';
         
         members.forEach((member, idx) => {
             if (depositJPY[idx] > 0 || depositUSD[idx] > 0) {
                 const memberName = member || 'メンバー' + (idx + 1);
                 html += '<div class="deposit-item">';
-                html += `<span class="deposit-label">${memberName}</span>`;
+                html += `<span class="deposit-label">${memberName}から預かった</span>`;
                 html += '<div>';
                 if (depositJPY[idx] > 0) {
                     html += `<div class="deposit-value">¥${depositJPY[idx].toLocaleString()}</div>`;
