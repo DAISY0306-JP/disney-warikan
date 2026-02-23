@@ -386,7 +386,8 @@ input[type="file"] { display: none; }
 </div>
 
 <div class="card">
-<h2>💰 支払い記録</h2>
+<h2>💰 支払い記録 <button onclick="toggleSection('expenseSection')" style="float:right;padding:8px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;min-height:auto;">▼</button></h2>
+<div id="expenseSection">
 <div class="currency-toggle" id="expenseCurrencyToggle">
 <button class="currency-btn active" onclick="setCurrency('JPY')">円</button>
 <button class="currency-btn" onclick="setCurrency('USD')">ドル</button>
@@ -417,29 +418,38 @@ input[type="file"] { display: none; }
 </div>
 <button class="btn btn-primary" onclick="addExpense()">追加</button>
 </div>
+</div>
 
 <div class="card">
-<h2>📝 支払い一覧</h2>
+<h2>📝 支払い一覧 <button onclick="toggleSection('expenseListSection')" style="float:right;padding:8px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;min-height:auto;">▼</button></h2>
+<div id="expenseListSection">
 <div class="expense-list" id="expenseList">
 <div class="empty-state"><p>まだ記録がありません</p></div>
 </div>
 </div>
+</div>
 
 <div class="card">
-<h2>💳 精算</h2>
+<h2>💳 精算 <button onclick="toggleSection('settlementSection')" style="float:right;padding:8px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;min-height:auto;">▼</button></h2>
+<div id="settlementSection">
 <div id="depositSummary"></div>
 <div class="summary-grid" id="summaryGrid"></div>
 <div id="settlementList" class="settlement-list"></div>
 </div>
-
-<div class="card">
-<h2>📅 日別サマリー</h2>
-<div id="dailySummary"></div>
 </div>
 
 <div class="card">
-<h2>📊 統計</h2>
+<h2>📅 日別サマリー <button onclick="toggleSection('dailySummarySection')" style="float:right;padding:8px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;min-height:auto;">▼</button></h2>
+<div id="dailySummarySection">
+<div id="dailySummary"></div>
+</div>
+</div>
+
+<div class="card">
+<h2>📊 統計 <button onclick="toggleSection('statisticsSection')" style="float:right;padding:8px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;min-height:auto;">▼</button></h2>
+<div id="statisticsSection">
 <div id="statistics"></div>
+</div>
 </div>
 </div>
 
