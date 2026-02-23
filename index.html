@@ -350,7 +350,8 @@ input[type="file"] { display: none; }
 </div>
 
 <div class="card">
-<h2>💵 預かり金</h2>
+<h2>💵 預かり金 <button onclick="toggleSection('depositSection')" style="float:right;padding:8px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;min-height:auto;">▼</button></h2>
+<div id="depositSection">
 <div class="info-text">事前に集めたお金を記録します。預かった人の負担が増え、預けた人の負担が減ります。</div>
 <div class="input-group">
 <label>誰が預かった？</label>
@@ -371,14 +372,17 @@ input[type="file"] { display: none; }
 <button class="btn btn-primary" onclick="addDeposit()">記録</button>
 <div id="depositsList" style="margin-top:15px;"></div>
 </div>
+</div>
 
 <div class="card">
-<h2>🏷️ カテゴリ</h2>
+<h2>🏷️ カテゴリ <button onclick="toggleSection('categorySection')" style="float:right;padding:8px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;min-height:auto;">▼</button></h2>
+<div id="categorySection">
 <div class="category-list" id="categoryList"></div>
 <div class="input-group">
 <input type="text" id="newCategory" placeholder="新カテゴリ名" maxlength="50">
 </div>
 <button class="btn btn-add" onclick="addCategory()">+ 追加</button>
+</div>
 </div>
 
 <div class="card">
@@ -522,6 +526,7 @@ function importData(e){const f=e.target.files[0];if(!f)return;if(f.size>MAX_FILE
 if(!members||members.length===0){members=['']}if(d.expenses&&Array.isArray(d.expenses)&&d.expenses.length<=MAX_EXPENSES){expenses=d.expenses.filter(e=>{if(!e||typeof e!=='object'||!e.name)return false;const a=validateNum(e.amount);return a&&e.currency&&typeof e.paidBy==='number'&&Array.isArray(e.participants)}).map(e=>{const a=validateNum(e.amount);return{name:sanitize(e.name),amount:a,currency:e.currency==='USD'?'USD':'JPY',category:sanitize(e.category||'その他'),paidBy:e.paidBy>=0&&e.paidBy<members.length?e.paidBy:0,participants:e.participants.filter(p=>typeof p==='number'&&p>=0&&p<members.length),memo:sanitize(e.memo||''),timestamp:e.timestamp||new Date().toISOString()}}).filter(e=>e.participants&&e.participants.length>0)}if(d.deposits&&Array.isArray(d.deposits)&&d.deposits.length<=MAX_DEPOSITS){deposits=d.deposits.filter(dep=>{if(!dep||typeof dep!=='object')return false;const a=validateNum(dep.amount);return a&&typeof dep.holder==='number'&&typeof dep.from==='number'}).map(dep=>{const a=validateNum(dep.amount);return{holder:dep.holder>=0&&dep.holder<members.length?dep.holder:0,from:dep.from>=0&&dep.from<members.length?dep.from:0,amount:a,currency:dep.currency==='USD'?'USD':'JPY',timestamp:dep.timestamp||new Date().toISOString()}})}if(d.categories&&Array.isArray(d.categories)&&d.categories.length<=MAX_CATEGORIES){categories=d.categories.map(c=>sanitize(c)).filter(c=>c)}if(d.exchangeRate){const v=validateNum(d.exchangeRate,1,1000);if(v)exchangeRate=v}saveData();updateMemberList();updateMemberSelects();updateCategoryList();updateCategorySelect();updateDisplay();showRateDisplay();alert('読み込み完了')}catch(err){alert('読み込み失敗');console.error(err)}};r.readAsText(f);e.target.value=''}
 function saveData(){localStorage.setItem('warikanMembers',JSON.stringify(members));localStorage.setItem('warikanExpenses',JSON.stringify(expenses));localStorage.setItem('warikanDeposits',JSON.stringify(deposits));localStorage.setItem('warikanCategories',JSON.stringify(categories));localStorage.setItem('exchangeRate',exchangeRate)}
 function loadData(){try{const sm=localStorage.getItem('warikanMembers');const se=localStorage.getItem('warikanExpenses');const sd=localStorage.getItem('warikanDeposits');const sc=localStorage.getItem('warikanCategories');const sr=localStorage.getItem('exchangeRate');const ts=localStorage.getItem('tripStartDate');const bj=localStorage.getItem('dailyBudgetJPY');const bu=localStorage.getItem('dailyBudgetUSD');if(sm)members=JSON.parse(sm).map(m=>sanitize(m));if(!members||members.length===0){members=['']}if(se&&members.length){const rawExp=JSON.parse(se).filter(e=>e&&typeof e==='object');expenses=rawExp.map(e=>{const a=validateNum(e.amount);if(!a)return null;return{...e,amount:a,currency:e.currency==='USD'?'USD':'JPY',category:e.category||'その他',paidBy:e.paidBy>=0&&e.paidBy<members.length?e.paidBy:0,participants:Array.isArray(e.participants)?e.participants.filter(p=>typeof p==='number'&&p>=0&&p<members.length):[]}}).filter(e=>e&&e.participants&&e.participants.length>0)}if(sd&&members.length){const rawDep=JSON.parse(sd).filter(d=>d&&typeof d==='object');deposits=rawDep.map(d=>{const a=validateNum(d.amount);if(!a)return null;return{...d,amount:a,currency:d.currency==='USD'?'USD':'JPY',holder:d.holder>=0&&d.holder<members.length?d.holder:0,from:d.from>=0&&d.from<members.length?d.from:0}}).filter(d=>d)}if(sc)categories=JSON.parse(sc).map(c=>sanitize(c)).filter(c=>c);if(sr){const v=validateNum(sr,1,1000);if(v)exchangeRate=v}if(ts)tripStartDate=ts;if(bj)dailyBudgetJPY=parseFloat(bj)||0;if(bu)dailyBudgetUSD=parseFloat(bu)||0}catch(e){console.error('Load error:',e)}}
+function toggleSection(id){const section=document.getElementById(id);const btn=event.target;if(section.style.display==='none'){section.style.display='block';btn.textContent='▼'}else{section.style.display='none';btn.textContent='▶'}}
 </script>
 
 </body>
