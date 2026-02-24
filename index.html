@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
+<html lang="ja"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>割り勘アプリ</title>
@@ -245,6 +243,46 @@ input[type="file"] { display: none; }
 .hr { height: 1px; background: #e2e8f0; margin: 12px 0; }
 .small { font-size: 12px; color: #666; }
 .pill { display:inline-block; padding: 6px 10px; background:#e2e8f0; border-radius: 999px; font-size: 12px; font-weight: 600; color:#2d3748; }
+
+.copy-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin: 8px 0 12px;
+}
+.copy-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: #3182ce;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 42px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.copy-btn:active { transform: scale(0.98); }
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  background: rgba(17, 24, 39, 0.92);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  z-index: 9999;
+  display: none;
+}
+.toast.show { display:block; }
+
+.copy-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;}
+@media (max-width:420px){.summary-grid{grid-template-columns:1fr;}}
+.settlement-item{align-items:flex-start;gap:10px;}
+
 </style>
 </head>
 
@@ -259,20 +297,19 @@ input[type="file"] { display: none; }
       <input type="file" id="importFile" accept=".json" onchange="importData(event)">
     </div>
     <div id="rateDisplay" class="rate-display">
-      <span id="rateText"></span>
+      <span id="rateText"><span>💱 為替レート: $1 = ¥150.00 <button style="margin-left: 10px; padding: 4px 8px; background: rgb(102, 126, 234); color: white; border: medium; border-radius: 6px; font-size: 12px; cursor: pointer;">変更</button></span></span>
     </div>
   </div>
 
   <div class="card">
     <h2>👥 メンバー
-      <button id="toggleMemberBtn" onclick="toggleMemberEdit()"
-        style="float:right;padding:8px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;">
+      <button id="toggleMemberBtn" onclick="toggleMemberEdit()" style="float:right;padding:8px 16px;background:#667eea;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;">
         編集
       </button>
     </h2>
-    <div id="memberDisplay" style="padding:10px 0;"></div>
+    <div id="memberDisplay" style="padding:10px 0;"><p style="color:#999;">メンバーを設定してください</p></div>
     <div id="memberEdit" style="display:none;">
-      <div class="member-list" id="memberList"></div>
+      <div class="member-list" id="memberList"><div class="member-item"><input type="text" placeholder="メンバー1" maxlength="50"></div></div>
       <button class="btn btn-add" onclick="addMember()">+ 追加</button>
       <button class="btn btn-primary" onclick="saveMemberEdit()" style="margin-top:10px;">確定</button>
     </div>
@@ -283,11 +320,11 @@ input[type="file"] { display: none; }
     <div class="info-text">預かり金は「預かった人→預けた人」への固定返金として扱い、支出の精算ロジックには混ぜません。</div>
     <div class="input-group">
       <label>誰が預かった？</label>
-      <select id="depositHolder"><option value="">選択</option></select>
+      <select id="depositHolder"><option value="">選択</option><option value="0">メンバー1</option></select>
     </div>
     <div class="input-group">
       <label>誰から預かった？</label>
-      <select id="depositFrom"><option value="">選択</option></select>
+      <select id="depositFrom"><option value="">選択</option><option value="0">メンバー1</option></select>
     </div>
     <div class="input-group">
       <label>金額</label>
@@ -317,27 +354,36 @@ input[type="file"] { display: none; }
     </div>
     <div class="input-group">
       <label>支払った人</label>
-      <select id="paidBy"><option value="">選択</option></select>
+      <select id="paidBy"><option value="">選択</option><option value="0">メンバー1</option></select>
     </div>
     <div class="input-group">
       <label>参加者</label>
-      <div class="checkbox-group" id="participantsCheckbox"></div>
+      <div class="checkbox-group" id="participantsCheckbox"><div class="checkbox-item"><input type="checkbox" id="participant0" value="0"><label for="participant0">メンバー1</label></div></div>
     </div>
     <button class="btn btn-primary" onclick="addExpense()">追加</button>
   </div>
 
   <div class="card">
     <h2>📝 支払い一覧</h2>
-    <div class="expense-list" id="expenseList">
-      <div class="empty-state"><p>まだ記録がありません</p></div>
-    </div>
+    <div class="expense-list" id="expenseList"><div class="empty-state"><p>まだ記録がありません</p></div></div>
   </div>
 
   <div class="card">
     <h2>💳 精算（支出のみ）</h2>
+    <div class="info-text" style="margin-top:10px;">
+      <b>精算の表示</b>：
+      <label style="margin-left:10px;cursor:pointer;"><input type="radio" name="settMode" value="direct" onchange="setSettlementMode('direct')" style="margin-right:6px;">立替者へ直接（おすすめ）</label>
+      <label style="margin-left:10px;cursor:pointer;"><input type="radio" name="settMode" value="min" onchange="setSettlementMode('min')" style="margin-right:6px;">最小精算（送金回数を圧縮）</label>
+      <div class="small" style="margin-top:6px;">「直接」は、<span class="pill">参加者→支払者</span> をそのまま出します（MIYUが欲しいやつ）。「最小精算」は経路が変わるので、見た目が直感とズレることがあります。</div>
+    </div>
     <div id="depositRefundSummary"></div>
-    <div class="summary-grid" id="summaryGrid"></div>
-    <div id="settlementList" class="settlement-list"></div>
+    <div class="summary-grid" id="summaryGrid">
+      <div class="summary-card">
+        <div class="summary-label">メンバー1</div>
+        <div class="summary-value">¥0 / $0.00</div>
+      </div>
+    </div>
+    <div id="settlementList" class="settlement-list"><h3 style="margin-top:20px;margin-bottom:15px;color:#333;">精算方法（支出） — 立替者へ直接</h3><div class="small" style="margin-bottom:8px;color:#666;">※預かり金はこの「支出の精算」には含めず、上の「預かり金の返金（固定）」に出します。</div><div style="font-weight:700;margin:10px 0 6px;">円</div><div class="small" style="text-align:center;color:#999;padding:8px;">なし</div><div style="font-weight:700;margin:14px 0 6px;">ドル</div><div class="small" style="text-align:center;color:#999;padding:8px;">なし</div></div>
   </div>
 
   <div class="card">
@@ -345,15 +391,24 @@ input[type="file"] { display: none; }
     <div class="info-text">「支出の精算」＋「預かり金の返金」を合算して、各人の受取/支払/ネットを表示します。セレクトで1人を選ぶと明細に絞れます。</div>
     <div class="input-group">
       <label>対象メンバー</label>
-      <select id="focusMember" onchange="renderPersonalViews()">
-        <option value="">全員</option>
-      </select>
+      <select id="focusMember" onchange="renderPersonalViews()"><option value="">全員</option><option value="0">メンバー1</option></select>
     </div>
-    <div id="personalSummary"></div>
+    <div id="personalSummary"><div class="settlement-item">
+      <div class="settlement-text">
+        <b>メンバー1</b>
+        <div class="small">受取 / 支払 / ネット（預かり金込み）</div>
+      </div>
+      <div style="text-align:right">
+        <div><span class="pill">円</span> 受取 ¥0 / 支払 ¥0 / <b>+¥0</b></div>
+        <div style="margin-top:4px"><span class="pill">ドル</span> 受取 $0.00 / 支払 $0.00 / <b>+$0.00</b></div>
+      </div>
+    </div></div>
     <div class="hr"></div>
-    <div id="personalDetails"></div>
+    <div id="personalDetails"><p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと、その人の「誰→誰」明細だけ表示します</p></div>
   </div>
 </div>
+
+<div id="toast" class="toast">コピーしました</div>
 
 <script>
 const MAX_MEMBERS=10;
@@ -369,6 +424,7 @@ let deposits=[];
 let currentCurrency='JPY';
 let currentDepositCurrency='JPY';
 let exchangeRate=150;
+let settlementMode='direct';
 
 const sanitize = s => String(s ?? '').substring(0, MAX_STRING_LEN);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -384,6 +440,38 @@ function clampInt(n, min, max){
   if(!Number.isFinite(v)) return null;
   if(v < min || v > max) return null;
   return v;
+}
+
+function showToast(msg='コピーしました'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer=setTimeout(()=>t.classList.remove('show'), 1200);
+}
+
+async function copyToClipboard(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast('コピーしました');
+  }catch(e){
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text;
+      ta.style.position='fixed';
+      ta.style.left='-9999px';
+      ta.style.top='0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('コピーしました');
+    }catch(err){
+      alert('コピーに失敗しました（ブラウザ制限の可能性）');
+      console.error(err);
+    }
+  }
 }
 
 function normalizeData(input){
@@ -442,6 +530,8 @@ window.onload=()=>{
   updateMemberDisplay();
   updateFocusMemberSelect();
   showRateDisplay();
+  // ラジオ反映
+  document.querySelectorAll('input[name="settMode"]').forEach(r=>{ r.checked = (r.value===settlementMode); });
   updateDisplay();
 };
 
@@ -488,7 +578,37 @@ function updateMemberDisplay(){
 }
 
 function showRateDisplay(){
-  document.getElementById('rateText').textContent = `💱 為替レート: $1 = ¥${exchangeRate.toFixed(2)}`;
+  const rt=document.getElementById('rateText');
+  rt.textContent='';
+  const span=document.createElement('span');
+  span.textContent = `💱 為替レート: $1 = ¥${exchangeRate.toFixed(2)} `;
+  const btn=document.createElement('button');
+  btn.textContent='変更';
+  btn.style.cssText='margin-left:10px;padding:4px 8px;background:#667eea;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;';
+  btn.onclick=setManualRate;
+  span.appendChild(btn);
+  rt.appendChild(span);
+}
+
+
+function setSettlementMode(mode){
+  settlementMode = (mode==='min') ? 'min' : 'direct';
+  try{ localStorage.setItem('settlementMode', settlementMode); }catch(e){}
+  // ラジオ反映
+  document.querySelectorAll('input[name="settMode"]').forEach(r=>{ r.checked = (r.value===settlementMode); });
+  updateDisplay();
+}
+
+function setManualRate(){
+  const r=prompt('為替レートを入力してください（例: 150）', String(exchangeRate));
+  const v=validateNum(r, 1, 1000);
+  if(v){
+    exchangeRate=v;
+    saveData();
+    showRateDisplay();
+    updateDisplay();
+    alert('レートを更新しました');
+  }
 }
 
 function addMember(){
@@ -501,7 +621,53 @@ function addMember(){
 }
 function removeMember(i){
   if(members.length<=1){alert('最低1人必要');return}
+  if(!confirm('削除すると既存データ（支出/預かり金）も影響します。続行しますか？')) return;
+
+  // 先に配列から削除（新しいmembers.lengthを基準に整合を取る）
   members.splice(i,1);
+
+  // 支出データのインデックスを詰め直す
+  expenses = (expenses||[]).map(e=>{
+    if(!e || typeof e!=='object') return null;
+    let paidBy = Number(e.paidBy);
+    if(Number.isNaN(paidBy)) paidBy = 0;
+    if(paidBy === i) paidBy = 0;
+    else if(paidBy > i) paidBy -= 1;
+
+    let participants = Array.isArray(e.participants) ? e.participants.slice() : [];
+    participants = participants
+      .map(p=>Number(p))
+      .filter(p=>!Number.isNaN(p))
+      .filter(p=>p !== i)
+      .map(p=> (p > i) ? (p-1) : p);
+
+    participants = [...new Set(participants)].filter(p=>p>=0 && p<members.length);
+
+    // 参加者が空になったら、支払者を参加者に入れて保全（それも無理なら捨てる）
+    if(participants.length===0){
+      if(paidBy>=0 && paidBy<members.length) participants=[paidBy];
+      else return null;
+    }
+    paidBy = clampInt(paidBy, 0, members.length-1) ?? 0;
+
+    return { ...e, paidBy, participants };
+  }).filter(Boolean);
+
+  // 預かり金データのインデックスを詰め直す（削除された人が絡むレコードは除外）
+  deposits = (deposits||[]).map(d=>{
+    if(!d || typeof d!=='object') return null;
+    let holder = Number(d.holder);
+    let from = Number(d.from);
+    if(Number.isNaN(holder) || Number.isNaN(from)) return null;
+    if(holder === i || from === i) return null;
+    if(holder > i) holder -= 1;
+    if(from > i) from -= 1;
+    holder = clampInt(holder, 0, members.length-1);
+    from = clampInt(from, 0, members.length-1);
+    if(holder===null || from===null || holder===from) return null;
+    return { ...d, holder, from };
+  }).filter(Boolean);
+
   updateMemberList();
   updateMemberSelects();
   updateFocusMemberSelect();
@@ -751,6 +917,60 @@ function calculateSettlementTransactions(b){
   return t;
 }
 
+function buildDirectMatrix(includeDeposits){
+  const n = members.length;
+  const jpy = Array.from({length:n}, ()=>Array(n).fill(0));
+  const usd = Array.from({length:n}, ()=>Array(n).fill(0));
+
+  // 支出：参加者→支払者
+  expenses.forEach(e=>{
+    const per = e.amount / e.participants.length;
+    const mat = (e.currency==='USD') ? usd : jpy;
+    e.participants.forEach(idx=>{
+      if(idx===e.paidBy) return;
+      mat[idx][e.paidBy] += per;
+    });
+  });
+
+  if(includeDeposits){
+    // 預かり金：預かった人→預けた人（返金）
+    deposits.forEach(d=>{
+      const mat = (d.currency==='USD') ? usd : jpy;
+      if(d.holder===d.from) return;
+      mat[d.holder][d.from] += d.amount;
+    });
+  }
+  return {jpy, usd};
+}
+
+function netMatrix(mat){
+  const n = mat.length;
+  const tx = [];
+  for(let i=0;i<n;i++){
+    for(let j=i+1;j<n;j++){
+      const a = mat[i][j] || 0;
+      const b = mat[j][i] || 0;
+      const diff = a - b;
+      if(Math.abs(diff) < 0.01) continue;
+      if(diff > 0) tx.push({from:i,to:j,amount:diff});
+      else tx.push({from:j,to:i,amount:-diff});
+    }
+  }
+  return tx;
+}
+
+function txToPayRecv(tx){
+  const n = members.length;
+  const pay = Array(n).fill(0);
+  const recv = Array(n).fill(0);
+  tx.forEach(t=>{
+    pay[t.from] += t.amount;
+    recv[t.to] += t.amount;
+  });
+  return {pay, recv};
+}
+
+
 function displayDepositRefundSummary(refunds){
   const box=document.getElementById('depositRefundSummary');
   if(!deposits.length){box.innerHTML='';return}
@@ -776,6 +996,7 @@ function calculateSettlement(){
   const refunds=calculateDepositRefunds();
   displayDepositRefundSummary(refunds);
 
+  // サマリー（支出のみの収支バランス）
   const sg=document.getElementById('summaryGrid');
   let sgHtml='';
   members.forEach((m,i)=>{
@@ -788,151 +1009,120 @@ function calculateSettlement(){
   });
   sg.innerHTML = sgHtml;
 
-  const settlementsJPY=calculateSettlementTransactions(bj);
-  const settlementsUSD=calculateSettlementTransactions(bu);
-  const sl=document.getElementById('settlementList');
-  let slHtml = '<h3 style="margin-top:20px;margin-bottom:15px;color:#333;">精算方法（支出）</h3>';
+  // 精算リスト（支出のみ）
+  let settlementsJPY=[], settlementsUSD=[];
+  if(settlementMode==='direct'){
+    const mat = buildDirectMatrix(false);
+    settlementsJPY = netMatrix(mat.jpy);
+    settlementsUSD = netMatrix(mat.usd);
+  }else{
+    settlementsJPY = calculateSettlementTransactions(bj);
+    settlementsUSD = calculateSettlementTransactions(bu);
+  }
 
-  settlementsJPY.forEach(s=>{
-    slHtml += `<div class="settlement-item">
-      <div class="settlement-text">${safe(members[s.from])} → ${safe(members[s.to])}</div>
-      <div class="settlement-amount">¥${Math.round(s.amount).toLocaleString()}</div>
-    </div>`;
-  });
-  settlementsUSD.forEach(s=>{
-    slHtml += `<div class="settlement-item">
-      <div class="settlement-text">${safe(members[s.from])} → ${safe(members[s.to])}</div>
-      <div class="settlement-amount">$${s.amount.toFixed(2)}</div>
-    </div>`;
-  });
+  const sl=document.getElementById('settlementList');
+  let slHtml = `<h3 style="margin-top:20px;margin-bottom:15px;color:#333;">精算方法（支出） — ${settlementMode==='direct'?'立替者へ直接':'最小精算'}</h3>`;
+  const renderTx=(tx,isJPY)=>{
+    tx.forEach(s=>{
+      slHtml += `<div class="settlement-item">
+        <div class="settlement-text">${safe(members[s.from])} → ${safe(members[s.to])}</div>
+        <div class="settlement-amount">${isJPY?`¥${Math.round(s.amount).toLocaleString()}`:`$${s.amount.toFixed(2)}`}</div>
+      </div>`;
+    });
+    if(!tx.length){
+      slHtml += `<div class="small" style="text-align:center;color:#999;padding:8px;">なし</div>`;
+    }
+  };
+  slHtml += `<div class="small" style="margin-bottom:8px;color:#666;">※預かり金はこの「支出の精算」には含めず、上の「預かり金の返金（固定）」に出します。</div>`;
+  slHtml += `<div style="font-weight:700;margin:10px 0 6px;">円</div>`;
+  renderTx(settlementsJPY,true);
+  slHtml += `<div style="font-weight:700;margin:14px 0 6px;">ドル</div>`;
+  renderTx(settlementsUSD,false);
   sl.innerHTML = slHtml;
 
   window.__lastExpenseBalances={bj,bu};
-  window.__lastExpenseSettlements={settlementsJPY,settlementsUSD};
+  window.__lastExpenseSettlements={settlementsJPY,settlementsUSD,mode:settlementMode};
   window.__lastDepositRefunds=refunds;
 }
+
 
 function renderPersonalViews(){
   const wrap=document.getElementById('personalSummary');
   const details=document.getElementById('personalDetails');
 
-  const balances=window.__lastExpenseBalances||calculateExpenseBalances();
   const refunds=window.__lastDepositRefunds||calculateDepositRefunds();
-  const settlements=window.__lastExpenseSettlements||{
-    settlementsJPY:calculateSettlementTransactions(balances.bj),
-    settlementsUSD:calculateSettlementTransactions(balances.bu)
-  };
 
-  const expPayJ=balances.bj.map(v=>v<0?-v:0), expRecvJ=balances.bj.map(v=>v>0?v:0);
-  const expPayU=balances.bu.map(v=>v<0?-v:0), expRecvU=balances.bu.map(v=>v>0?v:0);
+  // 直接精算（支出のみ / 預かり金込み）
+  const matExp = buildDirectMatrix(false);
+  const matFinal = buildDirectMatrix(true);
+  const expTxJPY = netMatrix(matExp.jpy);
+  const expTxUSD = netMatrix(matExp.usd);
+  const finalTxJPY = netMatrix(matFinal.jpy);
+  const finalTxUSD = netMatrix(matFinal.usd);
 
-  const payJ=expPayJ.map((v,i)=>v+refunds.payJ[i]);
-  const recvJ=expRecvJ.map((v,i)=>v+refunds.recvJ[i]);
-  const netJ=recvJ.map((v,i)=>v-payJ[i]);
+  const expPRJ = txToPayRecv(expTxJPY);
+  const expPRU = txToPayRecv(expTxUSD);
+  const finPRJ = txToPayRecv(finalTxJPY);
+  const finPRU = txToPayRecv(finalTxUSD);
 
-  const payU=expPayU.map((v,i)=>v+refunds.payU[i]);
-  const recvU=expRecvU.map((v,i)=>v+refunds.recvU[i]);
-  const netU=recvU.map((v,i)=>v-payU[i]);
-
-  let summaryHtml = '';
+  // 個人別まとめ（最終精算ベース）
+  wrap.innerHTML='';
   members.forEach((m,i)=>{
-    summaryHtml += `
-      <div class="settlement-item">
-        <div class="settlement-text">
-          <b>${safe(m||`メンバー${i+1}`)}</b>
-          <div class="small">受取 / 支払 / ネット</div>
-        </div>
-        <div style="text-align:right">
-          <div><span class="pill">円</span>
-            受取 ¥${Math.round(recvJ[i]).toLocaleString()} / 支払 ¥${Math.round(payJ[i]).toLocaleString()} /
-            <b>${netJ[i]>=0?'+':'-'}¥${Math.round(Math.abs(netJ[i])).toLocaleString()}</b>
-          </div>
-          <div style="margin-top:4px"><span class="pill">ドル</span>
-            受取 $${recvU[i].toFixed(2)} / 支払 $${payU[i].toFixed(2)} /
-            <b>${netU[i]>=0?'+':'-'}$${Math.abs(netU[i]).toFixed(2)}</b>
-          </div>
-        </div>
+    const payJ = finPRJ.pay[i], recvJ = finPRJ.recv[i], netJ = recvJ - payJ;
+    const payU = finPRU.pay[i], recvU = finPRU.recv[i], netU = recvU - payU;
+
+    const div=document.createElement('div');
+    div.className='settlement-item';
+    div.innerHTML = `
+      <div class="settlement-text">
+        <b>${safe(m||`メンバー${i+1}`)}</b>
+        <div class="small">受取 / 支払 / ネット（預かり金込み）</div>
+      </div>
+      <div style="text-align:right">
+        <div><span class="pill">円</span> 受取 ¥${Math.round(recvJ).toLocaleString()} / 支払 ¥${Math.round(payJ).toLocaleString()} / <b>${netJ>=0?'+':'-'}¥${Math.round(Math.abs(netJ)).toLocaleString()}</b></div>
+        <div style="margin-top:4px"><span class="pill">ドル</span> 受取 $${recvU.toFixed(2)} / 支払 $${payU.toFixed(2)} / <b>${netU>=0?'+':'-'}$${Math.abs(netU).toFixed(2)}</b></div>
       </div>
     `;
+    wrap.appendChild(div);
   });
-  wrap.innerHTML = summaryHtml;
 
   const focus=document.getElementById('focusMember').value;
   if(focus===''){
-    details.innerHTML='<p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと明細が出ます</p>';
+    details.innerHTML='<p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと、その人の「誰→誰」明細だけ表示します</p>';
     return;
   }
-  const k=parseInt(focus,10);
+  const k=parseInt(focus);
 
-  const makeList=(arr,label,isRefund)=>{
-    const hit=(arr||[]).filter(x=>x.from===k||x.to===k);
-    let h=`<div style="margin-top:12px;margin-bottom:8px;font-weight:700;">${label}</div>`;
-    if(!hit.length) return h+`<div class="small" style="text-align:center;color:#999;padding:8px;">なし</div>`;
-    hit.forEach(x=>{
-      const amt = label.includes('円') ? `¥${Math.round(x.amount).toLocaleString()}` : `$${x.amount.toFixed(2)}`;
-      h+=`<div class="settlement-item">
-        <div class="settlement-text">${safe(members[x.from])} → ${safe(members[x.to])}${isRefund?'（返金）':''}</div>
-        <div class="settlement-amount">${amt}</div>
+  const filterTx = (tx)=>tx.filter(x=>x.from===k||x.to===k);
+
+  const renderSection = (title, tx, isJPY, badge)=>{
+    let h = `<div style="margin-top:14px;margin-bottom:8px;font-weight:800;">${badge} ${title}</div>`;
+    if(!tx.length) return h + `<div class="small" style="text-align:center;color:#999;padding:8px;">なし</div>`;
+    tx.forEach(x=>{
+      h += `<div class="settlement-item">
+        <div class="settlement-text">${safe(members[x.from])} → ${safe(members[x.to])}</div>
+        <div class="settlement-amount">${isJPY?`¥${Math.round(x.amount).toLocaleString()}`:`$${x.amount.toFixed(2)}`}</div>
       </div>`;
     });
     return h;
   };
 
-  // 合算（支出精算 + 預かり金返金）を「相手別ネット」で相殺して表示
-  const aggregateForMember = (memberIdx, txList) => {
-    const net = new Map(); // other -> (受取:+ / 支払:-)
-    (txList||[]).forEach(tx=>{
-      if(tx.to === memberIdx){
-        net.set(tx.from, (net.get(tx.from) || 0) + tx.amount);
-      } else if(tx.from === memberIdx){
-        net.set(tx.to, (net.get(tx.to) || 0) - tx.amount);
-      }
-    });
-
-    const rows=[];
-    for(const [other, amt] of net.entries()){
-      if(Math.abs(amt) < 0.01) continue;
-      if(amt > 0) rows.push({from: other, to: memberIdx, amount: amt});   // other -> member
-      else rows.push({from: memberIdx, to: other, amount: -amt});         // member -> other
-    }
-    rows.sort((a,b)=>b.amount-a.amount);
-    return rows;
-  };
-
-  const renderTxRows = (rows, isJPY) => {
-    if(!rows.length) return `<div class="small" style="text-align:center;color:#999;padding:8px;">なし</div>`;
-    return rows.map(x=>{
-      const amt = isJPY ? `¥${Math.round(x.amount).toLocaleString()}` : `$${x.amount.toFixed(2)}`;
-      return `<div class="settlement-item">
-        <div class="settlement-text">${safe(members[x.from])} → ${safe(members[x.to])}</div>
-        <div class="settlement-amount">${amt}</div>
-      </div>`;
-    }).join('');
-  };
-
-  const mergedJPY = [...(settlements.settlementsJPY || []), ...(refunds.refundsJPY || [])];
-  const mergedUSD = [...(settlements.settlementsUSD || []), ...(refunds.refundsUSD || [])];
-  const finalRowsJPY = aggregateForMember(k, mergedJPY);
-  const finalRowsUSD = aggregateForMember(k, mergedUSD);
-
   details.innerHTML =
     `<h3 style="margin-bottom:10px;color:#333;">🔎 ${safe(members[k])} の明細</h3>` +
-
-    `<div style="margin-top:12px;margin-bottom:8px;font-weight:800;color:#333;">✅ 最終精算（預かり金込み・相殺済み）（円）</div>` +
-    renderTxRows(finalRowsJPY, true) +
-
-    `<div style="margin-top:12px;margin-bottom:8px;font-weight:800;color:#333;">✅ 最終精算（預かり金込み・相殺済み）（ドル）</div>` +
-    renderTxRows(finalRowsUSD, false) +
-
-    `<div class="hr"></div>` +
-
-    makeList(settlements.settlementsJPY,'💳 支出の精算（円）',false) +
-    makeList(settlements.settlementsUSD,'💳 支出の精算（ドル）',false) +
-    makeList(refunds.refundsJPY,'💵 預かり金（円）',true) +
-    makeList(refunds.refundsUSD,'💵 預かり金（ドル）',true);
+    renderSection('最終精算（預かり金込み・相殺済み）【円】', filterTx(finalTxJPY), true, '✅') +
+    renderSection('最終精算（預かり金込み・相殺済み）【ドル】', filterTx(finalTxUSD), false, '✅') +
+    '<div class="hr"></div>' +
+    renderSection('支出の精算（立替者へ直接）【円】', filterTx(expTxJPY), true, '🧾') +
+    renderSection('支出の精算（立替者へ直接）【ドル】', filterTx(expTxUSD), false, '🧾') +
+    '<div class="hr"></div>' +
+    renderSection('預かり金（固定返金）【円】', filterTx(refunds.refundsJPY), true, '💵') +
+    renderSection('預かり金（固定返金）【ドル】', filterTx(refunds.refundsUSD), false, '💵');
 }
 
+
 function updateDisplay(){
+  // ラジオ反映
+  document.querySelectorAll('input[name="settMode"]').forEach(r=>{ r.checked = (r.value===settlementMode); });
   updateMemberList();
   displayDeposits();
   displayExpenses();
@@ -1013,5 +1203,6 @@ function loadData(){
   }
 }
 </script>
-</body>
-</html>
+
+
+</body></html>
