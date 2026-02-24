@@ -243,6 +243,7 @@ input[type="file"] { display: none; }
 .hr { height: 1px; background: #e2e8f0; margin: 12px 0; }
 .small { font-size: 12px; color: #666; }
 .pill { display:inline-block; padding: 6px 10px; background:#e2e8f0; border-radius: 999px; font-size: 12px; font-weight: 600; color:#2d3748; }
+.estimate { font-size:11px; color:#999; margin-left:6px; }
 
 .copy-row {
   display:flex;
@@ -284,6 +285,12 @@ input[type="file"] { display: none; }
 .settlement-item{align-items:flex-start;gap:10px;}
 
 </style>
+
+<style>
+.copy-row { display:flex !important; flex-wrap:wrap; justify-content:space-between; gap:10px; margin:10px 0; }
+.copy-btn { display:inline-block !important; background:#3182ce; color:#fff; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; }
+</style>
+
 </head>
 
 <body>
@@ -380,7 +387,7 @@ input[type="file"] { display: none; }
     <div class="summary-grid" id="summaryGrid">
       <div class="summary-card">
         <div class="summary-label">メンバー1</div>
-        <div class="summary-value">¥0 / $0.00</div>
+        <div class="summary-value">¥0 / $0.00<span class="estimate">(≈¥0)</span></div>
       </div>
     </div>
     <div id="settlementList" class="settlement-list"><h3 style="margin-top:20px;margin-bottom:15px;color:#333;">精算方法（支出） — 立替者へ直接</h3><div class="small" style="margin-bottom:8px;color:#666;">※預かり金はこの「支出の精算」には含めず、上の「預かり金の返金（固定）」に出します。</div><div style="font-weight:700;margin:10px 0 6px;">円</div><div class="small" style="text-align:center;color:#999;padding:8px;">なし</div><div style="font-weight:700;margin:14px 0 6px;">ドル</div><div class="small" style="text-align:center;color:#999;padding:8px;">なし</div></div>
@@ -400,7 +407,7 @@ input[type="file"] { display: none; }
       </div>
       <div style="text-align:right">
         <div><span class="pill">円</span> 受取 ¥0 / 支払 ¥0 / <b>+¥0</b></div>
-        <div style="margin-top:4px"><span class="pill">ドル</span> 受取 $0.00 / 支払 $0.00 / <b>+$0.00</b></div>
+        <div style="margin-top:4px"><span class="pill">ドル</span> 受取 $0.00<span class="estimate">(≈¥0)</span> / 支払 $0.00<span class="estimate">(≈¥0)</span> / <b>+$0.00<span class="estimate">(≈¥0)</span></b></div>
       </div>
     </div></div>
     <div class="hr"></div>
@@ -433,6 +440,16 @@ const safe = s => esc(sanitize(s));
 const validateNum=(n,min=0,max=10000000)=>{
   const v=parseFloat(n);
   return !isNaN(v)&&v>=min&&v<=max?v:null
+};
+
+const fmtJPY = (n)=>`¥${Math.round(Number(n||0)).toLocaleString()}`;
+const fmtUSD = (n)=>{
+  const num = Number(n||0);
+  const usd = `$${num.toFixed(2)}`;
+  if(!exchangeRate || !isFinite(exchangeRate) || exchangeRate<=0) return usd;
+  const yen = Math.round(num*exchangeRate);
+  const yenStr = (yen>=0?`¥${yen.toLocaleString()}`:`-¥${Math.abs(yen).toLocaleString()}`);
+  return `${usd}<span class="estimate">(≈${yenStr})</span>`;
 };
 
 function clampInt(n, min, max){
@@ -796,7 +813,7 @@ function displayDeposits(){
   deposits.forEach((dep,i)=>{
     const holderName = safe(members[dep.holder]||`メンバー${dep.holder+1}`);
     const fromName = safe(members[dep.from]||`メンバー${dep.from+1}`);
-    const amt = dep.currency==='JPY' ? `¥${dep.amount.toLocaleString()}` : `$${dep.amount.toFixed(2)}`;
+    const amt = dep.currency==='JPY' ? `¥${dep.amount.toLocaleString()}` : fmtUSD(dep.amount);
     html += `
       <div class="settlement-item">
         <span>${holderName}が${fromName}から</span>
@@ -849,7 +866,7 @@ function displayExpenses(){
     const nm = safe(e.name);
     const paid = safe(members[e.paidBy]||`メンバー${e.paidBy+1}`);
     const parts = e.participants.map(idx => safe(members[idx]||`メンバー${idx+1}`)).join(', ');
-    const amt = e.currency==='JPY' ? `¥${e.amount.toLocaleString()}` : `$${e.amount.toFixed(2)}`;
+    const amt = e.currency==='JPY' ? `¥${e.amount.toLocaleString()}` : fmtUSD(e.amount);
     html += `
       <div class="expense-item">
         <div class="expense-header">
@@ -984,7 +1001,7 @@ function displayDepositRefundSummary(refunds){
   refunds.refundsUSD.forEach(x=>{
     html+=`<div class="settlement-item" style="background:transparent;padding:10px 0;">
       <span class="deposit-label">${safe(members[x.from])} → ${safe(members[x.to])}</span>
-      <span class="deposit-value">$${x.amount.toFixed(2)}</span>
+      <span class="deposit-value">${fmtUSD(x.amount)}</span>
     </div>`;
   });
   html+='</div>';
@@ -1003,7 +1020,7 @@ function calculateSettlement(){
     sgHtml += `
       <div class="summary-card">
         <div class="summary-label">${safe(m||`メンバー${i+1}`)}</div>
-        <div class="summary-value">¥${Math.round(bj[i]).toLocaleString()} / $${bu[i].toFixed(2)}</div>
+        <div class="summary-value">¥${Math.round(bj[i]).toLocaleString()} / ${fmtUSD(bu[i])}</div>
       </div>
     `;
   });
@@ -1026,7 +1043,7 @@ function calculateSettlement(){
     tx.forEach(s=>{
       slHtml += `<div class="settlement-item">
         <div class="settlement-text">${safe(members[s.from])} → ${safe(members[s.to])}</div>
-        <div class="settlement-amount">${isJPY?`¥${Math.round(s.amount).toLocaleString()}`:`$${s.amount.toFixed(2)}`}</div>
+        <div class="settlement-amount">${isJPY?`¥${Math.round(s.amount).toLocaleString()}`:fmtUSD(s.amount)}</div>
       </div>`;
     });
     if(!tx.length){
@@ -1080,7 +1097,7 @@ function renderPersonalViews(){
       </div>
       <div style="text-align:right">
         <div><span class="pill">円</span> 受取 ¥${Math.round(recvJ).toLocaleString()} / 支払 ¥${Math.round(payJ).toLocaleString()} / <b>${netJ>=0?'+':'-'}¥${Math.round(Math.abs(netJ)).toLocaleString()}</b></div>
-        <div style="margin-top:4px"><span class="pill">ドル</span> 受取 $${recvU.toFixed(2)} / 支払 $${payU.toFixed(2)} / <b>${netU>=0?'+':'-'}$${Math.abs(netU).toFixed(2)}</b></div>
+        <div style="margin-top:4px"><span class="pill">ドル</span> 受取 ${fmtUSD(recvU)} / 支払 ${fmtUSD(payU)} / <b>${netU>=0?'+':'-'}${fmtUSD(Math.abs(netU))}</b></div>
       </div>
     `;
     wrap.appendChild(div);
@@ -1101,7 +1118,7 @@ function renderPersonalViews(){
     tx.forEach(x=>{
       h += `<div class="settlement-item">
         <div class="settlement-text">${safe(members[x.from])} → ${safe(members[x.to])}</div>
-        <div class="settlement-amount">${isJPY?`¥${Math.round(x.amount).toLocaleString()}`:`$${x.amount.toFixed(2)}`}</div>
+        <div class="settlement-amount">${isJPY?`¥${Math.round(x.amount).toLocaleString()}`:`${fmtUSD(x.amount)}`}</div>
       </div>`;
     });
     return h;
