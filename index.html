@@ -71,20 +71,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 /* ★ ヘッダー系ブルーグレー小ボタン（変更・編集） */
 .btn-bluegray-sm{padding:8px 16px;font-size:13px;font-weight:800;cursor:pointer;border-radius:8px;background:rgba(140,147,170,.22);color:var(--text);border:1px solid rgba(140,147,170,.42);}
 
-.expense-list{max-height:560px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
-.expense-item{background:var(--surface);border-radius:18px;border:1px solid var(--line);overflow:hidden;box-shadow:0 2px 8px rgba(28,25,41,.05);}
-.expense-item.is-editing{outline:2px solid rgba(140,147,170,.50);box-shadow:0 0 0 4px rgba(140,147,170,.10);}
-.expense-color-bar{height:4px;background:linear-gradient(90deg,rgba(140,147,170,.6),rgba(185,179,204,.4));}
+.expense-list{max-height:560px;overflow-y:auto;}
+.expense-item{
+  background:var(--surface);border-radius:18px;border:1px solid var(--line);
+  box-shadow:0 2px 8px rgba(28,25,41,.05);margin-bottom:10px;
+}
+.expense-item.is-editing{outline:2px solid rgba(140,147,170,.50);}
+.expense-color-bar{height:4px;border-radius:18px 18px 0 0;background:linear-gradient(90deg,rgba(140,147,170,.6),rgba(185,179,204,.4));}
 .expense-item.is-editing .expense-color-bar{background:linear-gradient(90deg,var(--accent-bluegray),rgba(147,167,214,.6));}
 .expense-body{padding:14px 16px 12px;}
 .expense-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px;}
 .expense-title{font-weight:900;color:var(--text);font-size:16px;line-height:1.3;}
-.expense-amount{font-weight:900;color:var(--accent-bluegray);font-size:19px;white-space:nowrap;}
+.expense-amount{font-weight:900;color:var(--accent-bluegray);font-size:17px;white-space:nowrap;text-align:right;}
 .expense-meta{display:flex;gap:8px;flex-wrap:wrap;}
-.expense-meta-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--muted);font-weight:700;}
+.expense-meta-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;color:var(--muted);font-weight:700;}
 .expense-meta-chip b{color:var(--text);font-weight:900;}
-.expense-actions{display:flex;gap:0;border-top:1px solid var(--line);}
-.expense-actions button{flex:1;padding:11px 10px;border:none;background:transparent;font-size:13px;font-weight:800;cursor:pointer;transition:background .15s,color .15s;}
+.expense-actions{display:flex;border-top:1px solid var(--line);}
+.expense-actions button{flex:1;padding:12px 10px;border:none;background:transparent;font-size:13px;font-weight:800;cursor:pointer;transition:background .15s;}
 .expense-actions button:first-child{border-right:1px solid var(--line);}
 .expense-actions button:hover{background:var(--surface-2);}
 .expense-action-edit{color:var(--accent-bluegray) !important;}
@@ -187,7 +190,7 @@ input[type="file"]{display:none;}
 
 /* ===== 個人別まとめ カード ===== */
 .personal-card{background:var(--surface-2);border:1px solid var(--line);border-radius:18px;margin-bottom:12px;overflow:hidden;}
-.personal-card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid var(--line);gap:8px;flex-wrap:wrap;}
+.personal-card-header{display:flex;flex-direction:column;align-items:stretch;padding:12px 16px 12px;border-bottom:1px solid var(--line);gap:6px;}
 .personal-card-name{font-size:16px;font-weight:900;color:var(--text);}
 .personal-card-nets{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;}
 .net-badge{padding:5px 11px;border-radius:999px;font-size:12px;font-weight:900;white-space:nowrap;}
@@ -201,7 +204,7 @@ input[type="file"]{display:none;}
 .stat-cell{text-align:right;}
 .stat-lbl{font-size:10px;color:var(--muted);font-weight:800;margin-bottom:3px;letter-spacing:.2px;}
 .stat-val{font-size:13px;font-weight:900;color:var(--text);line-height:1.3;}
-.stat-val .estimate{font-size:10px;font-weight:700;color:var(--muted);}
+.stat-val .estimate{font-size:10px;font-weight:700;color:var(--muted);display:block;line-height:1.4;margin-top:1px;}
 .c-recv{color:#4a7a6a;}
 .c-pay{color:#7a4040;}
 .c-net-p{color:#3d6b5c;}
