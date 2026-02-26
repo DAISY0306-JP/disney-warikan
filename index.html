@@ -71,14 +71,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 /* ★ ヘッダー系ブルーグレー小ボタン（変更・編集） */
 .btn-bluegray-sm{padding:8px 16px;font-size:13px;font-weight:800;cursor:pointer;border-radius:8px;background:rgba(140,147,170,.22);color:var(--text);border:1px solid rgba(140,147,170,.42);}
 
-.expense-list{max-height:520px;overflow-y:auto;}
-.expense-item{background:var(--surface-2);padding:16px;border-radius:16px;margin-bottom:12px;border:1px solid var(--line);border-left:5px solid rgba(140,147,170,.55);}
-.expense-item.is-editing{border-left-color:var(--accent-bluegray);background:rgba(140,147,170,.07);outline:2px solid rgba(140,147,170,.30);}
-.expense-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:12px;}
-.expense-title{font-weight:900;color:var(--text);font-size:16px;}
-.expense-amount{font-weight:900;color:var(--accent-bluegray);font-size:18px;}
-.expense-details{font-size:14px;color:var(--muted);margin-bottom:6px;}
-.expense-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.expense-list{max-height:560px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+.expense-item{background:var(--surface);border-radius:18px;border:1px solid var(--line);overflow:hidden;box-shadow:0 2px 8px rgba(28,25,41,.05);}
+.expense-item.is-editing{outline:2px solid rgba(140,147,170,.50);box-shadow:0 0 0 4px rgba(140,147,170,.10);}
+.expense-color-bar{height:4px;background:linear-gradient(90deg,rgba(140,147,170,.6),rgba(185,179,204,.4));}
+.expense-item.is-editing .expense-color-bar{background:linear-gradient(90deg,var(--accent-bluegray),rgba(147,167,214,.6));}
+.expense-body{padding:14px 16px 12px;}
+.expense-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px;}
+.expense-title{font-weight:900;color:var(--text);font-size:16px;line-height:1.3;}
+.expense-amount{font-weight:900;color:var(--accent-bluegray);font-size:19px;white-space:nowrap;}
+.expense-meta{display:flex;gap:8px;flex-wrap:wrap;}
+.expense-meta-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--muted);font-weight:700;}
+.expense-meta-chip b{color:var(--text);font-weight:900;}
+.expense-actions{display:flex;gap:0;border-top:1px solid var(--line);}
+.expense-actions button{flex:1;padding:11px 10px;border:none;background:transparent;font-size:13px;font-weight:800;cursor:pointer;transition:background .15s,color .15s;}
+.expense-actions button:first-child{border-right:1px solid var(--line);}
+.expense-actions button:hover{background:var(--surface-2);}
+.expense-action-edit{color:var(--accent-bluegray) !important;}
+.expense-action-delete{color:var(--danger) !important;}
 
 /* 編集中バナー */
 .edit-banner{display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(140,147,170,.12);border:1.5px solid rgba(140,147,170,.38);border-radius:14px;padding:12px 16px;margin-bottom:14px;}
@@ -90,10 +100,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .settlement-text{color:var(--text);font-size:15px;}
 .settlement-amount{font-weight:900;color:var(--danger);font-size:17px;}
 
-.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px;}
-.summary-card{background:var(--surface-2);padding:16px;border-radius:16px;text-align:center;border:1px solid var(--line);}
-.summary-label{font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:800;}
-.summary-value{font-size:18px;font-weight:900;color:var(--accent-bluegray);}
+/* 個人別明細セクション */
+.detail-section{margin-bottom:8px;}
+.detail-section-header{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 4px 6px;
+  border-bottom:2px solid var(--line);
+  margin-bottom:8px;
+}
+.detail-section-badge{font-size:16px;line-height:1;}
+.detail-section-title{font-size:12px;font-weight:900;color:var(--muted);letter-spacing:.3px;text-transform:uppercase;}
+.detail-section-ccy{
+  margin-left:auto;font-size:11px;font-weight:900;
+  padding:3px 8px;border-radius:999px;
+  background:rgba(140,147,170,.15);color:var(--accent-bluegray);
+  border:1px solid rgba(140,147,170,.28);
+}
+.detail-tx-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;background:var(--surface);
+  border-radius:14px;border:1px solid var(--line);
+  margin-bottom:7px;gap:10px;
+}
+.detail-tx-from{font-size:14px;font-weight:900;color:var(--text);}
+.detail-tx-arrow{font-size:13px;color:var(--muted);margin:0 4px;flex-shrink:0;}
+.detail-tx-to{font-size:14px;font-weight:900;color:var(--text);}
+.detail-tx-route{display:flex;align-items:center;flex:1;min-width:0;}
+.detail-tx-amount{font-size:16px;font-weight:900;color:var(--danger);white-space:nowrap;flex-shrink:0;}
+.detail-none{text-align:center;color:var(--muted);font-size:13px;padding:10px 0 4px;font-weight:700;}
+.detail-group{margin-bottom:18px;}
+
+.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;}
+.summary-card{
+  background:var(--surface);border-radius:18px;border:1px solid var(--line);
+  overflow:hidden;box-shadow:0 2px 8px rgba(28,25,41,.05);
+}
+.summary-card-header{
+  padding:10px 14px 8px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+}
+.summary-card-name{font-size:13px;font-weight:900;color:var(--text);}
+.summary-card-body{padding:10px 14px 12px;display:flex;flex-direction:column;gap:7px;}
+.summary-row{display:flex;align-items:baseline;justify-content:space-between;gap:6px;}
+.summary-ccy{font-size:10px;font-weight:900;color:var(--muted);letter-spacing:.3px;min-width:28px;}
+.summary-num{font-size:15px;font-weight:900;line-height:1.2;text-align:right;}
+.summary-num .estimate{font-size:10px;font-weight:700;color:var(--muted);display:block;line-height:1.3;}
+.summary-num-pos{color:#3d7a6a;}
+.summary-num-neg{color:#8a3535;}
+.summary-num-zero{color:var(--muted);}
 
 .currency-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;background:var(--surface-2);padding:6px;border-radius:16px;border:1px solid var(--line);}
 .currency-btn{padding:12px;border:none;border-radius:14px;background:transparent;cursor:pointer;font-weight:900;font-size:15px;transition:background .2s,color .2s;min-height:48px;color:var(--muted);}
@@ -152,6 +206,20 @@ input[type="file"]{display:none;}
 .c-pay{color:#7a4040;}
 .c-net-p{color:#3d6b5c;}
 .c-net-m{color:#7a3535;}
+
+/* 精算モード選択カード */
+.sett-mode-card{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:14px 10px;border-radius:16px;cursor:pointer;
+  background:var(--surface-2);border:2px solid var(--line);
+  transition:background .15s,border-color .15s;user-select:none;
+}
+.sett-mode-card.active{
+  background:rgba(140,147,170,.18);border-color:rgba(140,147,170,.55);
+}
+.sett-mode-icon{font-size:22px;line-height:1;}
+.sett-mode-name{font-size:13px;font-weight:900;color:var(--text);text-align:center;}
+.sett-mode-desc{font-size:11px;font-weight:700;color:var(--muted);text-align:center;}
 
 /* toast */
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--footer-h) + env(safe-area-inset-bottom) + 10px);background:rgba(78,74,99,.92);color:white;padding:10px 18px;border-radius:999px;font-weight:900;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:1200;white-space:nowrap;}
@@ -264,11 +332,23 @@ input[type="file"]{display:none;}
 
   <div class="card">
     <h2 id="sec-settlement">💳 精算（支出のみ）</h2>
-    <div class="info-text" style="margin-top:10px;">
-      <b>精算の表示</b>：
-      <label style="margin-left:10px;cursor:pointer;"><input type="radio" name="settMode" value="direct" onchange="setSettlementMode('direct')" style="margin-right:6px;">立替者へ直接（おすすめ）</label>
-      <label style="margin-left:10px;cursor:pointer;"><input type="radio" name="settMode" value="min" onchange="setSettlementMode('min')" style="margin-right:6px;">最小精算（送金回数を圧縮）</label>
-      <div class="small" style="margin-top:6px;">「直接」は、<span class="pill">参加者→支払者</span> をそのまま出します。「最小精算」は経路が変わるので、見た目が直感とズレることがあります。</div>
+    <div style="margin-top:10px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:8px;letter-spacing:.3px;">精算の表示方法</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <label class="sett-mode-card" id="settCard-direct">
+          <input type="radio" name="settMode" value="direct" onchange="setSettlementMode('direct')" style="display:none;">
+          <div class="sett-mode-icon">💳</div>
+          <div class="sett-mode-name">立替者へ直接</div>
+          <div class="sett-mode-desc">おすすめ</div>
+        </label>
+        <label class="sett-mode-card" id="settCard-min">
+          <input type="radio" name="settMode" value="min" onchange="setSettlementMode('min')" style="display:none;">
+          <div class="sett-mode-icon">🗜️</div>
+          <div class="sett-mode-name">最小精算</div>
+          <div class="sett-mode-desc">送金回数を圧縮</div>
+        </label>
+      </div>
+      <div class="small" style="line-height:1.6;padding:10px 12px;background:var(--surface-2);border-radius:12px;border:1px solid var(--line);">「直接」は <span class="pill">参加者→支払者</span> をそのまま出します。「最小精算」は経路が変わるため、見た目が直感とズレることがあります。</div>
     </div>
     <details data-ui="deposit-details">
       <summary>内訳（預かり金の返金）</summary>
@@ -414,7 +494,7 @@ function normalizeData(input){
 window.onload=()=>{
   loadData();if(!members.length)members=[''];
   updateMemberSelects();updateMemberDisplay();updateFocusMemberSelect();showRateDisplay();
-  document.querySelectorAll('input[name="settMode"]').forEach(r=>{r.checked=(r.value===settlementMode);});
+  updateSettCards();
   updateDisplay();
 };
 
@@ -589,12 +669,20 @@ function displayExpenses(){
     const amt=e.currency==='JPY'?`¥${e.amount.toLocaleString()}`:fmtUSD(e.amount);
     const isEd=editingExpenseIdx===i;
     html+=`<div class="expense-item${isEd?' is-editing':''}">
-      <div class="expense-header"><div class="expense-title">${nm}</div><div class="expense-amount">${amt}</div></div>
-      <div class="expense-details">支払: ${paid}</div>
-      <div class="expense-details">参加: ${parts}</div>
+      <div class="expense-color-bar"></div>
+      <div class="expense-body">
+        <div class="expense-header">
+          <div class="expense-title">${nm}</div>
+          <div class="expense-amount">${amt}</div>
+        </div>
+        <div class="expense-meta">
+          <span class="expense-meta-chip">💳 <b>${paid}</b></span>
+          <span class="expense-meta-chip">👥 ${parts}</span>
+        </div>
+      </div>
       <div class="expense-actions">
-        <button class="btn-edit" onclick="startEditExpense(${i})">編集</button>
-        <button class="btn-danger" onclick="deleteExpense(${i})">削除</button>
+        <button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button>
+        <button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button>
       </div>
     </div>`;
   });
@@ -631,9 +719,15 @@ function netMatrix(mat){
   return tx;
 }
 function txToPayRecv(tx){const n=members.length,pay=Array(n).fill(0),recv=Array(n).fill(0);tx.forEach(t=>{pay[t.from]+=t.amount;recv[t.to]+=t.amount;});return{pay,recv};}
+function updateSettCards(){
+  ['direct','min'].forEach(m=>{
+    const el=document.getElementById(`settCard-${m}`);
+    if(el) el.classList.toggle('active', m===settlementMode);
+  });
+}
 function setSettlementMode(mode){
   settlementMode=mode==='min'?'min':'direct';try{localStorage.setItem('settlementMode',settlementMode);}catch(e){}
-  document.querySelectorAll('input[name="settMode"]').forEach(r=>{r.checked=(r.value===settlementMode);});updateDisplay();
+  updateSettCards();updateDisplay();
 }
 function displayDepositRefundSummary(refunds){
   const box=document.getElementById('depositRefundSummary');if(!deposits.length){box.innerHTML='';return;}
@@ -645,7 +739,34 @@ function displayDepositRefundSummary(refunds){
 function calculateSettlement(){
   const{bj,bu}=calculateExpenseBalances(),refunds=calculateDepositRefunds();
   displayDepositRefundSummary(refunds);
-  document.getElementById('summaryGrid').innerHTML=members.map((m,i)=>`<div class="summary-card"><div class="summary-label">${safe(m||`メンバー${i+1}`)}</div><div class="summary-value">¥${Math.round(bj[i]).toLocaleString()} / ${fmtUSD(bu[i])}</div></div>`).join('');
+  document.getElementById('summaryGrid').innerHTML=members.map((m,i)=>{
+    const jVal=Math.round(bj[i]), uVal=bu[i];
+    const jCls=jVal>0?'summary-num-pos':jVal<0?'summary-num-neg':'summary-num-zero';
+    const uNum=Math.round(uVal*100)/100;
+    const uCls=uNum>0?'summary-num-pos':uNum<0?'summary-num-neg':'summary-num-zero';
+    const jSign=jVal>0?'+':jVal<0?'−':'';
+    const jLabel=`${jSign}¥${Math.abs(jVal).toLocaleString()}`;
+    const uSign=uNum>0?'+':uNum<0?'−':'';
+    const uAbs=Math.abs(uNum).toFixed(2);
+    // yen estimate for USD
+    const yenEst=exchangeRate&&isFinite(exchangeRate)&&exchangeRate>0?Math.round(uVal*exchangeRate):null;
+    const yenEstStr=yenEst!==null?`≈${yenEst>=0?'¥':'−¥'}${Math.abs(yenEst).toLocaleString()}`:'';
+    return `<div class="summary-card">
+      <div class="summary-card-header">
+        <span class="summary-card-name">👤 ${safe(m||`メンバー${i+1}`)}</span>
+      </div>
+      <div class="summary-card-body">
+        <div class="summary-row">
+          <span class="summary-ccy">円</span>
+          <span class="summary-num ${jCls}">${jLabel}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-ccy">USD</span>
+          <span class="summary-num ${uCls}">${uSign}$${uAbs}${yenEstStr?`<span class="estimate">(${yenEstStr})</span>`:''}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
   let sJ=[],sU=[];
   if(settlementMode==='direct'){const mat=buildDirectMatrix(false);sJ=netMatrix(mat.jpy);sU=netMatrix(mat.usd);}
   else{sJ=calculateSettlementTransactions(bj);sU=calculateSettlementTransactions(bu);}
@@ -707,21 +828,49 @@ function renderPersonalViews(){
   const focus=document.getElementById('focusMember').value;
   if(focus===''){details.innerHTML='<p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと明細が表示されます</p>';return;}
   const k=parseInt(focus),filterTx=tx=>tx.filter(x=>x.from===k||x.to===k);
-  const renderSection=(title,tx,isJPY,badge)=>{
-    let h=`<div style="margin-top:14px;margin-bottom:8px;font-weight:800;">${badge} ${title}</div>`;
-    if(!tx.length)return h+`<div class="small" style="text-align:center;color:#999;padding:8px;">なし</div>`;
-    return h+tx.map(x=>`<div class="settlement-item"><div class="settlement-text">${safe(members[x.from])} → ${safe(members[x.to])}</div><div class="settlement-amount">${isJPY?`¥${Math.round(x.amount).toLocaleString()}`:fmtUSD(x.amount)}</div></div>`).join('');
+
+  // 送金アイテム1件のHTML
+  const txItem=(x,isJPY)=>`
+    <div class="detail-tx-item">
+      <div class="detail-tx-route">
+        <span class="detail-tx-from">${safe(members[x.from])}</span>
+        <span class="detail-tx-arrow">→</span>
+        <span class="detail-tx-to">${safe(members[x.to])}</span>
+      </div>
+      <div class="detail-tx-amount">${isJPY?`¥${Math.round(x.amount).toLocaleString()}`:fmtUSD(x.amount)}</div>
+    </div>`;
+
+  // セクション1つ（円+ドルまとめて）
+  const renderGroup=(title,badge,txJPY,txUSD)=>{
+    const jpyItems=txJPY.length?txJPY.map(x=>txItem(x,true)).join(''):`<div class="detail-none">なし</div>`;
+    const usdItems=txUSD.length?txUSD.map(x=>txItem(x,false)).join(''):`<div class="detail-none">なし</div>`;
+    return `<div class="detail-group">
+      <div class="detail-section">
+        <div class="detail-section-header">
+          <span class="detail-section-badge">${badge}</span>
+          <span class="detail-section-title">${title}</span>
+          <span class="detail-section-ccy">円</span>
+        </div>
+        ${jpyItems}
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-header">
+          <span class="detail-section-badge">${badge}</span>
+          <span class="detail-section-title">${title}</span>
+          <span class="detail-section-ccy">USD</span>
+        </div>
+        ${usdItems}
+      </div>
+    </div>`;
   };
+
   details.innerHTML=
-    `<h3 style="margin-bottom:10px;color:#333;">🔎 ${safe(members[k])} の明細</h3>`+
-    renderSection('最終精算（預かり金込み・相殺済み）【円】',filterTx(finalTxJPY),true,'✅')+
-    renderSection('最終精算（預かり金込み・相殺済み）【ドル】',filterTx(finalTxUSD),false,'✅')+
+    `<div style="font-size:15px;font-weight:900;color:var(--text);margin-bottom:14px;padding:4px 0;">🔎 ${safe(members[k])} の明細</div>`+
+    renderGroup('最終精算（預かり金込み・相殺済み）','✅',filterTx(finalTxJPY),filterTx(finalTxUSD))+
     '<div class="hr"></div>'+
-    renderSection('支出の精算（立替者へ直接）【円】',filterTx(expTxJPY),true,'🧾')+
-    renderSection('支出の精算（立替者へ直接）【ドル】',filterTx(expTxUSD),false,'🧾')+
+    renderGroup('支出の精算（立替者へ直接）','🧾',filterTx(expTxJPY),filterTx(expTxUSD))+
     '<div class="hr"></div>'+
-    renderSection('預かり金（固定返金）【円】',filterTx(refunds.refundsJPY),true,'💵')+
-    renderSection('預かり金（固定返金）【ドル】',filterTx(refunds.refundsUSD),false,'💵');
+    renderGroup('預かり金（固定返金）','💵',filterTx(refunds.refundsJPY),filterTx(refunds.refundsUSD));
 }
 
 /* ===== フッター・メイン更新 ===== */
@@ -730,7 +879,7 @@ function updateFooterTotal(){
   const ft=document.getElementById('footerTotal');if(ft)ft.textContent=`¥${Math.round(j+u*exchangeRate).toLocaleString()}`;
 }
 function updateDisplay(){
-  document.querySelectorAll('input[name="settMode"]').forEach(r=>{r.checked=(r.value===settlementMode);});
+  updateSettCards();
   updateMemberList();displayDeposits();displayExpenses();calculateSettlement();renderPersonalViews();updateFooterTotal();
 }
 
