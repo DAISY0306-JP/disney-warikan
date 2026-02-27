@@ -121,9 +121,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .edit-banner-text{font-size:13px;font-weight:800;color:var(--accent-bluegray);}
 .edit-banner-cancel{padding:6px 14px;background:rgba(217,140,140,.22);color:var(--text);border:1px solid rgba(217,140,140,.38);border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;}
 
-.settlement-item{background:var(--surface-2);padding:16px;border-radius:16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);}
-.settlement-text{color:var(--text);font-size:15px;}
-.settlement-amount{font-weight:900;color:var(--danger);font-size:17px;}
+.settlement-item{background:var(--surface);padding:14px 16px;border-radius:16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(28,25,41,.04);}
+.settlement-text{color:var(--text);font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.settlement-amount{font-weight:900;color:var(--danger);font-size:17px;white-space:nowrap;flex-shrink:0;}
 
 /* シェアバー */
 .share-bar{
@@ -368,29 +368,32 @@ input[type="file"]{display:none;}
       <span class="card-chevron open">▶</span>
     </div>
     <div class="card-body" id="cardSettlement">
-    <div style="margin-top:10px;margin-bottom:14px;">
-      <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:8px;letter-spacing:.3px;">精算の表示方法</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-        <label class="sett-mode-card" id="settCard-direct">
-          <input type="radio" name="settMode" value="direct" onchange="setSettlementMode('direct')" style="display:none;">
-          <div class="sett-mode-icon">💳</div>
-          <div class="sett-mode-name">立替者へ直接</div>
-          <div class="sett-mode-desc">おすすめ</div>
-        </label>
-        <label class="sett-mode-card" id="settCard-min">
-          <input type="radio" name="settMode" value="min" onchange="setSettlementMode('min')" style="display:none;">
-          <div class="sett-mode-icon">🗜️</div>
-          <div class="sett-mode-name">最小精算</div>
-          <div class="sett-mode-desc">送金回数を圧縮</div>
-        </label>
-      </div>
-      <div class="small" style="line-height:1.6;padding:10px 12px;background:var(--surface-2);border-radius:12px;border:1px solid var(--line);">「直接」は <span class="pill">参加者→支払者</span> をそのまま出します。「最小精算」は経路が変わるため、見た目が直感とズレることがあります。</div>
+    <div class="info-text" style="line-height:1.8;margin-bottom:14px;">
+      <b>受取</b> ＝ 立て替えた分を他の人から回収するお金<br>
+      <b>支払</b> ＝ 他の人に立て替えてもらった分を返すお金<br>
+      <b>ネット</b> ＝ 受取 − 支払（＋なら受け取り超過、−なら支払い超過）
     </div>
+    <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:10px;letter-spacing:.3px;">各メンバーの受取 / 支払 / ネット</div>
+    <div id="personalSummary"></div>
 
 ```
-<div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:8px;letter-spacing:.3px;">各メンバーのネット（受取−支払）</div>
-<div class="summary-grid" id="summaryGrid"></div>
-<div style="font-size:12px;font-weight:900;color:var(--muted);margin:16px 0 8px;letter-spacing:.3px;">送金の内訳</div>
+<div style="margin-top:20px;margin-bottom:14px;">
+  <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:8px;letter-spacing:.3px;">送金の内訳 — 表示方法を選択</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+    <label class="sett-mode-card" id="settCard-direct">
+      <input type="radio" name="settMode" value="direct" onchange="setSettlementMode('direct')" style="display:none;">
+      <div class="sett-mode-icon">💳</div>
+      <div class="sett-mode-name">立替者へ直接</div>
+      <div class="sett-mode-desc">おすすめ</div>
+    </label>
+    <label class="sett-mode-card" id="settCard-min">
+      <input type="radio" name="settMode" value="min" onchange="setSettlementMode('min')" style="display:none;">
+      <div class="sett-mode-icon">🗜️</div>
+      <div class="sett-mode-name">最小精算</div>
+      <div class="sett-mode-desc">送金回数を圧縮</div>
+    </label>
+  </div>
+</div>
 <div id="settlementList"></div>
 </div>
 ```
@@ -405,13 +408,6 @@ input[type="file"]{display:none;}
       <span class="card-chevron open">▶</span>
     </div>
     <div class="card-body" id="cardPersonal">
-      <div class="info-text" style="line-height:1.8;">
-        <b>受取</b> ＝ 立て替えた分を他の人から回収するお金<br>
-        <b>支払</b> ＝ 他の人に立て替えてもらった分を返すお金<br>
-        <b>ネット</b> ＝ 受取 − 支払（＋なら受け取り超過、−なら支払い超過）
-      </div>
-      <div id="personalSummary"></div>
-      <div class="hr"></div>
       <div style="font-size:13px;font-weight:900;color:var(--muted);margin-bottom:10px;letter-spacing:.2px;">📋 メンバーを選んで「誰→誰」の明細を表示</div>
       <div class="member-btn-grid" id="focusMemberBtns"></div>
       <div id="personalDetails" style="margin-top:4px;"><p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと明細が表示されます</p></div>
@@ -799,43 +795,16 @@ function setSettlementMode(mode){
 function displayDepositRefundSummary(refunds){}
 function calculateSettlement(){
   const{bj,bu}=calculateExpenseBalances();
-  document.getElementById('summaryGrid').innerHTML=members.map((m,i)=>{
-    const jVal=Math.round(bj[i]), uVal=bu[i];
-    const jCls=jVal>0?'summary-num-pos':jVal<0?'summary-num-neg':'summary-num-zero';
-    const uNum=Math.round(uVal*100)/100;
-    const uCls=uNum>0?'summary-num-pos':uNum<0?'summary-num-neg':'summary-num-zero';
-    const jSign=jVal>0?'+':jVal<0?'−':'';
-    const jLabel=`${jSign}¥${Math.abs(jVal).toLocaleString()}`;
-    const uSign=uNum>0?'+':uNum<0?'−':'';
-    const uAbs=Math.abs(uNum).toFixed(2);
-    // yen estimate for USD
-    const yenEst=exchangeRate&&isFinite(exchangeRate)&&exchangeRate>0?Math.round(uVal*exchangeRate):null;
-    const yenEstStr=yenEst!==null?`≈${yenEst>=0?'¥':'−¥'}${Math.abs(yenEst).toLocaleString()}`:'';
-    return `<div class="summary-card">
-      <div class="summary-card-header">
-        <span class="summary-card-name">👤 ${safe(m||`メンバー${i+1}`)}</span>
-      </div>
-      <div class="summary-card-body">
-        <div class="summary-row">
-          <span class="summary-ccy">円</span>
-          <span class="summary-num ${jCls}">${jLabel}</span>
-        </div>
-        <div class="summary-row">
-          <span class="summary-ccy">USD</span>
-          <span class="summary-num ${uCls}">${uSign}$${uAbs}${yenEstStr?`<span class="estimate">(${yenEstStr})</span>`:''}</span>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+
   let sJ=[],sU=[];
   if(settlementMode==='direct'){const mat=buildDirectMatrix(false);sJ=netMatrix(mat.jpy);sU=netMatrix(mat.usd);}
   else{sJ=calculateSettlementTransactions(bj);sU=calculateSettlementTransactions(bu);}
   const renderTx=(tx,isJPY)=>tx.length?tx.map(s=>`<div class="settlement-item"><div class="settlement-text">${safe(members[s.from])} → ${safe(members[s.to])}</div><div class="settlement-amount">${isJPY?`¥${Math.round(s.amount).toLocaleString()}`:fmtUSD(s.amount)}</div></div>`).join(''):`<div class="small" style="text-align:center;color:#999;padding:8px;">なし</div>`;
   document.getElementById('settlementList').innerHTML=
-    `<h3 style="margin-top:20px;margin-bottom:15px;color:#333;">精算方法（支出） — ${settlementMode==='direct'?'立替者へ直接':'最小精算'}</h3>`+
+    ``+
 
-    `<div style="font-weight:700;margin:10px 0 6px;">円</div>`+renderTx(sJ,true)+
-    `<div style="font-weight:700;margin:14px 0 6px;">ドル</div>`+renderTx(sU,false);
+    `<div style="font-size:12px;font-weight:900;color:var(--muted);letter-spacing:.3px;margin-bottom:8px;">円</div>`+renderTx(sJ,true)+
+    `<div style="font-size:12px;font-weight:900;color:var(--muted);letter-spacing:.3px;margin:14px 0 8px;">USD</div>`+renderTx(sU,false);
   _lastDepositRefunds=null;
 }
 
