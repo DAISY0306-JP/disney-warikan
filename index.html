@@ -122,7 +122,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .edit-banner-cancel{padding:6px 14px;background:rgba(217,140,140,.22);color:var(--text);border:1px solid rgba(217,140,140,.38);border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;}
 
 .settlement-item{background:var(--surface);padding:14px 16px;border-radius:16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(28,25,41,.04);}
-.settlement-text{color:var(--text);font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.settlement-text{color:var(--text);font-size:16px;font-weight:800;min-width:0;}
 .settlement-amount{font-weight:900;color:var(--danger);font-size:17px;white-space:nowrap;flex-shrink:0;}
 
 /* シェアバー */
@@ -368,36 +368,22 @@ input[type="file"]{display:none;}
       <span class="card-chevron open">▶</span>
     </div>
     <div class="card-body" id="cardSettlement">
-    <div class="info-text" style="line-height:1.8;margin-bottom:14px;">
-      <b>受取</b> ＝ 立て替えた分を他の人から回収するお金<br>
-      <b>支払</b> ＝ 他の人に立て替えてもらった分を返すお金<br>
-      <b>ネット</b> ＝ 受取 − 支払（＋なら受け取り超過、−なら支払い超過）
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <label class="sett-mode-card" id="settCard-direct">
+        <input type="radio" name="settMode" value="direct" onchange="setSettlementMode('direct')" style="display:none;">
+        <div class="sett-mode-icon">💳</div>
+        <div class="sett-mode-name">立替者へ直接</div>
+        <div class="sett-mode-desc">おすすめ</div>
+      </label>
+      <label class="sett-mode-card" id="settCard-min">
+        <input type="radio" name="settMode" value="min" onchange="setSettlementMode('min')" style="display:none;">
+        <div class="sett-mode-icon">🗜️</div>
+        <div class="sett-mode-name">最小精算</div>
+        <div class="sett-mode-desc">送金回数を圧縮</div>
+      </label>
     </div>
-    <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:10px;letter-spacing:.3px;">各メンバーの受取 / 支払 / ネット</div>
-    <div id="personalSummary"></div>
-
-```
-<div style="margin-top:20px;margin-bottom:14px;">
-  <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:8px;letter-spacing:.3px;">送金の内訳 — 表示方法を選択</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-    <label class="sett-mode-card" id="settCard-direct">
-      <input type="radio" name="settMode" value="direct" onchange="setSettlementMode('direct')" style="display:none;">
-      <div class="sett-mode-icon">💳</div>
-      <div class="sett-mode-name">立替者へ直接</div>
-      <div class="sett-mode-desc">おすすめ</div>
-    </label>
-    <label class="sett-mode-card" id="settCard-min">
-      <input type="radio" name="settMode" value="min" onchange="setSettlementMode('min')" style="display:none;">
-      <div class="sett-mode-icon">🗜️</div>
-      <div class="sett-mode-name">最小精算</div>
-      <div class="sett-mode-desc">送金回数を圧縮</div>
-    </label>
-  </div>
-</div>
-<div id="settlementList"></div>
-</div>
-```
-
+    <div id="settlementList"></div>
+    </div>
   </div>
 
   <!-- 個人別まとめ -->
@@ -408,7 +394,14 @@ input[type="file"]{display:none;}
       <span class="card-chevron open">▶</span>
     </div>
     <div class="card-body" id="cardPersonal">
-      <div style="font-size:13px;font-weight:900;color:var(--muted);margin-bottom:10px;letter-spacing:.2px;">📋 メンバーを選んで「誰→誰」の明細を表示</div>
+      <div class="info-text" style="line-height:1.8;margin-bottom:14px;">
+        <b>受取</b> ＝ 立て替えた分を他の人から回収するお金<br>
+        <b>支払</b> ＝ 他の人に立て替えてもらった分を返すお金<br>
+        <b>ネット</b> ＝ 受取 − 支払（＋ = 受け取り超過、− = 支払い超過）
+      </div>
+      <div id="personalSummary"></div>
+      <div class="hr" style="margin:16px 0;"></div>
+      <div style="font-size:13px;font-weight:900;color:var(--muted);margin-bottom:10px;letter-spacing:.2px;">📋 メンバーを選んで明細 ＆ シェア</div>
       <div class="member-btn-grid" id="focusMemberBtns"></div>
       <div id="personalDetails" style="margin-top:4px;"><p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと明細が表示されます</p></div>
     </div>
@@ -608,19 +601,14 @@ function updateMemberSelects(){
   });
 }
 // 現在の選択状態を保持
-let _focusMemberIdx = null;
+let _focusMemberIdx = 0;
 
 function updateFocusMemberSelect(){
   const grid=document.getElementById('focusMemberBtns');
   if(!grid) return;
   grid.innerHTML='';
   // 「全員」ボタン
-  const allBtn=document.createElement('button');
-  allBtn.className='member-btn' + (_focusMemberIdx===null?' active':'');
-  allBtn.textContent='👥 全員（サマリー）';
-  allBtn.style.gridColumn='1/-1';
-  allBtn.onclick=()=>{ _focusMemberIdx=null; updateFocusMemberSelect(); renderPersonalViews(); };
-  grid.appendChild(allBtn);
+
   // 各メンバーボタン
   members.forEach((m,i)=>{
     if(!m&&members.length===1) return;
@@ -801,8 +789,6 @@ function calculateSettlement(){
   else{sJ=calculateSettlementTransactions(bj);sU=calculateSettlementTransactions(bu);}
   const renderTx=(tx,isJPY)=>tx.length?tx.map(s=>`<div class="settlement-item"><div class="settlement-text">${safe(members[s.from])} → ${safe(members[s.to])}</div><div class="settlement-amount">${isJPY?`¥${Math.round(s.amount).toLocaleString()}`:fmtUSD(s.amount)}</div></div>`).join(''):`<div class="small" style="text-align:center;color:#999;padding:8px;">なし</div>`;
   document.getElementById('settlementList').innerHTML=
-    ``+
-
     `<div style="font-size:12px;font-weight:900;color:var(--muted);letter-spacing:.3px;margin-bottom:8px;">円</div>`+renderTx(sJ,true)+
     `<div style="font-size:12px;font-weight:900;color:var(--muted);letter-spacing:.3px;margin:14px 0 8px;">USD</div>`+renderTx(sU,false);
   _lastDepositRefunds=null;
