@@ -398,7 +398,7 @@ input[type="file"]{display:none;}
       <div class="info-text" style="line-height:1.8;margin-bottom:14px;">
         <b>受取</b> ＝ 立て替えた分を他の人から回収するお金<br>
         <b>支払</b> ＝ 他の人に立て替えてもらった分を返すお金<br>
-        <b>ネット</b> ＝ 受取 − 支払（＋ = 受け取り超過、− = 支払い超過）
+        <b>差引</b> ＝ 受取 − 支払（＋ = 受取超過、− = 支払超過）
       </div>
       <div id="personalSummary"></div>
       <div class="hr" style="margin:16px 0;"></div>
@@ -410,6 +410,12 @@ input[type="file"]{display:none;}
 </div>
 
 <div id="toast" class="toast"></div>
+<div style="margin:0 16px 8px;padding:10px 14px;background:rgba(255,193,7,.12);border:1px solid rgba(255,193,7,.35);border-radius:14px;font-size:12px;color:#7a5c00;line-height:1.6;">
+  💾 データはこのブラウザにのみ保存されています。キャッシュを消すと消えるので、定期的に「JSONエクスポート」でバックアップしてください。
+</div>
+<div style="text-align:center;padding:12px 20px 24px;font-size:11px;color:var(--muted);line-height:1.7;">
+  ⚠️ このアプリは個人が趣味で開発したものです。<br>計算結果の正確性は保証されません。<br>実際の精算はご自身でご確認のうえ、自己責任でご利用ください。
+</div>
 
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
@@ -500,9 +506,14 @@ function cancelRateEdit(){document.getElementById('rateEditRow').classList.remov
 function applyRate(){
   const v=validateNum(document.getElementById('rateInput').value,1,1000);
   if(!v){showToast('⚠ 1〜1000 の数値を入力してください');return;}
-  exchangeRate=v;saveData();showRateDisplay();cancelRateEdit();updateDisplay();showToast('💱 為替レートを更新しました');
+  exchangeRate=v;localStorage.setItem('rateUpdatedAt',new Date().toISOString());saveData();showRateDisplay();cancelRateEdit();updateDisplay();showToast('💱 為替レートを更新しました');
 }
-function showRateDisplay(){document.getElementById('rateText').textContent=`💱 為替レート: $1 = ¥${exchangeRate.toFixed(2)}`;}
+function showRateDisplay(){
+  const ts=localStorage.getItem('rateUpdatedAt');
+  let dateStr='';
+  if(ts){const d=new Date(ts);dateStr=` (${d.getMonth()+1}/${d.getDate()} 更新)`;}
+  document.getElementById('rateText').textContent=`💱 為替レート: $1 = ¥${exchangeRate.toFixed(2)}${dateStr}`;
+}
 
 /* ===== データ正規化 ===== */
 function normalizeData(input){
@@ -623,56 +634,7 @@ function updateFocusMemberSelect(){
 
 /* ===== 通貨 ===== */
 function setCurrency(c){currentCurrency=c;document.querySelectorAll('#expenseCurrencyToggle .currency-btn').forEach((b,i)=>b.classList.toggle('active',(c==='JPY'&&i===0)||(c==='USD'&&i===1)));}
-function setDepositCurrency(c){currentDepositCurrency=c;document.querySelectorAll('#depositCurrencyToggle .currency-btn').forEach((b,i)=>b.classList.toggle('active',(c==='JPY'&&i===0)||(c==='USD'&&i===1)));}
 
-/* ===== 預かり金 CRUD ===== */
-function submitDeposit(){editingDepositIdx>=0?updateDeposit():addDeposit();}
-function addDeposit(){
-  if(deposits.length>=MAX_DEPOSITS){showToast(`⚠ 最大${MAX_DEPOSITS}件まで`);return;}
-  const h=parseInt(document.getElementById('depositHolder').value),f=parseInt(document.getElementById('depositFrom').value),a=validateNum(document.getElementById('depositAmount').value);
-  if(isNaN(h)||isNaN(f)||!a){showToast('⚠ 全て入力してください');return;}if(h===f){showToast('⚠ 別の人を選択してください');return;}
-  deposits.push({holder:h,from:f,amount:a,currency:currentDepositCurrency,timestamp:new Date().toISOString()});
-  clearDepositForm();saveData();updateDisplay();showToast('💵 預かり金を記録しました');
-}
-function startEditDeposit(i){
-  const d=deposits[i];editingDepositIdx=i;
-  document.getElementById('depositHolder').value=String(d.holder);document.getElementById('depositFrom').value=String(d.from);document.getElementById('depositAmount').value=d.amount;
-  setDepositCurrency(d.currency);document.getElementById('depositSubmitBtn').textContent='更新';document.getElementById('depositEditBanner').classList.add('visible');
-  document.querySelector('.card:nth-child(3)').scrollIntoView({behavior:'smooth',block:'start'});showToast('✏️ 預かり金を編集中');
-}
-function updateDeposit(){
-  const h=parseInt(document.getElementById('depositHolder').value),f=parseInt(document.getElementById('depositFrom').value),a=validateNum(document.getElementById('depositAmount').value);
-  if(isNaN(h)||isNaN(f)||!a){showToast('⚠ 全て入力してください');return;}if(h===f){showToast('⚠ 別の人を選択してください');return;}
-  deposits[editingDepositIdx]={...deposits[editingDepositIdx],holder:h,from:f,amount:a,currency:currentDepositCurrency};
-  clearDepositForm();saveData();updateDisplay();showToast('✅ 預かり金を更新しました');
-}
-function cancelEditDeposit(){clearDepositForm();showToast('編集をキャンセルしました');}
-function clearDepositForm(){
-  editingDepositIdx=-1;
-}
-async function deleteDeposit(i){
-  const dep=deposits[i],hName=members[dep.holder]||`メンバー${dep.holder+1}`,fName=members[dep.from]||`メンバー${dep.from+1}`;
-  const ok=await openConfirm('預かり金を削除',`「${hName} が ${fName} から預かった」記録を削除しますか？`);if(!ok)return;
-  if(editingDepositIdx===i)clearDepositForm();else if(editingDepositIdx>i)editingDepositIdx--;
-  deposits.splice(i,1);saveData();updateDisplay();showToast('🗑 削除しました');
-}
-function displayDeposits(){
-  const d=document.getElementById('depositsList');if(!deposits.length){d.innerHTML='';return;}
-  let html='<h3 style="margin-bottom:10px;font-size:14px;font-weight:600;">一覧</h3>';
-  deposits.forEach((dep,i)=>{
-    const hn=safe(members[dep.holder]||`メンバー${dep.holder+1}`),fn=safe(members[dep.from]||`メンバー${dep.from+1}`);
-    const amt=dep.currency==='JPY'?`¥${dep.amount.toLocaleString()}`:fmtUSD(dep.amount);
-    const isEd=editingDepositIdx===i;
-    html+=`<div class="settlement-item" style="${isEd?'outline:2px solid var(--accent-bluegray);':''}">
-      <span>${hn}が${fn}から <b style="color:#d97706;">${amt}</b></span>
-      <span style="display:flex;gap:8px;align-items:center;">
-        <button class="btn-edit" style="padding:8px 12px;font-size:12px;min-height:auto;border-radius:10px;" onclick="startEditDeposit(${i})">編集</button>
-        <button class="btn-danger" style="padding:8px 12px;font-size:12px;min-height:auto;" onclick="deleteDeposit(${i})">削除</button>
-      </span>
-    </div>`;
-  });
-  d.innerHTML=html;
-}
 
 /* ===== 支出 CRUD ===== */
 function submitExpense(){editingExpenseIdx>=0?updateExpense():addExpense();}
@@ -747,11 +709,7 @@ function calculateExpenseBalances(){
   expenses.forEach(e=>{const per=e.amount/e.participants.length,b=e.currency==='JPY'?bj:bu;b[e.paidBy]+=e.amount;e.participants.forEach(idx=>b[idx]-=per);});
   return{bj,bu};
 }
-function calculateDepositRefunds(){
-  const refundsJPY=[],refundsUSD=[],payJ=Array(members.length).fill(0),recvJ=Array(members.length).fill(0),payU=Array(members.length).fill(0),recvU=Array(members.length).fill(0);
-  deposits.forEach(d=>{const item={from:d.holder,to:d.from,amount:d.amount};if(d.currency==='JPY'){refundsJPY.push(item);payJ[d.holder]+=d.amount;recvJ[d.from]+=d.amount;}else{refundsUSD.push(item);payU[d.holder]+=d.amount;recvU[d.from]+=d.amount;}});
-  return{refundsJPY,refundsUSD,payJ,recvJ,payU,recvU};
-}
+
 function calculateSettlementTransactions(b){
   const t=[],c=[],d=[];
   b.forEach((bal,i)=>{if(bal>0.01)c.push({idx:i,amount:bal});else if(bal<-0.01)d.push({idx:i,amount:-bal});});
@@ -781,7 +739,7 @@ function setSettlementMode(mode){
   settlementMode=mode==='min'?'min':'direct';try{localStorage.setItem('settlementMode',settlementMode);}catch(e){}
   updateSettCards();updateDisplay();
 }
-function displayDepositRefundSummary(refunds){}
+
 function calculateSettlement(){
   const{bj,bu}=calculateExpenseBalances();
 
@@ -837,13 +795,13 @@ function renderPersonalViews(){
           <div class="stat-ccy">円</div>
           <div class="stat-cell"><div class="stat-lbl">受取</div><div class="stat-val c-recv">¥${Math.round(recvJ).toLocaleString()}</div></div>
           <div class="stat-cell"><div class="stat-lbl">支払</div><div class="stat-val c-pay">¥${Math.round(payJ).toLocaleString()}</div></div>
-          <div class="stat-cell"><div class="stat-lbl">ネット</div><div class="stat-val ${netJ>=0?'c-net-p':'c-net-m'}">${lblJ}</div></div>
+          <div class="stat-cell"><div class="stat-lbl">差引</div><div class="stat-val ${netJ>=0?'c-net-p':'c-net-m'}">${lblJ}</div></div>
         </div>
         <div class="stat-row">
           <div class="stat-ccy">USD</div>
           <div class="stat-cell"><div class="stat-lbl">受取</div><div class="stat-val c-recv">${fmtUSD(recvU)}</div></div>
           <div class="stat-cell"><div class="stat-lbl">支払</div><div class="stat-val c-pay">${fmtUSD(payU)}</div></div>
-          <div class="stat-cell"><div class="stat-lbl">ネット</div><div class="stat-val ${netUr>=0?'c-net-p':'c-net-m'}">${fmtUSD(netU)}</div></div>
+          <div class="stat-cell"><div class="stat-lbl">差引</div><div class="stat-val ${netUr>=0?'c-net-p':'c-net-m'}">${fmtUSD(netU)}</div></div>
         </div>
       </div>
     `;
