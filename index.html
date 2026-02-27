@@ -121,9 +121,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .edit-banner-text{font-size:13px;font-weight:800;color:var(--accent-bluegray);}
 .edit-banner-cancel{padding:6px 14px;background:rgba(217,140,140,.22);color:var(--text);border:1px solid rgba(217,140,140,.38);border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;}
 
-.settlement-item{background:var(--surface);padding:14px 16px;border-radius:16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(28,25,41,.04);}
-.settlement-text{color:var(--text);font-size:16px;font-weight:800;min-width:0;}
+.settlement-item{background:var(--surface);padding:14px 16px;border-radius:16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:16px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(28,25,41,.04);}
+.settlement-text{color:var(--text);font-size:16px;font-weight:800;flex:1;min-width:0;}
 .settlement-amount{font-weight:900;color:var(--danger);font-size:17px;white-space:nowrap;flex-shrink:0;}
+.settlement-amount-sub{font-weight:700;color:var(--danger);font-size:13px;opacity:.75;white-space:nowrap;}
 
 /* シェアバー */
 .share-bar{
@@ -787,10 +788,20 @@ function calculateSettlement(){
   let sJ=[],sU=[];
   if(settlementMode==='direct'){const mat=buildDirectMatrix(false);sJ=netMatrix(mat.jpy);sU=netMatrix(mat.usd);}
   else{sJ=calculateSettlementTransactions(bj);sU=calculateSettlementTransactions(bu);}
-  const renderTx=(tx,isJPY)=>tx.length?tx.map(s=>`<div class="settlement-item"><div class="settlement-text">${safe(members[s.from])} → ${safe(members[s.to])}</div><div class="settlement-amount">${isJPY?`¥${Math.round(s.amount).toLocaleString()}`:fmtUSD(s.amount)}</div></div>`).join(''):`<div class="small" style="text-align:center;color:#999;padding:8px;">なし</div>`;
-  document.getElementById('settlementList').innerHTML=
-    `<div style="font-size:12px;font-weight:900;color:var(--muted);letter-spacing:.3px;margin-bottom:8px;">円</div>`+renderTx(sJ,true)+
-    `<div style="font-size:12px;font-weight:900;color:var(--muted);letter-spacing:.3px;margin:14px 0 8px;">USD</div>`+renderTx(sU,false);
+  // 円とUSDをfrom→toのキーでマージ
+  const pairMap={};
+  sJ.forEach(s=>{const k=`${s.from}_${s.to}`;if(!pairMap[k])pairMap[k]={from:s.from,to:s.to,jpy:null,usd:null};pairMap[k].jpy=s.amount;});
+  sU.forEach(s=>{const k=`${s.from}_${s.to}`;if(!pairMap[k])pairMap[k]={from:s.from,to:s.to,jpy:null,usd:null};pairMap[k].usd=s.amount;});
+  const pairs=Object.values(pairMap);
+  const html=pairs.length?pairs.map(p=>{
+    const jStr=p.jpy!=null?`¥${Math.round(p.jpy).toLocaleString()}`:'';
+    const uStr=p.usd!=null?fmtUSD(p.usd):'';
+    const amtHtml=jStr&&uStr
+      ?`<div style="text-align:right"><div class="settlement-amount">${jStr}</div><div class="settlement-amount-sub">${uStr}</div></div>`
+      :`<div class="settlement-amount">${jStr||uStr}</div>`;
+    return `<div class="settlement-item"><div class="settlement-text">${safe(members[p.from])} → ${safe(members[p.to])}</div>${amtHtml}</div>`;
+  }).join(''):`<div class="small" style="text-align:center;color:#999;padding:8px;">なし</div>`;
+  document.getElementById('settlementList').innerHTML=html;
   _lastDepositRefunds=null;
 }
 
