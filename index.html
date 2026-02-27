@@ -42,8 +42,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-export{background:rgba(140,147,170,.18);color:var(--text);border:1px solid rgba(140,147,170,.35);}
 .btn-import{background:rgba(185,179,204,.20);color:var(--text);border:1px solid rgba(185,179,204,.45);display:flex;align-items:center;justify-content:center;}
 
-.card{background:var(--surface);padding:20px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;border:1px solid var(--line);}
-.card h2{color:var(--text);font-size:18px;margin-bottom:14px;padding-bottom:10px;border-bottom:3px solid var(--accent);}
+.card{background:var(--surface);padding:0;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;border:1px solid var(--line);overflow:hidden;}
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px;cursor:pointer;user-select:none;gap:10px;
+  border-bottom:3px solid var(--accent);
+}
+.card-header:hover{background:var(--surface-2);}
+.card-header h2{color:var(--text);font-size:18px;margin:0;border:none;padding:0;flex:1;}
+.card-chevron{font-size:14px;color:var(--muted);transition:transform .25s ease;flex-shrink:0;line-height:1;}
+.card-chevron.open{transform:rotate(90deg);}
+.card-body{padding:20px;display:block;}
+.card-body.collapsed{display:none;}
+/* メンバーボタン群 */
+.member-btn-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;}
+.member-btn{
+  padding:14px 10px;border:2px solid var(--line);border-radius:16px;
+  background:var(--surface-2);color:var(--text);font-size:15px;font-weight:900;
+  cursor:pointer;transition:background .15s,border-color .15s;text-align:center;
+}
+.member-btn.active{
+  background:rgba(140,147,170,.20);border-color:rgba(140,147,170,.55);
+  color:var(--text);
+}
+@media(max-width:400px){.member-btn-grid{grid-template-columns:1fr;}}
 
 .input-group{margin-bottom:14px;}
 .input-group label{display:block;margin-bottom:6px;color:var(--muted);font-size:14px;font-weight:800;}
@@ -103,7 +125,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .settlement-text{color:var(--text);font-size:15px;}
 .settlement-amount{font-weight:900;color:var(--danger);font-size:17px;}
 
+/* シェアバー */
+.share-bar{
+  display:flex;gap:8px;margin-bottom:16px;
+}
+.share-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:13px 10px;border:none;border-radius:16px;
+  font-size:14px;font-weight:900;cursor:pointer;
+  transition:transform .05s,filter .15s;
+}
+.share-btn:active{transform:scale(.98);}
+.share-btn-copy{background:rgba(140,147,170,.20);color:var(--text);border:1px solid rgba(140,147,170,.38);}
+.share-btn-share{background:rgba(139,184,168,.28);color:var(--text);border:1px solid rgba(139,184,168,.42);}
+
 /* 個人別明細セクション */
+.detail-group{margin-bottom:18px;}
 .detail-section{margin-bottom:8px;}
 .detail-section-header{
   display:flex;align-items:center;gap:8px;
@@ -131,7 +168,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .detail-tx-route{display:flex;align-items:center;flex:1;min-width:0;}
 .detail-tx-amount{font-size:16px;font-weight:900;color:var(--danger);white-space:nowrap;flex-shrink:0;}
 .detail-none{text-align:center;color:var(--muted);font-size:13px;padding:10px 0 4px;font-weight:700;}
-.detail-group{margin-bottom:18px;}
 
 .summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;}
 .summary-card{
@@ -273,22 +309,29 @@ input[type="file"]{display:none;}
   <!-- メンバー -->
 
   <div class="card">
-    <h2>👥 メンバー
-      <!-- ★編集ボタン → ブルーグレー -->
-      <button id="toggleMemberBtn" onclick="toggleMemberEdit()" class="btn-bluegray-sm" style="float:right;">編集</button>
-    </h2>
-    <div id="memberDisplay" style="padding:10px 0;"><p style="color:#999;">メンバーを設定してください</p></div>
-    <div id="memberEdit" style="display:none;">
-      <div class="member-list" id="memberList"></div>
-      <button class="btn btn-add" onclick="addMember()">+ 追加</button>
-      <button class="btn btn-primary" onclick="saveMemberEdit()" style="margin-top:10px;">確定</button>
+    <div class="card-header" onclick="toggleCard('cardMember',this)">
+      <h2>👥 メンバー</h2>
+      <button id="toggleMemberBtn" onclick="event.stopPropagation();toggleMemberEdit()" class="btn-bluegray-sm">編集</button>
+      <span class="card-chevron open">▶</span>
+    </div>
+    <div class="card-body" id="cardMember">
+      <div id="memberDisplay" style="padding:6px 0;"><p style="color:#999;">メンバーを設定してください</p></div>
+      <div id="memberEdit" style="display:none;">
+        <div class="member-list" id="memberList"></div>
+        <button class="btn btn-add" onclick="addMember()">+ 追加</button>
+        <button class="btn btn-primary" onclick="saveMemberEdit()" style="margin-top:10px;">確定</button>
+      </div>
     </div>
   </div>
 
   <!-- 預かり金 -->
 
   <div class="card">
-    <h2>💵 預かり金</h2>
+    <div class="card-header" onclick="toggleCard('cardDeposit',this)">
+      <h2>💵 預かり金</h2>
+      <span class="card-chevron open">▶</span>
+    </div>
+    <div class="card-body" id="cardDeposit">
     <div class="info-text">預かり金は「預かった人→預けた人」への固定返金として扱い、支出の精算ロジックには混ぜません。</div>
     <div class="edit-banner" id="depositEditBanner">
       <span class="edit-banner-text">✏️ 預かり金を編集中</span>
@@ -303,12 +346,17 @@ input[type="file"]{display:none;}
     </div>
     <button class="btn btn-primary" id="depositSubmitBtn" onclick="submitDeposit()">記録</button>
     <div id="depositsList" style="margin-top:15px;"></div>
+    </div>
   </div>
 
   <!-- 支払い記録 -->
 
   <div class="card">
-    <h2 id="sec-expense">💰 支払い記録</h2>
+    <div class="card-header" onclick="toggleCard('cardExpense',this)" id="sec-expense">
+      <h2>💰 支払い記録</h2>
+      <span class="card-chevron open">▶</span>
+    </div>
+    <div class="card-body" id="cardExpense">
     <div class="edit-banner" id="expenseEditBanner">
       <span class="edit-banner-text">✏️ 支払いを編集中</span>
       <button class="edit-banner-cancel" onclick="cancelEditExpense()">キャンセル</button>
@@ -322,19 +370,29 @@ input[type="file"]{display:none;}
     <div class="input-group"><label>支払った人</label><select id="paidBy"><option value="">選択</option></select></div>
     <div class="input-group"><label>参加者</label><div class="checkbox-group" id="participantsCheckbox"></div></div>
     <button class="btn btn-primary" id="expenseSubmitBtn" onclick="submitExpense()">追加</button>
+    </div>
   </div>
 
   <!-- 支払い一覧 -->
 
   <div class="card">
-    <h2>📝 支払い一覧</h2>
-    <div class="expense-list" id="expenseList"><div class="empty-state"><p>まだ記録がありません</p></div></div>
+    <div class="card-header" onclick="toggleCard('cardExpenseList',this)">
+      <h2>📝 支払い一覧</h2>
+      <span class="card-chevron open">▶</span>
+    </div>
+    <div class="card-body" id="cardExpenseList">
+      <div class="expense-list" id="expenseList"><div class="empty-state"><p>まだ記録がありません</p></div></div>
+    </div>
   </div>
 
   <!-- 精算 -->
 
   <div class="card">
-    <h2 id="sec-settlement">💳 精算（支出のみ）</h2>
+    <div class="card-header" onclick="toggleCard('cardSettlement',this)" id="sec-settlement">
+      <h2>💳 精算（支出のみ）</h2>
+      <span class="card-chevron open">▶</span>
+    </div>
+    <div class="card-body" id="cardSettlement">
     <div style="margin-top:10px;margin-bottom:14px;">
       <div style="font-size:12px;font-weight:900;color:var(--muted);margin-bottom:8px;letter-spacing:.3px;">精算の表示方法</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
@@ -362,20 +420,24 @@ input[type="file"]{display:none;}
       <summary>内訳（支出の精算）</summary>
       <div id="settlementList"></div>
     </details>
+    </div>
   </div>
 
   <!-- 個人別まとめ -->
 
   <div class="card">
-    <h2 id="sec-personal">👤 個人別まとめ</h2>
-    <div class="info-text">「支出の精算」＋「預かり金の返金」を合算して、各人の受取 / 支払 / ネットを表示します。</div>
-    <div id="personalSummary"></div>
-    <div class="hr"></div>
-    <div class="input-group" style="margin-bottom:0;">
-      <label>メンバーを選んで「誰→誰」の明細を表示</label>
-      <select id="focusMember" onchange="renderPersonalViews()"><option value="">全員（サマリーのみ）</option></select>
+    <div class="card-header" onclick="toggleCard('cardPersonal',this)" id="sec-personal">
+      <h2>👤 個人別まとめ</h2>
+      <span class="card-chevron open">▶</span>
     </div>
-    <div id="personalDetails" style="margin-top:12px;"><p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと明細が表示されます</p></div>
+    <div class="card-body" id="cardPersonal">
+      <div class="info-text">「支出の精算」＋「預かり金の返金」を合算した数字です。各カードの 受取 / 支払 / ネット はすべて<b>預かり金込み</b>です。</div>
+      <div id="personalSummary"></div>
+      <div class="hr"></div>
+      <div style="font-size:13px;font-weight:900;color:var(--muted);margin-bottom:10px;letter-spacing:.2px;">📋 メンバーを選んで「誰→誰」の明細を表示</div>
+      <div class="member-btn-grid" id="focusMemberBtns"></div>
+      <div id="personalDetails" style="margin-top:4px;"><p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと明細が表示されます</p></div>
+    </div>
   </div>
 </div>
 
@@ -447,11 +509,18 @@ function openConfirm(title,msg){
     _confirmResolve=resolve;
     document.getElementById('confirmTitle').textContent=title;
     document.getElementById('confirmMsg').textContent=msg;
-    document.getElementById('confirmOkBtn').onclick=()=>{closeConfirm();resolve(true);};
+    document.getElementById('confirmOkBtn').onclick=()=>{
+      document.getElementById('confirmOverlay').classList.remove('active');
+      _confirmResolve=null;
+      resolve(true);
+    };
     document.getElementById('confirmOverlay').classList.add('active');
   });
 }
-function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('active');if(_confirmResolve){_confirmResolve(false);_confirmResolve=null;}}
+function closeConfirm(){
+  document.getElementById('confirmOverlay').classList.remove('active');
+  if(_confirmResolve){_confirmResolve(false);_confirmResolve=null;}
+}
 
 /* ===== 為替レート ===== */
 function toggleRateEdit(){
@@ -564,11 +633,29 @@ function updateMemberSelects(){
     div.appendChild(cb);div.appendChild(lbl);pc.appendChild(div);
   });
 }
+// 現在の選択状態を保持
+let _focusMemberIdx = null;
+
 function updateFocusMemberSelect(){
-  const s=document.getElementById('focusMember'),cur=s.value;s.innerHTML='';
-  const opt0=document.createElement('option');opt0.value='';opt0.textContent='全員（サマリーのみ）';s.appendChild(opt0);
-  members.forEach((m,i)=>{const opt=document.createElement('option');opt.value=String(i);opt.textContent=sanitize(m||`メンバー${i+1}`);s.appendChild(opt);});
-  if([...s.options].some(o=>o.value===cur))s.value=cur;
+  const grid=document.getElementById('focusMemberBtns');
+  if(!grid) return;
+  grid.innerHTML='';
+  // 「全員」ボタン
+  const allBtn=document.createElement('button');
+  allBtn.className='member-btn' + (_focusMemberIdx===null?' active':'');
+  allBtn.textContent='👥 全員（サマリー）';
+  allBtn.style.gridColumn='1/-1';
+  allBtn.onclick=()=>{ _focusMemberIdx=null; updateFocusMemberSelect(); renderPersonalViews(); };
+  grid.appendChild(allBtn);
+  // 各メンバーボタン
+  members.forEach((m,i)=>{
+    if(!m&&members.length===1) return;
+    const btn=document.createElement('button');
+    btn.className='member-btn' + (_focusMemberIdx===i?' active':'');
+    btn.textContent=sanitize(m||`メンバー${i+1}`);
+    btn.onclick=()=>{ _focusMemberIdx=i; updateFocusMemberSelect(); renderPersonalViews(); };
+    grid.appendChild(btn);
+  });
 }
 
 /* ===== 通貨 ===== */
@@ -828,8 +915,8 @@ function renderPersonalViews(){
     wrap.appendChild(card);
   });
 
-  const focus=document.getElementById('focusMember').value;
-  if(focus===''){details.innerHTML='<p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと明細が表示されます</p>';return;}
+  const focus=_focusMemberIdx;
+  if(focus===null||focus===undefined){details.innerHTML='<p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと明細が表示されます</p>';return;}
   const k=parseInt(focus),filterTx=tx=>tx.filter(x=>x.from===k||x.to===k);
 
   // 送金アイテム1件のHTML
@@ -867,13 +954,46 @@ function renderPersonalViews(){
     </div>`;
   };
 
+  // テキスト形式（コピー・シェア用）
+  const buildShareText=()=>{
+    const name=members[k]||`メンバー${k+1}`;
+    const line=(label,tx,isJPY)=>{
+      if(!tx.length) return '';
+      return tx.map(x=>{
+        const from=members[x.from]||`メンバー${x.from+1}`;
+        const to=members[x.to]||`メンバー${x.to+1}`;
+        const amt=isJPY?`¥${Math.round(x.amount).toLocaleString()}`:`$${Math.abs(x.amount).toFixed(2)}`;
+        return `  ${from} → ${to}：${amt}`;
+      }).join('\n');
+    };
+    const sections=[
+      ['【最終精算（円）】',filterTx(finalTxJPY),true],
+      ['【最終精算（USD）】',filterTx(finalTxUSD),false],
+      ['【支出精算（円）】',filterTx(expTxJPY),true],
+      ['【支出精算（USD）】',filterTx(expTxUSD),false],
+      ['【預かり金返金（円）】',filterTx(refunds.refundsJPY),true],
+      ['【預かり金返金（USD）】',filterTx(refunds.refundsUSD),false],
+    ].map(([label,tx,isJPY])=>{
+      const rows=line(label,tx,isJPY);
+      return rows?`${label}\n${rows}`:'';
+    }).filter(Boolean).join('\n\n');
+    return `💰 割り勘明細 — ${name}\n${'─'.repeat(20)}\n${sections}\n${'─'.repeat(20)}\n※ 割り勘アプリより`;
+  };
+
   details.innerHTML=
-    `<div style="font-size:15px;font-weight:900;color:var(--text);margin-bottom:14px;padding:4px 0;">🔎 ${safe(members[k])} の明細</div>`+
+    `<div style="font-size:15px;font-weight:900;color:var(--text);margin-bottom:12px;padding:4px 0;">🔎 ${safe(members[k])} の明細</div>`+
+    `<div class="share-bar">
+      <button class="share-btn share-btn-copy" onclick="copyDetailText()">📋 テキストコピー</button>
+      <button class="share-btn share-btn-share" onclick="shareDetail()">🔗 シェア</button>
+    </div>`+
     renderGroup('最終精算（預かり金込み・相殺済み）','✅',filterTx(finalTxJPY),filterTx(finalTxUSD))+
     '<div class="hr"></div>'+
     renderGroup('支出の精算（立替者へ直接）','🧾',filterTx(expTxJPY),filterTx(expTxUSD))+
     '<div class="hr"></div>'+
     renderGroup('預かり金（固定返金）','💵',filterTx(refunds.refundsJPY),filterTx(refunds.refundsUSD));
+
+  // シェア用テキストをグローバルに保持
+  window._currentShareText = buildShareText();
 }
 
 /* ===== フッター・メイン更新 ===== */
@@ -913,6 +1033,38 @@ function importData(e){
     catch(err){showToast('⚠ 読み込みに失敗しました');console.error(err);}
   };
   r.readAsText(f);e.target.value='';
+}
+
+/* ===== 明細コピー・シェア ===== */
+function copyDetailText(){
+  const text=window._currentShareText;
+  if(!text){showToast('⚠ メンバーを選んでください');return;}
+  navigator.clipboard.writeText(text).then(()=>{
+    showToast('📋 コピーしました！LINEに貼り付けてね');
+  }).catch(()=>{
+    // fallback
+    const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    showToast('📋 コピーしました！');
+  });
+}
+function shareDetail(){
+  const text=window._currentShareText;
+  if(!text){showToast('⚠ メンバーを選んでください');return;}
+  if(navigator.share){
+    navigator.share({title:'割り勘明細',text}).catch(()=>{});
+  } else {
+    copyDetailText();
+  }
+}
+
+/* ===== カード開閉 ===== */
+function toggleCard(bodyId, headerEl){
+  const body=document.getElementById(bodyId);
+  const chevron=headerEl.querySelector('.card-chevron');
+  const isOpen=!body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', isOpen);
+  if(chevron) chevron.classList.toggle('open', !isOpen);
 }
 
 /* ===== スクロール ===== */
