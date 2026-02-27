@@ -316,7 +316,7 @@ input[type="file"]{display:none;}
       <span class="card-chevron open">▶</span>
     </div>
     <div class="card-body" id="cardMember">
-      <div id="memberDisplay" style="padding:6px 0;"><p style="color:#999;">メンバーを設定してください</p></div>
+      <div id="memberDisplay" style="padding:6px 0;"><p style="color:var(--muted);">メンバーを設定してください</p></div>
       <div id="memberEdit" style="display:none;">
         <div class="member-list" id="memberList"></div>
         <button class="btn btn-add" onclick="addMember()">+ 追加</button>
@@ -342,7 +342,7 @@ input[type="file"]{display:none;}
       <button class="currency-btn" onclick="setCurrency('USD')">ドル</button>
     </div>
     <div class="input-group"><label>項目名</label><input type="text" id="expenseName" placeholder="例: ランチ代" maxlength="100"></div>
-    <div class="input-group"><label>金額</label><input type="number" id="expenseAmount" placeholder="0" min="0" max="10000000" step="0.01"></div>
+    <div class="input-group"><label>金額</label><input type="number" id="expenseAmount" placeholder="0" min="0" max="10000000" step="0.01" inputmode="decimal"></div>
     <div class="input-group"><label>支払った人</label><select id="paidBy"><option value="">選択</option></select></div>
     <div class="input-group"><label>参加者</label><div class="checkbox-group" id="participantsCheckbox"></div></div>
     <button class="btn btn-primary" id="expenseSubmitBtn" onclick="submitExpense()">追加</button>
@@ -404,7 +404,7 @@ input[type="file"]{display:none;}
       <div class="hr" style="margin:16px 0;"></div>
       <div style="font-size:13px;font-weight:900;color:var(--muted);margin-bottom:10px;letter-spacing:.2px;">📋 メンバーを選んで明細 ＆ シェア</div>
       <div class="member-btn-grid" id="focusMemberBtns"></div>
-      <div id="personalDetails" style="margin-top:4px;"><p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと明細が表示されます</p></div>
+      <div id="personalDetails" style="margin-top:4px;"><p style="text-align:center;color:var(--muted);padding:10px;">メンバーを選ぶと明細が表示されます</p></div>
     </div>
   </div>
 </div>
@@ -526,7 +526,7 @@ function normalizeData(input){
       const name=sanitize(e.name).trim(),amount=validateNum(e.amount),currency=(e.currency==='USD')?'USD':'JPY';
       const paidBy=clampInt(e.paidBy,0,mLen-1);
       const participants=Array.isArray(e.participants)?[...new Set(e.participants.map(p=>clampInt(p,0,mLen-1)).filter(p=>p!==null))]:[];
-      if(!name||!amount||paidBy===null||participants.length===0)return null;
+      if(!name||amount===null||paidBy===null||participants.length===0)return null;
       return{name,amount,currency,paidBy,participants,timestamp:e.timestamp||new Date().toISOString()};
     }).filter(Boolean);
   }
@@ -561,9 +561,9 @@ function saveMemberEdit(){
 }
 function updateMemberDisplay(){
   const d=document.getElementById('memberDisplay');
-  if(members.every(m=>!m)){d.innerHTML='<p style="color:#999;">メンバーを設定してください</p>';return;}
+  if(members.every(m=>!m)){d.innerHTML='<p style="color:var(--muted);">メンバーを設定してください</p>';return;}
   d.innerHTML='';
-  members.forEach(m=>{if(m){const s=document.createElement('span');s.style.cssText='display:inline-block;background:#f1e4e0;padding:8px 16px;margin:5px;border-radius:8px;font-size:15px;';s.textContent=m;d.appendChild(s);}});
+  members.forEach(m=>{if(m){const s=document.createElement('span');s.style.cssText='display:inline-block;background:var(--surface-2);border:1px solid var(--line);padding:8px 16px;margin:5px;border-radius:999px;font-size:15px;font-weight:900;';s.textContent=m;d.appendChild(s);}});
 }
 function addMember(){if(members.length>=MAX_MEMBERS){showToast(`⚠ 最大${MAX_MEMBERS}人まで`);return;}members.push('');updateMemberList();updateMemberSelects();updateFocusMemberSelect();saveData();}
 async function removeMember(i){
@@ -641,7 +641,7 @@ function submitExpense(){editingExpenseIdx>=0?updateExpense():addExpense();}
 function addExpense(){
   if(expenses.length>=MAX_EXPENSES){showToast(`⚠ 最大${MAX_EXPENSES}件まで`);return;}
   const name=sanitize(document.getElementById('expenseName').value).trim(),amt=validateNum(document.getElementById('expenseAmount').value),paidBy=parseInt(document.getElementById('paidBy').value);
-  if(!name||!amt||isNaN(paidBy)){showToast('⚠ 必須項目を入力してください');return;}
+  if(!name||amt===null||isNaN(paidBy)){showToast('⚠ 必須項目を入力してください');return;}
   const parts=[];members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb&&cb.checked)parts.push(i);});
   if(!parts.length){showToast('⚠ 参加者を選択してください');return;}
   expenses.push({name,amount:amt,currency:currentCurrency,paidBy,participants:[...new Set(parts)],timestamp:new Date().toISOString()});
@@ -656,7 +656,7 @@ function startEditExpense(i){
 }
 function updateExpense(){
   const name=sanitize(document.getElementById('expenseName').value).trim(),amt=validateNum(document.getElementById('expenseAmount').value),paidBy=parseInt(document.getElementById('paidBy').value);
-  if(!name||!amt||isNaN(paidBy)){showToast('⚠ 必須項目を入力してください');return;}
+  if(!name||amt===null||isNaN(paidBy)){showToast('⚠ 必須項目を入力してください');return;}
   const parts=[];members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb&&cb.checked)parts.push(i);});
   if(!parts.length){showToast('⚠ 参加者を選択してください');return;}
   expenses[editingExpenseIdx]={...expenses[editingExpenseIdx],name,amount:amt,currency:currentCurrency,paidBy,participants:[...new Set(parts)]};
@@ -758,7 +758,7 @@ function calculateSettlement(){
       ?`<div style="text-align:right"><div class="settlement-amount">${jStr}</div><div class="settlement-amount-sub">${uStr}</div></div>`
       :`<div class="settlement-amount">${jStr||uStr}</div>`;
     return `<div class="settlement-item"><div class="settlement-text">${safe(members[p.from])} → ${safe(members[p.to])}</div>${amtHtml}</div>`;
-  }).join(''):`<div class="small" style="text-align:center;color:#999;padding:8px;">なし</div>`;
+  }).join(''):`<div class="small" style="text-align:center;color:var(--muted);padding:8px;">なし</div>`;
   document.getElementById('settlementList').innerHTML=html;
   _lastDepositRefunds=null;
 }
@@ -809,7 +809,7 @@ function renderPersonalViews(){
   });
 
   const focus=_focusMemberIdx;
-  if(focus===null||focus===undefined){details.innerHTML='<p style="text-align:center;color:#999;padding:10px;">メンバーを選ぶと明細が表示されます</p>';return;}
+  if(focus===null||focus===undefined){details.innerHTML='<p style="text-align:center;color:var(--muted);padding:10px;">メンバーを選ぶと明細が表示されます</p>';return;}
   const k=parseInt(focus),filterTx=tx=>tx.filter(x=>x.from===k||x.to===k);
 
   // 送金アイテム1件のHTML
@@ -916,7 +916,7 @@ function importData(e){
   if(f.size>MAX_FILE_SIZE){showToast('⚠ ファイルが大きすぎます');e.target.value='';return;}
   const r=new FileReader();
   r.onload=ev=>{
-    try{const nd=normalizeData(JSON.parse(ev.target.result));members=nd.members;expenses=nd.expenses;deposits=nd.deposits;exchangeRate=nd.exchangeRate;saveData();updateMemberSelects();updateMemberDisplay();updateFocusMemberSelect();showRateDisplay();updateDisplay();showToast('✅ 読み込み完了');}
+    try{const nd=normalizeData(JSON.parse(ev.target.result));members=nd.members;expenses=nd.expenses;deposits=nd.deposits;exchangeRate=nd.exchangeRate;localStorage.setItem('rateUpdatedAt',new Date().toISOString());saveData();updateMemberSelects();updateMemberDisplay();updateFocusMemberSelect();showRateDisplay();updateDisplay();showToast('✅ 読み込み完了');}
     catch(err){showToast('⚠ 読み込みに失敗しました');console.error(err);}
   };
   r.readAsText(f);e.target.value='';
