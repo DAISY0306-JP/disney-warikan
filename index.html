@@ -867,7 +867,7 @@ function displayExpenses(){
     if(totalJ>0) totParts.push(`¥${Math.round(totalJ).toLocaleString()}`);
     if(totalU>0) totParts.push(`$${totalU.toFixed(2)}`);
     const totStr=totParts.join(' + ')||'¥0';
-    const gid=`catg_${g.cat.replace(/[^a-zA-Z0-9]/g,'_')}`;
+    const gid=`catg_${groups.indexOf(g)}`;
     html+=`<div class="cat-group"><div class="cat-group-header" onclick="toggleCatGroup('${gid}',this)"><span style="display:flex;align-items:center;gap:8px;"><span class="cat-group-toggle open">▶</span><span class="cat-group-label">${safe(g.cat)}</span></span><span class="cat-group-total">${totStr}</span></div><div class="cat-group-body" id="${gid}">`;
     g.items.forEach(({e,i})=>{
       const nm=safe(e.name),paid=safe(members[e.paidBy]||`メンバー${e.paidBy+1}`);
