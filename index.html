@@ -603,6 +603,14 @@ window.onload=()=>{
 /* ===== メンバー ===== */
 function toggleMemberEdit(){
   const edit=document.getElementById('memberEdit'),display=document.getElementById('memberDisplay'),btn=document.getElementById('toggleMemberBtn');
+  // カードが閉じていたら開く
+  const body=document.getElementById('cardMember');
+  const header=body.previousElementSibling;
+  if(body.classList.contains('collapsed')){
+    body.classList.remove('collapsed');
+    const chev=header.querySelector('.card-chevron');
+    if(chev)chev.classList.add('open');
+  }
   if(edit.style.display==='none'){edit.style.display='block';display.style.display='none';btn.textContent='キャンセル';}
   else{edit.style.display='none';display.style.display='block';btn.textContent='編集';updateMemberDisplay();}
 }
@@ -774,7 +782,7 @@ function addExpense(){
 function startEditExpense(i){
   const e=expenses[i];editingExpenseIdx=i;
   document.getElementById('expenseName').value=e.name;document.getElementById('expenseAmount').value=e.amount;document.getElementById('paidBy').value=String(e.paidBy);
-  setCurrency(e.currency);setCatUI(e.category||'🍽 食事');members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
+  setCurrency(e.currency);setCatPicker(e.category||'🍽 食事');members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
   document.getElementById('expenseSubmitBtn').textContent='更新';document.getElementById('expenseEditBanner').classList.add('visible');
   scrollToSection('sec-expense');showToast('✏️ 支払いを編集中');
 }
@@ -790,7 +798,7 @@ function cancelEditExpense(){clearExpenseForm();showToast('編集をキャンセ
 function clearExpenseForm(){
   editingExpenseIdx=-1;document.getElementById('expenseName').value='';document.getElementById('expenseAmount').value='';document.getElementById('paidBy').value='';
   members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb)cb.checked=true;});
-  document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');resetCatPicker();setCatUI('🍽 食事');
+  document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');resetCatPicker();setCatPicker('🍽 食事');
 }
 async function deleteExpense(i){
   const ok=await openConfirm('支払いを削除',`「${expenses[i].name}」を削除しますか？`);if(!ok)return;
