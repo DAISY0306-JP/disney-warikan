@@ -268,8 +268,12 @@ input[type="file"]{display:none;}
 .cat-custom-input{flex:1;min-width:100px;padding:8px 12px;border:1.5px solid var(--line);border-radius:999px;font-size:13px;font-weight:800;background:var(--surface-2);color:var(--text);}
 .cat-custom-input:focus{outline:none;border-color:rgba(140,147,170,.65);}
 /* カテゴリグループ */
-.cat-group{margin-bottom:18px;}
-.cat-group-header{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 8px;border-bottom:2px solid var(--line);margin-bottom:10px;}
+.cat-group{margin-bottom:10px;}
+.cat-group-body{overflow:hidden;transition:max-height .25s ease;}
+.cat-group-body.collapsed{display:none;}
+.cat-group-toggle{font-size:12px;color:var(--muted);transition:transform .2s;display:inline-block;}
+.cat-group-toggle.open{transform:rotate(90deg);}
+.cat-group-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);margin-bottom:6px;cursor:pointer;user-select:none;}
 .cat-group-label{font-size:13px;font-weight:900;color:var(--muted);letter-spacing:.3px;}
 .cat-group-total{font-size:13px;font-weight:900;color:var(--accent-bluegray);}
 /* カテゴリチップ */
@@ -284,6 +288,8 @@ input[type="file"]{display:none;}
 .cat-manage-item{display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:10px 14px;}
 .cat-manage-item input{flex:1;border:none;background:transparent;font-size:15px;font-weight:800;color:var(--text);outline:none;}
 .cat-manage-del{padding:6px 12px;border-radius:10px;border:1px solid rgba(217,140,140,.35);background:rgba(217,140,140,.18);color:var(--text);font-size:12px;font-weight:800;cursor:pointer;}
+.cat-manage-move{padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:12px;font-weight:800;cursor:pointer;}
+.cat-manage-move:disabled{opacity:.3;cursor:default;}
 .cat-add-row{display:flex;gap:8px;}
 .cat-add-input{flex:1;padding:12px 14px;border:2px solid var(--line);border-radius:14px;font-size:15px;background:var(--surface-2);color:var(--text);}
 .cat-add-input:focus{outline:none;border-color:rgba(140,147,170,.65);}
@@ -738,24 +744,40 @@ function renderCatManageList(){
   const list=document.getElementById('catManageList');
   list.innerHTML='';
   _cats.forEach((cat,i)=>{
+    const usedCount=expenses.filter(e=>(e.category||'その他')===cat).length;
     const div=document.createElement('div');div.className='cat-manage-item';
+    // 上下ボタン
+    const upBtn=document.createElement('button');upBtn.className='cat-manage-move';upBtn.textContent='↑';upBtn.disabled=i===0;
+    upBtn.onclick=()=>{[_cats[i-1],_cats[i]]=[_cats[i],_cats[i-1]];renderCatManageList();};
+    const downBtn=document.createElement('button');downBtn.className='cat-manage-move';downBtn.textContent='↓';downBtn.disabled=i===_cats.length-1;
+    downBtn.onclick=()=>{[_cats[i],_cats[i+1]]=[_cats[i+1],_cats[i]];renderCatManageList();};
+    // 名前入力
     const inp=document.createElement('input');inp.type='text';inp.value=cat;inp.maxLength=30;
     inp.onchange=e=>{
       const newVal=e.target.value.trim();
       if(!newVal){showToast('⚠ 空にはできません');inp.value=cat;return;}
-      // 既存の支出のカテゴリも更新
       expenses.forEach(ex=>{if(ex.category===_cats[i])ex.category=newVal;});
       if(_currentCat===_cats[i])_currentCat=newVal;
       _cats[i]=newVal;saveData();
     };
-    const del=document.createElement('button');del.className='cat-manage-del';del.textContent='削除';
-    del.onclick=()=>{
+    // 削除ボタン（使用中なら警告付き）
+    const del=document.createElement('button');del.className='cat-manage-del';
+    del.textContent=usedCount>0?`削除(${usedCount}件)`:'削除';
+    del.onclick=async()=>{
       if(_cats.length<=1){showToast('⚠ 最低1つ必要です');return;}
+      if(usedCount>0){
+        const ok=await openConfirm('カテゴリを削除',`「${cat}」は${usedCount}件の支出で使用中です。削除すると「その他」に変更されます。`);
+        if(!ok)return;
+        expenses.forEach(ex=>{if(ex.category===cat)ex.category='その他';});
+        if(!_cats.includes('その他')&&!_cats.filter((_,j)=>j!==i).includes('その他')){}
+        saveData();
+      }
       _cats.splice(i,1);
       if(_currentCat===cat)_currentCat=_cats[0];
       renderCatManageList();
     };
-    div.appendChild(inp);div.appendChild(del);list.appendChild(div);
+    div.appendChild(upBtn);div.appendChild(downBtn);div.appendChild(inp);div.appendChild(del);
+    list.appendChild(div);
   });
 }
 function addCatFromModal(){
@@ -845,7 +867,8 @@ function displayExpenses(){
     if(totalJ>0) totParts.push(`¥${Math.round(totalJ).toLocaleString()}`);
     if(totalU>0) totParts.push(`$${totalU.toFixed(2)}`);
     const totStr=totParts.join(' + ')||'¥0';
-    html+=`<div class="cat-group"><div class="cat-group-header"><span class="cat-group-label">${safe(g.cat)}</span><span class="cat-group-total">${totStr}</span></div>`;
+    const gid=`catg_${g.cat.replace(/[^a-zA-Z0-9]/g,'_')}`;
+    html+=`<div class="cat-group"><div class="cat-group-header" onclick="toggleCatGroup('${gid}',this)"><span style="display:flex;align-items:center;gap:8px;"><span class="cat-group-toggle open">▶</span><span class="cat-group-label">${safe(g.cat)}</span></span><span class="cat-group-total">${totStr}</span></div><div class="cat-group-body" id="${gid}">`;
     g.items.forEach(({e,i})=>{
       const nm=safe(e.name),paid=safe(members[e.paidBy]||`メンバー${e.paidBy+1}`);
       const parts=e.participants.map(idx=>safe(members[idx]||`メンバー${idx+1}`)).join(', ');
@@ -853,7 +876,7 @@ function displayExpenses(){
       const isEd=editingExpenseIdx===i;
       html+=`<div class="expense-item${isEd?' is-editing':''}"><div class="expense-color-bar"></div><div class="expense-body"><div class="expense-header"><div class="expense-title">${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip">💳 <b>${paid}</b></span><span class="expense-meta-chip">👥 ${parts}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button></div></div>`;
     });
-    html+='</div>';
+    html+='</div></div>';
   });
   l.innerHTML=html;
 }
@@ -1146,6 +1169,16 @@ function shareDetail(){
   } else {
     copyDetailText();
   }
+}
+
+/* ===== カテゴリグループ開閉 ===== */
+function toggleCatGroup(id, headerEl){
+  const body=document.getElementById(id);
+  const tog=headerEl.querySelector('.cat-group-toggle');
+  if(!body)return;
+  const isOpen=!body.classList.contains('collapsed');
+  body.classList.toggle('collapsed',isOpen);
+  if(tog)tog.classList.toggle('open',!isOpen);
 }
 
 /* ===== カード開閉 ===== */
