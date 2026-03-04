@@ -315,9 +315,10 @@ input[type="file"]{display:none;}
   <div class="header">
     <h1>💰 割り勘アプリ</h1>
     <p>グループの支出を簡単管理</p>
-    <div class="action-buttons">
-      <button class="btn-export" onclick="exportData()">📥 保存</button>
-      <label for="importFile" class="btn-import">📤 読込</label>
+    <div class="action-buttons" style="flex-direction:row;">
+      <button class="btn-export" onclick="exportData()" style="flex:1;">📥 保存</button>
+      <label for="importFile" class="btn-import" style="flex:1;">📤 読込</label>
+      <button class="btn-export" onclick="location.reload()" style="flex:1;">🔄 更新</button>
       <input type="file" id="importFile" accept=".json" onchange="importData(event)">
     </div>
     <div id="rateDisplay" class="rate-display">
