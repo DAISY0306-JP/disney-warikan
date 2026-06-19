@@ -593,6 +593,7 @@ let sb=null,currentUser=null,trips=[],currentTripId=null,_saveTimer=null,_isAppl
 
 
 
+
 /* ===== Supabase/Auth/旅行管理 ===== */
 function isSupabaseConfigured(){
   return SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('YOUR_') && !SUPABASE_ANON_KEY.includes('YOUR_');
@@ -841,17 +842,31 @@ async function createTrip(name,dataJson,selectAfter=true){
     return;
   }
   setSyncStatus('☁️ 旅行データを作成中...');
-  const payload={user_id:currentUser.id,name,data_json:dataJson};
-  const {data,error}=await sb.from('trips').insert(payload).select('id,name,updated_at').single();
+
+  // 直接 trips に insert せず、Supabase側のRPCで作成する。
+  // RLSのinsert判定で端末ごとに詰まるのを避けるため。
+  const {data,error}=await sb.rpc('create_trip_for_current_user',{
+    p_name:name,
+    p_data_json:dataJson||{}
+  });
+
   if(error){
     console.error(error);
     setSyncStatus('⚠ 旅行作成に失敗しました: '+error.message);
-    openInfoPopup('旅行作成に失敗しました',error.message || 'SupabaseのRLS/API設定を確認してください。');
+    openInfoPopup('旅行作成に失敗しました',error.message || 'SupabaseのRPC/RLS設定を確認してください。');
     return;
   }
-  trips=[data,...trips];
+
+  const created=Array.isArray(data)?data[0]:data;
+  if(!created||!created.id){
+    setSyncStatus('⚠ 旅行作成に失敗しました: 作成結果が取得できませんでした');
+    openInfoPopup('旅行作成に失敗しました','作成結果が取得できませんでした。SQL関数 create_trip_for_current_user を確認してください。');
+    return;
+  }
+
+  trips=[created,...trips.filter(t=>t.id!==created.id)];
   renderTripSelect();
-  if(selectAfter)await selectTrip(data.id);
+  if(selectAfter)await selectTrip(created.id);
 }
 async function selectTrip(id){
   if(!id||!sb)return;
