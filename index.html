@@ -230,7 +230,7 @@ input[type="file"]{display:none;}
 .info-overlay.active{display:flex;}
 .info-box{background:var(--surface);padding:28px 24px;border-radius:20px;max-width:340px;width:100%;box-shadow:var(--shadow);border:1px solid var(--line);text-align:center;}
 .info-title{font-size:18px;font-weight:900;margin-bottom:10px;color:var(--text);}
-.info-box p{color:var(--text);font-size:15px;line-height:1.7;margin-bottom:20px;}
+.info-box p{color:var(--text);font-size:15px;line-height:1.7;margin-bottom:20px;white-space:pre-line;}
 .info-box button{width:100%;padding:14px;border:none;border-radius:14px;font-size:15px;font-weight:900;cursor:pointer;min-height:50px;background:rgba(140,147,170,.18);color:var(--text);border:1px solid rgba(140,147,170,.30);}
 
 /* ===== 個人別まとめ カード ===== */
@@ -391,9 +391,12 @@ input[type="file"]{display:none;}
         <label>旅行を選択</label>
         <select id="tripSelect" onchange="selectTrip(this.value)"></select>
       </div>
-      <div class="action-buttons" style="flex-direction:row;">
-        <button class="btn-export" onclick="createTripPrompt()" style="flex:1;">＋ 新しい旅行</button>
-        <button class="btn-export" onclick="saveTripDataNow(true)" style="flex:1;">☁️ 同期</button>
+      <div class="action-buttons" style="flex-direction:row;flex-wrap:wrap;">
+        <button class="btn-export" onclick="createTripPrompt()" style="flex:1;min-width:150px;">＋ 新しい旅行</button>
+        <button class="btn-export" onclick="renameCurrentTripPrompt()" style="flex:1;min-width:150px;">✏️ 名前変更</button>
+        <button class="btn-export" onclick="showShareCodePrompt()" style="flex:1;min-width:150px;">🔗 共有コード</button>
+        <button class="btn-export" onclick="joinTripByCodePrompt()" style="flex:1;min-width:150px;">🔑 コード参加</button>
+        <button class="btn-export" onclick="saveTripDataNow(true)" style="flex:1;min-width:150px;">☁️ 同期</button>
       </div>
       <p class="small" id="syncStatus" style="margin-top:10px;line-height:1.7;">変更は自動保存されます。</p>
     </div>
@@ -582,7 +585,6 @@ let sb=null,currentUser=null,trips=[],currentTripId=null,_saveTimer=null,_isAppl
 
 
 
-
 /* ===== Supabase/Auth/旅行管理 ===== */
 function isSupabaseConfigured(){
   return SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('YOUR_') && !SUPABASE_ANON_KEY.includes('YOUR_');
@@ -709,6 +711,114 @@ async function createTripPrompt(){
   if(!name||!name.trim())return;
   await createTrip(name.trim(),{members:[''],expenses:[],deposits:[],exchangeRate,settlementMode:'direct',categories:_cats},true);
 }
+async function renameCurrentTripPrompt(){
+  if(!currentTripId){
+    showToast('⚠ 旅行を選択してください');
+    return;
+  }
+  const current=trips.find(t=>t.id===currentTripId);
+  const oldName=current?.name||'';
+  const input=prompt('新しい旅行名を入力してください',oldName);
+  const newName=(input||'').trim();
+  if(!newName||newName===oldName)return;
+  setSyncStatus('☁️ 旅行名を変更中...');
+  const {data,error}=await sb.from('trips')
+    .update({name:newName,updated_at:new Date().toISOString()})
+    .eq('id',currentTripId)
+    .select('id,name,updated_at')
+    .single();
+  if(error){
+    console.error(error);
+    setSyncStatus('⚠ 旅行名の変更に失敗しました: '+error.message);
+    openInfoPopup('旅行名の変更に失敗しました',error.message||'Supabaseの設定を確認してください。');
+    return;
+  }
+  trips=trips.map(t=>t.id===currentTripId?{...t,name:data?.name||newName,updated_at:data?.updated_at||new Date().toISOString()}:t);
+  renderTripSelect();
+  const sel=document.getElementById('tripSelect');
+  if(sel)sel.value=currentTripId;
+  setSyncStatus(`旅行名を「${newName}」に変更しました。変更は自動保存されます。`);
+  showToast('✏️ 旅行名を変更しました');
+}
+function normalizeShareCode(raw){
+  return String(raw||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+}
+function makeShareCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s='';
+  const cryptoObj=window.crypto||window.msCrypto;
+  if(cryptoObj&&cryptoObj.getRandomValues){
+    const arr=new Uint32Array(8);
+    cryptoObj.getRandomValues(arr);
+    for(let i=0;i<8;i++)s+=chars[arr[i]%chars.length];
+  }else{
+    for(let i=0;i<8;i++)s+=chars[Math.floor(Math.random()*chars.length)];
+  }
+  return s;
+}
+async function ensureShareCode(){
+  if(!currentTripId||!sb){
+    showToast('⚠ 旅行を選択してください');
+    return null;
+  }
+  const {data:existing,error:fetchError}=await sb.from('trips').select('id,name,share_code').eq('id',currentTripId).single();
+  if(fetchError){
+    console.error(fetchError);
+    openInfoPopup('共有コードの取得に失敗しました',fetchError.message||'Supabaseの設定を確認してください。');
+    return null;
+  }
+  if(existing?.share_code)return existing.share_code;
+  for(let i=0;i<5;i++){
+    const code=makeShareCode();
+    const {data,error}=await sb.from('trips')
+      .update({share_code:code,updated_at:new Date().toISOString()})
+      .eq('id',currentTripId)
+      .select('share_code')
+      .single();
+    if(!error&&data?.share_code)return data.share_code;
+    console.error(error);
+    // 共有コード重複などは作り直して再試行
+  }
+  openInfoPopup('共有コードの作成に失敗しました','時間をおいてもう一度試してください。');
+  return null;
+}
+async function showShareCodePrompt(){
+  if(!currentTripId){showToast('⚠ 旅行を選択してください');return;}
+  await saveTripDataNow(false);
+  const code=await ensureShareCode();
+  if(!code)return;
+  let copied=false;
+  try{
+    if(navigator.clipboard&&window.isSecureContext){
+      await navigator.clipboard.writeText(code);
+      copied=true;
+    }
+  }catch(e){copied=false;}
+  openInfoPopup(
+    '共有コード',
+    `コード: ${code}\n\n友達にこのコードを伝えて、「コード参加」から入力してもらってください。${copied?'\n\nクリップボードにコピーしました。':''}`
+  );
+}
+async function joinTripByCodePrompt(){
+  if(!sb||!currentUser){showToast('⚠ ログインしてください');return;}
+  const raw=prompt('共有コードを入力してください');
+  if(!raw)return;
+  const code=normalizeShareCode(raw);
+  if(!code){showToast('⚠ 共有コードを入力してください');return;}
+  setSyncStatus('☁️ 共有旅行に参加中...');
+  const {data,error}=await sb.rpc('join_trip_by_code',{p_share_code:code});
+  if(error){
+    console.error(error);
+    setSyncStatus('⚠ 共有旅行への参加に失敗しました: '+error.message);
+    openInfoPopup('共有旅行への参加に失敗しました',error.message||'共有コードを確認してください。');
+    return;
+  }
+  const joined=Array.isArray(data)?data[0]:data;
+  await loadTrips();
+  if(joined?.id)await selectTrip(joined.id);
+  openInfoPopup('共有旅行に参加しました',`「${joined?.name||'共有旅行'}」を旅行一覧に追加しました。`);
+}
+
 async function createTrip(name,dataJson,selectAfter=true){
   if(!sb||!currentUser){
     showToast('⚠ ログイン情報が確認できません');
