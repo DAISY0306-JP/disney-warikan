@@ -521,6 +521,14 @@ input[type="file"]{display:none;}
 </div>
 
 <div id="toast" class="toast"></div>
+<div class="info-overlay" id="infoOverlay">
+  <div class="info-box">
+    <div class="info-title" id="infoTitle">お知らせ</div>
+    <p id="infoMsg">メッセージ</p>
+    <button onclick="closeInfoPopup()">OK</button>
+  </div>
+</div>
+
 <div style="margin:0 16px 8px;padding:10px 14px;background:rgba(139,184,168,.12);border:1px solid rgba(139,184,168,.35);border-radius:14px;font-size:12px;color:#3d6b5c;line-height:1.6;">
   💾 データはログインアカウントに保存されます。必要に応じてJSONバックアップもできます。
 </div>
@@ -591,12 +599,20 @@ function isSupabaseConfigured(){
 }
 function setAuthMsg(msg){const el=document.getElementById('authMsg');if(el)el.textContent=msg||'';}
 function openInfoPopup(title,msg){
-  document.getElementById('infoTitle').textContent=title||'お知らせ';
-  document.getElementById('infoMsg').textContent=msg||'';
-  document.getElementById('infoOverlay').classList.add('active');
+  const titleEl=document.getElementById('infoTitle');
+  const msgEl=document.getElementById('infoMsg');
+  const overlay=document.getElementById('infoOverlay');
+  if(!titleEl||!msgEl||!overlay){
+    alert((title||'お知らせ')+'\n\n'+(msg||''));
+    return;
+  }
+  titleEl.textContent=title||'お知らせ';
+  msgEl.textContent=msg||'';
+  overlay.classList.add('active');
 }
 function closeInfoPopup(){
-  document.getElementById('infoOverlay').classList.remove('active');
+  const overlay=document.getElementById('infoOverlay');
+  if(overlay)overlay.classList.remove('active');
 }
 function setSyncStatus(msg){const el=document.getElementById('syncStatus');if(el)el.textContent=msg||'';}
 function showLoggedOut(msg='ログインしてください'){
