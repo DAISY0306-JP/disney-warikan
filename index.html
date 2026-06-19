@@ -547,14 +547,6 @@ input[type="file"]{display:none;}
   </div>
 </div>
 
-<div class="info-overlay" id="infoOverlay" onclick="if(event.target===this)closeInfoPopup()">
-  <div class="info-box">
-    <div class="info-title" id="infoTitle">お知らせ</div>
-    <p id="infoMsg">メッセージ</p>
-    <button onclick="closeInfoPopup()">OK</button>
-  </div>
-</div>
-
 <div class="footer-bar" id="footerBar" style="display:none;">
   <div class="footer-inner">
     <div class="footer-actions">
@@ -581,13 +573,13 @@ let editingExpenseIdx=-1,editingDepositIdx=-1;
 let currentCategory='🍽 食事';
 let _lastDepositRefunds=null;
 
-
 /* ===== Supabase設定 =====
    Supabaseの Project URL と anon public key を入れてください。
    anon keyはブラウザに置いてOKな公開キーです。RLSでデータを守ります。 */
 const SUPABASE_URL='https://kfmcjbxwwafvzltchpfb.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbWNqYnh3d2FmdnpsdGNocGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NDg4NTEsImV4cCI6MjA5NzQyNDg1MX0.29e39nDUgOd7H91n5ZaddqSsjOI3SDWTfA-FbyR5rck';
 let sb=null,currentUser=null,trips=[],currentTripId=null,_saveTimer=null,_isApplyingRemote=false;
+
 
 
 
@@ -627,7 +619,13 @@ async function signUp(){
   const email=document.getElementById('authEmail').value.trim();
   const password=document.getElementById('authPassword').value;
   if(!email||!password){setAuthMsg('メールアドレスとパスワードを入力してください。');return;}
-  const {data,error}=await sb.auth.signUp({email,password});
+  const {data,error}=await sb.auth.signUp({
+    email,
+    password,
+    options:{
+      emailRedirectTo: window.location.origin + window.location.pathname
+    }
+  });
   if(error){setAuthMsg('登録に失敗しました: '+error.message);return;}
   if(data.session){currentUser=data.session.user;await showLoggedIn();}
   else{
@@ -651,9 +649,19 @@ async function signOut(){
   showLoggedOut('ログアウトしました。');
 }
 async function showLoggedIn(){
-  document.getElementById('authShell').style.display='none';
+  const auth=document.getElementById('authShell');
+  if(auth)auth.style.display='none';
+
+  // 旅行データの取得に失敗しても画面が真っ白にならないよう、先に本体を表示する
+  const app=document.getElementById('appShell');
+  if(app)app.style.display='block';
+  const footer=document.getElementById('footerBar');
+  if(footer)footer.style.display='block';
+
   const loginText=document.getElementById('loginUserText');
   if(loginText)loginText.textContent=currentUser?.email||'-';
+
+  initAppViews();
   await loadTrips();
 }
 function getDataObject(){
@@ -669,12 +677,20 @@ function applyDataObject(raw){
   if(!_cats.includes(_currentCat))_currentCat=_cats[0];
 }
 async function loadTrips(){
+  if(!sb||!currentUser)return;
+  setSyncStatus('☁️ 旅行一覧を確認中...');
   const {data,error}=await sb.from('trips').select('id,name,updated_at').order('updated_at',{ascending:false});
-  if(error){setAuthMsg('旅行一覧の取得に失敗しました: '+error.message);return;}
+  if(error){
+    console.error(error);
+    setSyncStatus('⚠ 旅行一覧の取得に失敗しました: '+error.message);
+    showToast('⚠ 旅行一覧の取得に失敗しました');
+    return;
+  }
   trips=data||[];
   if(!trips.length){
-    loadData(); // 既存localStorageがあれば初回旅行へ移行
-    await createTrip('はじめての旅行',getDataObject(),false);
+    // 既存localStorageがあれば初回旅行へ移行。なければ空の旅行を作成。
+    loadData();
+    await createTrip('はじめての旅行',getDataObject(),true);
     return;
   }
   renderTripSelect();
@@ -694,10 +710,22 @@ async function createTripPrompt(){
   await createTrip(name.trim(),{members:[''],expenses:[],deposits:[],exchangeRate,settlementMode:'direct',categories:_cats},true);
 }
 async function createTrip(name,dataJson,selectAfter=true){
-  const {data,error}=await sb.from('trips').insert({name,data_json:dataJson}).select('id,name,updated_at').single();
-  if(error){showToast('⚠ 旅行作成に失敗しました');console.error(error);return;}
-  trips=[data,...trips];renderTripSelect();
-  if(selectAfter)await selectTrip(data.id);else await loadTrips();
+  if(!sb||!currentUser){
+    showToast('⚠ ログイン情報が確認できません');
+    return;
+  }
+  setSyncStatus('☁️ 旅行データを作成中...');
+  const payload={user_id:currentUser.id,name,data_json:dataJson};
+  const {data,error}=await sb.from('trips').insert(payload).select('id,name,updated_at').single();
+  if(error){
+    console.error(error);
+    setSyncStatus('⚠ 旅行作成に失敗しました: '+error.message);
+    openInfoPopup('旅行作成に失敗しました',error.message || 'SupabaseのRLS/API設定を確認してください。');
+    return;
+  }
+  trips=[data,...trips];
+  renderTripSelect();
+  if(selectAfter)await selectTrip(data.id);
 }
 async function selectTrip(id){
   if(!id||!sb)return;
@@ -705,7 +733,12 @@ async function selectTrip(id){
   currentTripId=id;localStorage.setItem('currentTripId',id);
   const sel=document.getElementById('tripSelect');if(sel)sel.value=id;
   const {data,error}=await sb.from('trips').select('id,name,data_json').eq('id',id).single();
-  if(error){showToast('⚠ 旅行データ取得に失敗しました');console.error(error);return;}
+  if(error){
+    console.error(error);
+    setSyncStatus('⚠ 旅行データ取得に失敗しました: '+error.message);
+    showToast('⚠ 旅行データ取得に失敗しました');
+    return;
+  }
   _isApplyingRemote=true;
   applyDataObject(data.data_json||{});
   _isApplyingRemote=false;
