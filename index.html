@@ -581,8 +581,11 @@ let members=[],expenses=[],deposits=[];
 let currentCurrency='JPY',currentDepositCurrency='JPY';
 let exchangeRate=150,settlementMode='direct';
 let editingExpenseIdx=-1,editingDepositIdx=-1;
-let currentCategory='🍽 食事';
+const DEFAULT_TRIP_NAME='NEW_TRIP';
+const DEFAULT_CATEGORIES=['その他'];
+let currentCategory=DEFAULT_CATEGORIES[0];
 let _lastDepositRefunds=null;
+
 
 /* ===== Supabase設定 =====
    Supabaseの Project URL と anon public key を入れてください。
@@ -590,7 +593,6 @@ let _lastDepositRefunds=null;
 const SUPABASE_URL='https://kfmcjbxwwafvzltchpfb.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbWNqYnh3d2FmdnpsdGNocGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NDg4NTEsImV4cCI6MjA5NzQyNDg1MX0.29e39nDUgOd7H91n5ZaddqSsjOI3SDWTfA-FbyR5rck';
 let sb=null,currentUser=null,trips=[],currentTripId=null,_saveTimer=null,_isApplyingRemote=false;
-
 
 
 
@@ -686,13 +688,24 @@ async function showLoggedIn(){
 function getDataObject(){
   return {members,expenses,deposits,exchangeRate,settlementMode,categories:_cats,updatedAt:new Date().toISOString()};
 }
+function getBlankTripData(){
+  return {
+    members:[''],
+    expenses:[],
+    deposits:[],
+    exchangeRate:150,
+    settlementMode:'direct',
+    categories:[...DEFAULT_CATEGORIES],
+    updatedAt:new Date().toISOString()
+  };
+}
 function applyDataObject(raw){
   raw=raw||{};
   const nd=normalizeData(raw);
   members=nd.members;expenses=nd.expenses;deposits=nd.deposits;exchangeRate=nd.exchangeRate;
   if(raw.settlementMode==='min'||raw.settlementMode==='direct')settlementMode=raw.settlementMode;
   if(Array.isArray(raw.categories)&&raw.categories.length){_cats=raw.categories.map(x=>sanitize(x)).filter(Boolean);}
-  if(!_cats.length)_cats=['🍽 食事','🏨 宿泊','🎡 アクティビティ','🛍 買い物','🚃 交通'];
+  if(!_cats.length)_cats=[...DEFAULT_CATEGORIES];
   if(!_cats.includes(_currentCat))_currentCat=_cats[0];
 }
 async function loadTrips(){
@@ -707,9 +720,9 @@ async function loadTrips(){
   }
   trips=data||[];
   if(!trips.length){
-    // 既存localStorageがあれば初回旅行へ移行。なければ空の旅行を作成。
-    loadData();
-    await createTrip('はじめての旅行',getDataObject(),true);
+    // 初回は個人端末のlocalStorageを引き継がず、完全に空の旅行を作成する。
+    // 既存データを使いたい場合は、ログイン後にJSON読込から手動で復元する。
+    await createTrip(DEFAULT_TRIP_NAME,getBlankTripData(),true);
     return;
   }
   renderTripSelect();
@@ -724,9 +737,9 @@ function renderTripSelect(){
   if(currentTripId)sel.value=currentTripId;
 }
 async function createTripPrompt(){
-  const name=prompt('旅行名を入力してください','韓国旅行2026');
+  const name=prompt('旅行名を入力してください',DEFAULT_TRIP_NAME);
   if(!name||!name.trim())return;
-  await createTrip(name.trim(),{members:[''],expenses:[],deposits:[],exchangeRate,settlementMode:'direct',categories:_cats},true);
+  await createTrip(name.trim(),getBlankTripData(),true);
 }
 async function renameCurrentTripPrompt(){
   if(!currentTripId){
@@ -1089,12 +1102,15 @@ function setCurrency(c){currentCurrency=c;document.querySelectorAll('#expenseCur
 
 
 /* ===== カテゴリ ===== */
-let _cats = ['🍽 食事','🏨 宿泊','🎡 アクティビティ','🛍 買い物','🚃 交通'];
+let _cats = [...DEFAULT_CATEGORIES];
 let _currentCat = _cats[0];
 
 function saveCats(){try{localStorage.setItem('warikanCats',JSON.stringify(_cats));}catch(e){}}
 function loadCats(){
-  try{const s=localStorage.getItem('warikanCats');if(s){const a=JSON.parse(s);if(Array.isArray(a)&&a.length)_cats=a;}}catch(e){}
+  // Supabase版では、初期カテゴリは旅行データ内の categories を優先する。
+  // 端末に残った古いlocalStorageカテゴリは、新規旅行へ自動反映しない。
+  _cats=[...DEFAULT_CATEGORIES];
+  _currentCat=_cats[0];
 }
 
 function renderCatPicker(){
@@ -1191,7 +1207,7 @@ function addExpense(){
 function startEditExpense(i){
   const e=expenses[i];editingExpenseIdx=i;
   document.getElementById('expenseName').value=e.name;document.getElementById('expenseAmount').value=e.amount;document.getElementById('paidBy').value=String(e.paidBy);
-  setCurrency(e.currency);setCatPicker(e.category||'🍽 食事');members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
+  setCurrency(e.currency);setCatPicker(e.category||DEFAULT_CATEGORIES[0]);members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
   document.getElementById('expenseSubmitBtn').textContent='更新';document.getElementById('expenseEditBanner').classList.add('visible');
   scrollToSection('sec-expense');showToast('✏️ 支払いを編集中');
 }
@@ -1207,7 +1223,7 @@ function cancelEditExpense(){clearExpenseForm();showToast('編集をキャンセ
 function clearExpenseForm(){
   editingExpenseIdx=-1;document.getElementById('expenseName').value='';document.getElementById('expenseAmount').value='';document.getElementById('paidBy').value='';
   members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb)cb.checked=true;});
-  document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');resetCatPicker();setCatPicker('🍽 食事');
+  document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');resetCatPicker();setCatPicker(DEFAULT_CATEGORIES[0]);
 }
 async function deleteExpense(i){
   const ok=await openConfirm('支払いを削除',`「${expenses[i].name}」を削除しますか？`);if(!ok)return;
