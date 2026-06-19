@@ -225,6 +225,14 @@ input[type="file"]{display:none;}
 .confirm-ok{background:rgba(217,140,140,.35);color:var(--text);border:1px solid rgba(217,140,140,.45);}
 .confirm-cancel{background:rgba(140,147,170,.18);color:var(--text);border:1px solid rgba(140,147,170,.30);}
 
+/* お知らせポップアップ */
+.info-overlay{display:none;position:fixed;inset:0;background:rgba(16,14,24,.55);z-index:2100;justify-content:center;align-items:center;padding:14px;}
+.info-overlay.active{display:flex;}
+.info-box{background:var(--surface);padding:28px 24px;border-radius:20px;max-width:340px;width:100%;box-shadow:var(--shadow);border:1px solid var(--line);text-align:center;}
+.info-title{font-size:18px;font-weight:900;margin-bottom:10px;color:var(--text);}
+.info-box p{color:var(--text);font-size:15px;line-height:1.7;margin-bottom:20px;}
+.info-box button{width:100%;padding:14px;border:none;border-radius:14px;font-size:15px;font-weight:900;cursor:pointer;min-height:50px;background:rgba(140,147,170,.18);color:var(--text);border:1px solid rgba(140,147,170,.30);}
+
 /* ===== 個人別まとめ カード ===== */
 .personal-card{background:var(--surface-2);border:1px solid var(--line);border-radius:18px;margin-bottom:12px;overflow:hidden;}
 .personal-card-header{display:flex;flex-direction:column;align-items:stretch;padding:12px 16px 12px;border-bottom:1px solid var(--line);gap:6px;}
@@ -510,7 +518,7 @@ input[type="file"]{display:none;}
 </div>
 
 <div id="toast" class="toast"></div>
-<div style="margin:0 16px 8px;padding:10px 14px;background:rgba(255,193,7,.12);border:1px solid rgba(255,193,7,.35);border-radius:14px;font-size:12px;color:#7a5c00;line-height:1.6;">
+<div style="margin:0 16px 8px;padding:10px 14px;background:rgba(139,184,168,.12);border:1px solid rgba(139,184,168,.35);border-radius:14px;font-size:12px;color:#3d6b5c;line-height:1.6;">
   💾 データはログインアカウントに保存されます。必要に応じてJSONバックアップもできます。
 </div>
 <div style="text-align:center;padding:12px 20px 24px;font-size:11px;color:var(--muted);line-height:1.7;">
@@ -536,6 +544,14 @@ input[type="file"]{display:none;}
       <button class="confirm-ok" id="confirmOkBtn">削除</button>
       <button class="confirm-cancel" onclick="closeConfirm()">キャンセル</button>
     </div>
+  </div>
+</div>
+
+<div class="info-overlay" id="infoOverlay" onclick="if(event.target===this)closeInfoPopup()">
+  <div class="info-box">
+    <div class="info-title" id="infoTitle">お知らせ</div>
+    <p id="infoMsg">メッセージ</p>
+    <button onclick="closeInfoPopup()">OK</button>
   </div>
 </div>
 
@@ -565,6 +581,7 @@ let editingExpenseIdx=-1,editingDepositIdx=-1;
 let currentCategory='🍽 食事';
 let _lastDepositRefunds=null;
 
+
 /* ===== Supabase設定 =====
    Supabaseの Project URL と anon public key を入れてください。
    anon keyはブラウザに置いてOKな公開キーです。RLSでデータを守ります。 */
@@ -579,6 +596,14 @@ function isSupabaseConfigured(){
   return SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('YOUR_') && !SUPABASE_ANON_KEY.includes('YOUR_');
 }
 function setAuthMsg(msg){const el=document.getElementById('authMsg');if(el)el.textContent=msg||'';}
+function openInfoPopup(title,msg){
+  document.getElementById('infoTitle').textContent=title||'お知らせ';
+  document.getElementById('infoMsg').textContent=msg||'';
+  document.getElementById('infoOverlay').classList.add('active');
+}
+function closeInfoPopup(){
+  document.getElementById('infoOverlay').classList.remove('active');
+}
 function setSyncStatus(msg){const el=document.getElementById('syncStatus');if(el)el.textContent=msg||'';}
 function showLoggedOut(msg='ログインしてください'){
   const auth=document.getElementById('authShell');if(auth)auth.style.display='block';
@@ -605,7 +630,10 @@ async function signUp(){
   const {data,error}=await sb.auth.signUp({email,password});
   if(error){setAuthMsg('登録に失敗しました: '+error.message);return;}
   if(data.session){currentUser=data.session.user;await showLoggedIn();}
-  else{setAuthMsg('登録メールを確認してください。Supabase側でメール確認をOFFにしている場合は、そのままログインできます。');}
+  else{
+    setAuthMsg('');
+    openInfoPopup('登録メールを確認してください','確認メールのリンクを押すと、ログインできるようになります。');
+  }
 }
 async function signIn(){
   if(!sb){await initSupabaseApp();if(!sb)return;}
