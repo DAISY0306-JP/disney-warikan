@@ -187,7 +187,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .summary-num-zero{color:var(--muted);}
 
 .currency-toggle{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;background:var(--surface-2);padding:6px;border-radius:16px;border:1px solid var(--line);}
-.currency-btn{padding:12px;border:none;border-radius:14px;background:transparent;cursor:pointer;font-weight:900;font-size:15px;transition:background .2s,color .2s;min-height:48px;color:var(--muted);}
+.currency-btn{padding:8px;border:none;border-radius:14px;background:transparent;cursor:pointer;font-weight:900;font-size:15px;transition:background .2s,color .2s;min-height:40px;color:var(--muted);}
 .currency-btn.active{background:rgba(140,147,170,.20);color:var(--text);border:1px solid rgba(140,147,170,.30);}
 
 .deposit-section{background:rgba(185,179,204,.14);padding:16px;border-radius:16px;margin-bottom:18px;border:1px solid rgba(185,179,204,.35);}
@@ -314,6 +314,39 @@ input[type="file"]{display:none;}
 .rate-fetch-btn:disabled{opacity:.5;cursor:default;}
 .rate-updated{font-size:11px;color:var(--muted);margin-top:6px;}
 
+/* 自分の精算バー */
+.me-bar{display:flex;align-items:center;gap:8px;margin:-4px 0 10px;padding:6px 8px 6px 12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);cursor:pointer;}
+.me-bar .me-main{flex:1;min-width:0;font-size:13px;font-weight:800;color:var(--muted);line-height:1.5;}
+.me-bar .me-main b{color:var(--text);}
+.me-bar .me-recv{color:#4f8f78;font-weight:900;}
+.me-bar .me-pay{color:#c06f6f;font-weight:900;}
+.me-bar .me-change{flex-shrink:0;padding:4px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:12px;font-weight:900;cursor:pointer;}
+
+/* アプリ風ダイアログ */
+.dlg-overlay{display:none;position:fixed;inset:0;background:rgba(16,14,24,.55);z-index:2050;justify-content:center;align-items:center;padding:14px;}
+.dlg-overlay.active{display:flex;}
+.dlg-box{background:var(--surface);padding:24px 20px 20px;border-radius:20px;max-width:360px;width:100%;box-shadow:var(--shadow);border:1px solid var(--line);}
+.dlg-title{font-size:17px;font-weight:900;margin-bottom:6px;text-align:center;color:var(--text);}
+.dlg-msg{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;text-align:center;white-space:pre-line;}
+.dlg-input{width:100%;padding:14px;border:2px solid var(--line);border-radius:14px;font-size:16px;background:var(--surface-2);color:var(--text);margin-bottom:16px;}
+.dlg-input:focus{outline:none;border-color:rgba(140,147,170,.65);}
+.dlg-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.dlg-choices button{padding:14px 8px;border:2px solid var(--line);border-radius:14px;background:var(--surface-2);color:var(--text);font-size:15px;font-weight:900;cursor:pointer;}
+.dlg-choices button.active{border-color:rgba(140,147,170,.65);background:rgba(140,147,170,.18);}
+.dlg-actions{display:flex;gap:10px;}
+.dlg-actions button{flex:1;padding:14px;border-radius:14px;font-size:15px;font-weight:900;cursor:pointer;min-height:50px;}
+.dlg-ok{background:rgba(139,184,168,.35);color:var(--text);border:1px solid rgba(139,184,168,.5);}
+.dlg-cancel{background:rgba(140,147,170,.18);color:var(--text);border:1px solid rgba(140,147,170,.30);}
+
+/* 共有カード */
+.share-code-box{text-align:center;padding:14px;background:var(--surface-2);border:1px dashed rgba(140,147,170,.5);border-radius:14px;margin-bottom:10px;}
+.share-code-box .lbl{font-size:11px;color:var(--muted);font-weight:800;}
+.share-code-box .code{font-size:26px;font-weight:900;letter-spacing:4px;color:var(--text);margin-top:2px;font-family:ui-monospace,Menlo,monospace;}
+.share-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.share-actions button{min-height:44px;padding:10px 8px;border-radius:14px;font-size:14px;font-weight:900;cursor:pointer;background:rgba(140,147,170,.18);color:var(--text);border:1px solid rgba(140,147,170,.35);}
+.share-actions .primary{grid-column:1/-1;background:rgba(139,184,168,.35);border-color:rgba(139,184,168,.5);}
+.invite-note{margin-bottom:12px;padding:10px 14px;background:rgba(147,167,214,.14);border:1px solid rgba(147,167,214,.4);border-radius:14px;font-size:13px;font-weight:800;color:var(--text);line-height:1.6;}
+
 /* top bar & tabs */
 .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:-10px -10px 12px;padding:10px;padding-top:calc(10px + env(safe-area-inset-top));background:var(--bg);}
 .topbar-trip{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);font-size:15px;font-weight:900;box-shadow:var(--shadow);}
@@ -321,6 +354,9 @@ input[type="file"]{display:none;}
 .topbar-total .t{font-size:10px;color:var(--muted);font-weight:800;}
 .topbar-total .v{font-size:16px;color:var(--text);font-weight:900;}
 .tab-panel{display:none;}
+/* 記録タブはタブ名と同じ見出しを省いて1画面に収める */
+#sec-expense{display:none;}
+#cardExpense.collapsed{display:block;}
 .tab-panel.active{display:block;}
 .tabbar{display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom));}
 .tab-btn{flex:1;max-width:160px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;border:none;border-radius:14px;background:transparent;color:var(--muted);font-size:11px;font-weight:900;cursor:pointer;}
@@ -349,6 +385,7 @@ input[type="file"]{display:none;}
     <h2>🔐 ログイン</h2>
   </div>
   <div class="card-body">
+    <div class="invite-note" id="inviteNote" style="display:none;">🎫 旅行に招待されています。ログイン（または新規登録）すると自動で参加します。</div>
     <div class="info-text">
       Supabaseでログインすると、旅行ごとの割り勘データを保存できます。JSON保存/読込もバックアップとして残しています。
     </div>
@@ -377,6 +414,11 @@ input[type="file"]{display:none;}
       <div class="t">合計（円換算）</div>
       <div class="v" id="footerTotal">¥0</div>
     </div>
+  </div>
+
+  <div class="me-bar" id="meBar" onclick="openMySettlement()">
+    <div class="me-main" id="meText">👤 自分を選ぶと、あなたの精算額がここに出ます</div>
+    <button class="me-change" onclick="event.stopPropagation();chooseMe()">自分を選ぶ</button>
   </div>
 
   <!-- ===== 記録タブ ===== -->
@@ -508,12 +550,24 @@ input[type="file"]{display:none;}
       <div class="action-buttons settings-grid">
         <button class="btn-export" onclick="createTripPrompt()">＋ 新しい旅行</button>
         <button class="btn-export" onclick="renameCurrentTripPrompt()">✏️ 名前変更</button>
-        <button class="btn-export" onclick="showShareCodePrompt()">🔗 共有コード</button>
-        <button class="btn-export" onclick="joinTripByCodePrompt()">🔑 コード参加</button>
         <button class="btn-export" onclick="saveTripDataNow(true)">☁️ 同期</button>
         <button class="btn-export" onclick="location.reload()">🔄 再読み込み</button>
       </div>
       <p class="small" id="syncStatus" style="margin-top:10px;line-height:1.7;">変更は自動保存されます。</p>
+    </div>
+  </div>
+
+  <div class="card" id="shareCard">
+    <div class="card-header"><h2>🤝 この旅行を共有</h2></div>
+    <div class="card-body">
+      <p class="small" style="line-height:1.7;margin-bottom:10px;">招待リンクを送ると、受け取った人はタップしてログインするだけでこの旅行に参加できます。</p>
+      <div id="shareCodeArea"></div>
+      <div class="share-actions">
+        <button class="primary" onclick="shareInviteLink()">📨 招待リンクを送る</button>
+        <button onclick="copyInviteLink()">🔗 リンクをコピー</button>
+        <button onclick="copyShareCode()">🔑 コードをコピー</button>
+        <button onclick="joinTripByCodePrompt()" style="grid-column:1/-1;">🎫 もらったコードで参加</button>
+      </div>
     </div>
   </div>
 
@@ -589,6 +643,18 @@ input[type="file"]{display:none;}
       <button class="cat-add-btn" onclick="addCatFromModal()">追加</button>
     </div>
     <button onclick="closeCatManager()" style="width:100%;margin-top:14px;padding:14px;border:none;border-radius:16px;background:rgba(140,147,170,.18);color:var(--text);font-weight:900;font-size:15px;cursor:pointer;">完了</button>
+  </div>
+</div>
+<div class="dlg-overlay" id="dlgOverlay">
+  <div class="dlg-box">
+    <div class="dlg-title" id="dlgTitle"></div>
+    <div class="dlg-msg" id="dlgMsg"></div>
+    <input class="dlg-input" id="dlgInput" type="text" maxlength="100">
+    <div class="dlg-choices" id="dlgChoices"></div>
+    <div class="dlg-actions">
+      <button class="dlg-cancel" id="dlgCancel">キャンセル</button>
+      <button class="dlg-ok" id="dlgOk">OK</button>
+    </div>
   </div>
 </div>
 <div class="confirm-overlay" id="confirmOverlay">
@@ -729,6 +795,7 @@ async function showLoggedIn(){
 
   initAppViews();
   await loadTrips();
+  await joinPendingInvite();
   startRemotePolling();
 }
 function getDataObject(){
@@ -784,7 +851,7 @@ function renderTripSelect(){
   if(currentTripId)sel.value=currentTripId;
 }
 async function createTripPrompt(){
-  const name=prompt('旅行名を入力してください',DEFAULT_TRIP_NAME);
+  const name=await appPrompt('新しい旅行',{message:'旅行名を入力してください',placeholder:'例: ソウル旅行',okText:'作成'});
   if(!name||!name.trim())return;
   await createTrip(name.trim(),getBlankTripData(),true);
 }
@@ -795,7 +862,7 @@ async function renameCurrentTripPrompt(){
   }
   const current=trips.find(t=>t.id===currentTripId);
   const oldName=current?.name||'';
-  const input=prompt('新しい旅行名を入力してください',oldName);
+  const input=await appPrompt('旅行名を変更',{value:oldName,okText:'変更'});
   const newName=(input||'').trim();
   if(!newName||newName===oldName)return;
   setSyncStatus('☁️ 旅行名を変更中...');
@@ -859,41 +926,92 @@ async function ensureShareCode(){
   openInfoPopup('共有コードの作成に失敗しました','時間をおいてもう一度試してください。');
   return null;
 }
-async function showShareCodePrompt(){
-  if(!currentTripId){showToast('⚠ 旅行を選択してください');return;}
+// 招待リンク: アプリのURLに ?join=コード を付けたもの
+let _shareCode=null;
+function inviteUrl(code){return`${location.origin}${location.pathname}?join=${encodeURIComponent(code)}`;}
+function renderShareArea(){
+  const el=document.getElementById('shareCodeArea');if(!el)return;
+  el.innerHTML=_shareCode
+    ?`<div class="share-code-box"><div class="lbl">共有コード</div><div class="code">${esc(_shareCode)}</div></div>`
+    :'';
+}
+async function getShareCode(){
+  if(_shareCode)return _shareCode;
   await saveTripDataNow(false);
   const code=await ensureShareCode();
-  if(!code)return;
-  let copied=false;
+  if(code){_shareCode=code;renderShareArea();}
+  return code;
+}
+async function copyText(text,doneMsg){
   try{
-    if(navigator.clipboard&&window.isSecureContext){
-      await navigator.clipboard.writeText(code);
-      copied=true;
-    }
-  }catch(e){copied=false;}
-  openInfoPopup(
-    '共有コード',
-    `コード: ${code}\n\n友達にこのコードを伝えて、「コード参加」から入力してもらってください。${copied?'\n\nクリップボードにコピーしました。':''}`
-  );
+    if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);showToast(doneMsg);return true;}
+  }catch(e){}
+  openInfoPopup('コピーしてください',text);
+  return false;
+}
+async function shareInviteLink(){
+  const code=await getShareCode();if(!code)return;
+  const trip=trips.find(t=>t.id===currentTripId);
+  const url=inviteUrl(code);
+  const text=`「${trip?.name||'旅行'}」の割り勘に参加してね！\nリンクを開いてログインすると参加できます。\n（共有コード: ${code}）`;
+  if(navigator.share){
+    try{await navigator.share({title:'割り勘アプリへの招待',text,url});return;}
+    catch(e){if(e&&e.name==='AbortError')return;}
+  }
+  await copyText(`${text}\n${url}`,'📋 招待メッセージをコピーしました');
+}
+async function copyInviteLink(){
+  const code=await getShareCode();if(!code)return;
+  await copyText(inviteUrl(code),'📋 招待リンクをコピーしました');
+}
+async function copyShareCode(){
+  const code=await getShareCode();if(!code)return;
+  await copyText(code,'📋 共有コードをコピーしました');
 }
 async function joinTripByCodePrompt(){
   if(!sb||!currentUser){showToast('⚠ ログインしてください');return;}
-  const raw=prompt('共有コードを入力してください');
+  const raw=await appPrompt('コードで参加',{message:'友達から届いた共有コードを入力してください',placeholder:'例: AB12CD34',okText:'参加'});
   if(!raw)return;
+  await joinTripByCode(raw);
+}
+async function joinTripByCode(raw){
   const code=normalizeShareCode(raw);
-  if(!code){showToast('⚠ 共有コードを入力してください');return;}
+  if(!code){showToast('⚠ 共有コードを入力してください');return false;}
   setSyncStatus('☁️ 共有旅行に参加中...');
   const {data,error}=await sb.rpc('join_trip_by_code',{p_share_code:code});
   if(error){
     console.error(error);
     setSyncStatus('⚠ 共有旅行への参加に失敗しました: '+error.message);
     openInfoPopup('共有旅行への参加に失敗しました',error.message||'共有コードを確認してください。');
-    return;
+    return false;
   }
   const joined=Array.isArray(data)?data[0]:data;
   await loadTrips();
   if(joined?.id)await selectTrip(joined.id);
-  openInfoPopup('共有旅行に参加しました',`「${joined?.name||'共有旅行'}」を旅行一覧に追加しました。`);
+  openInfoPopup('共有旅行に参加しました',`「${joined?.name||'共有旅行'}」に参加しました。\n上の旅行名から切り替えられます。`);
+  return true;
+}
+// URLの ?join= を読み取って保存（ログイン後に参加する）
+function capturePendingJoin(){
+  try{
+    const params=new URLSearchParams(location.search);
+    const code=normalizeShareCode(params.get('join'));
+    if(code){
+      localStorage.setItem('pendingJoin',code);
+      params.delete('join');
+      const q=params.toString();
+      history.replaceState(null,'',location.pathname+(q?`?${q}`:'')+location.hash);
+    }
+    const note=document.getElementById('inviteNote');
+    if(note)note.style.display=localStorage.getItem('pendingJoin')?'block':'none';
+  }catch(e){}
+}
+async function joinPendingInvite(){
+  let code=null;try{code=localStorage.getItem('pendingJoin');}catch(e){}
+  if(!code)return;
+  try{localStorage.removeItem('pendingJoin');}catch(e){}
+  const note=document.getElementById('inviteNote');if(note)note.style.display='none';
+  await joinTripByCode(code);
 }
 
 async function createTrip(name,dataJson,selectAfter=true){
@@ -934,7 +1052,8 @@ async function selectTrip(id){
   _syncBase=null;_syncRev=null;
   currentTripId=id;localStorage.setItem('currentTripId',id);
   const sel=document.getElementById('tripSelect');if(sel)sel.value=id;
-  const {data,error}=await sb.from('trips').select('id,name,data_json').eq('id',id).single();
+  _shareCode=null;renderShareArea();
+  const {data,error}=await sb.from('trips').select('id,name,data_json,share_code').eq('id',id).single();
   if(error){
     console.error(error);
     setSyncStatus('⚠ 旅行データ取得に失敗しました: '+error.message);
@@ -945,6 +1064,7 @@ async function selectTrip(id){
   applyDataObject(data.data_json||{});
   _isApplyingRemote=false;
   setSyncBase(data.data_json||{});
+  if(id===currentTripId){_shareCode=data.share_code||null;renderShareArea();}
   initAppViews();
   setSyncStatus(`「${data.name}」を読み込みました。変更は自動保存されます。`);
 }
@@ -1103,6 +1223,36 @@ function showToast(msg='OK'){
   clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.remove('show'),1600);
 }
 
+/* ===== アプリ風ダイアログ（prompt の代わり） ===== */
+let _dlgResolve=null;
+function _openDlg({title,message='',input=false,value='',placeholder='',choices=null,current=null,okText='OK'}){
+  return new Promise(resolve=>{
+    if(_dlgResolve)_dlgResolve(null);
+    _dlgResolve=resolve;
+    const $=id=>document.getElementById(id);
+    $('dlgTitle').textContent=title||'';
+    $('dlgMsg').textContent=message;$('dlgMsg').style.display=message?'block':'none';
+    const inp=$('dlgInput');inp.style.display=input?'block':'none';inp.value=value;inp.placeholder=placeholder;
+    const ch=$('dlgChoices');ch.innerHTML='';ch.style.display=choices?'grid':'none';
+    let picked=current;
+    (choices||[]).forEach((label,i)=>{
+      const b=document.createElement('button');b.type='button';b.textContent=label;
+      if(i===current)b.classList.add('active');
+      b.onclick=()=>{picked=i;finish(i);};
+      ch.appendChild(b);
+    });
+    const ok=$('dlgOk');ok.textContent=okText;ok.style.display=choices?'none':'block';
+    const finish=v=>{$('dlgOverlay').classList.remove('active');inp.onkeydown=null;const r=_dlgResolve;_dlgResolve=null;if(r)r(v);};
+    ok.onclick=()=>finish(input?inp.value:true);
+    $('dlgCancel').onclick=()=>finish(null);
+    inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();finish(inp.value);}};
+    $('dlgOverlay').classList.add('active');
+    if(input)setTimeout(()=>{inp.focus();inp.select();},50);
+  });
+}
+const appPrompt=(title,opts={})=>_openDlg({...opts,title,input:true});
+const appChoose=(title,choices,opts={})=>_openDlg({...opts,title,choices});
+
 /* ===== 確認ダイアログ ===== */
 let _confirmResolve=null;
 function openConfirm(title,msg){
@@ -1234,6 +1384,7 @@ function normalizeData(input){
 
 /* ===== 初期化 ===== */
 window.onload=async()=>{
+  capturePendingJoin();
   loadCats();
   await initSupabaseApp();
 };
@@ -1682,6 +1833,55 @@ function renderPersonalViews(){
   window._currentShareText = buildShareText();
 }
 
+/* ===== 自分の精算額 =====
+ * 「自分」は端末ごと・旅行ごとにメンバー名で覚える（並びが変わってもずれないように）
+ */
+const meKey=()=>`warikanMe_${currentTripId||'local'}`;
+function getMeIdx(){
+  let name=null;try{name=localStorage.getItem(meKey());}catch(e){}
+  if(!name)return -1;
+  return members.findIndex(m=>m===name);
+}
+async function chooseMe(){
+  const named=members.map((m,i)=>({m,i})).filter(x=>x.m);
+  if(!named.length){openInfoPopup('メンバーがいません','先に設定タブでメンバーを登録してください。');return;}
+  const cur=named.findIndex(x=>x.i===getMeIdx());
+  const picked=await appChoose('あなたはどのメンバー？',named.map(x=>x.m),{message:'この端末で選んだ人の精算額を上に表示します',current:cur<0?null:cur});
+  if(picked===null||picked===undefined)return;
+  try{localStorage.setItem(meKey(),named[picked].m);}catch(e){}
+  renderMeBar();
+}
+function openMySettlement(){
+  const me=getMeIdx();
+  if(me<0){chooseMe();return;}
+  _focusMemberIdx=me;updateFocusMemberSelect();renderPersonalViews();
+  const body=document.getElementById('cardPersonal');
+  if(body&&body.classList.contains('collapsed'))toggleCard('cardPersonal',body.previousElementSibling);
+  showTab('settle');
+}
+function renderMeBar(){
+  const text=document.getElementById('meText'),btn=document.querySelector('#meBar .me-change');
+  if(!text)return;
+  const me=getMeIdx();
+  if(me<0){
+    text.innerHTML='👤 自分を選ぶと、あなたの精算額がここに出ます';
+    if(btn)btn.textContent='自分を選ぶ';
+    return;
+  }
+  if(btn)btn.textContent='変更';
+  // 残高 = 立て替えた額 − 自分の負担額（＋なら受け取り、−なら支払い）
+  const bal=calculateExpenseBalances();
+  const recv=[],pay=[];
+  CURRENCIES.forEach(c=>{
+    const v=roundCur(c.code,bal[c.code][me]||0);
+    if(v>0)recv.push(fmtPlain(c.code,v));else if(v<0)pay.push(fmtPlain(c.code,-v));
+  });
+  const parts=[];
+  if(recv.length)parts.push(`<span class="me-recv">${recv.join(' + ')} 受け取り</span>`);
+  if(pay.length)parts.push(`<span class="me-pay">${pay.join(' + ')} 支払い</span>`);
+  text.innerHTML=`👤 <b>${safe(members[me])}</b>：${parts.length?parts.join('・'):'精算なし'}`;
+}
+
 /* ===== フッター・メイン更新 ===== */
 function updateFooterTotal(){
   let yen=0;(expenses||[]).forEach(e=>{yen+=Number(e.amount||0)*yenPer(normCurrency(e.currency));});
@@ -1732,7 +1932,7 @@ function renderCatSummary(){
 }
 function updateDisplay(){
   updateSettCards();
-  updateMemberList();displayExpenses();renderCatSummary();calculateSettlement();renderPersonalViews();updateFooterTotal();
+  updateMemberList();displayExpenses();renderCatSummary();calculateSettlement();renderPersonalViews();updateFooterTotal();renderMeBar();
 }
 
 /* ===== 保存・読込 ===== */
