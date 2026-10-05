@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>割り勘アプリ</title>
 
 <style>
@@ -26,10 +26,10 @@
   --danger:#d98c8c;
   --shadow:0 10px 24px rgba(28,25,41,.08);
   --radius:18px;
-  --footer-h:64px;
+  --footer-h:74px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);min-height:100vh;padding:10px;padding-bottom:calc(var(--footer-h) + env(safe-area-inset-bottom) + 16px);color:var(--text);}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);min-height:100vh;padding:10px;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:calc(var(--footer-h) + env(safe-area-inset-bottom) + 16px);color:var(--text);}
 .container{max-width:820px;margin:0 auto;}
 
 
@@ -64,9 +64,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 }
 @media(max-width:400px){.member-btn-grid{grid-template-columns:1fr;}}
 
-.input-group{margin-bottom:12px;}
-.input-group label{display:block;margin-bottom:6px;color:var(--muted);font-size:14px;font-weight:800;}
-.input-group input,.input-group select,.input-group textarea{width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:14px;font-size:16px;transition:border-color .2s,box-shadow .2s;background:var(--surface-2);color:var(--text);}
+.input-group{margin-bottom:10px;}
+.input-group label{display:block;margin-bottom:4px;color:var(--muted);font-size:13px;font-weight:800;}
+.input-group input,.input-group select,.input-group textarea{width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:14px;font-size:16px;transition:border-color .2s,box-shadow .2s;background:var(--surface-2);color:var(--text);}
 .input-group input:focus,.input-group select:focus,.input-group textarea:focus{outline:none;border-color:rgba(140,147,170,.65);box-shadow:0 0 0 4px rgba(140,147,170,.12);}
 
 .member-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
@@ -74,12 +74,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .member-item input{flex:1;padding:16px;font-size:16px;}
 .member-item button{padding:12px 16px;background:rgba(217,140,140,.25);color:var(--text);border:1px solid rgba(217,140,140,.35);border-radius:12px;cursor:pointer;font-size:13px;min-height:48px;}
 
-.checkbox-group{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
-.checkbox-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface-2);border-radius:12px;border:1px solid var(--line);}
-.checkbox-item input[type="checkbox"]{width:24px;height:24px;cursor:pointer;}
+.checkbox-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.checkbox-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface-2);border-radius:12px;border:1px solid var(--line);}
+.checkbox-item input[type="checkbox"]{width:20px;height:20px;cursor:pointer;flex-shrink:0;}
 .checkbox-item label{cursor:pointer;color:var(--text);font-size:15px;}
 
-.btn{padding:16px 24px;border:none;border-radius:16px;font-size:16px;font-weight:900;cursor:pointer;transition:transform .05s ease,filter .2s ease;min-height:56px;}
+.btn{padding:12px 24px;border:none;border-radius:16px;font-size:16px;font-weight:900;cursor:pointer;transition:transform .05s ease,filter .2s ease;min-height:48px;}
 .btn:active{transform:scale(.99);}
 .btn-primary{background:rgba(140,147,170,.20);color:var(--text);border:1px solid rgba(140,147,170,.35);width:100%;}
 .btn-add{background:rgba(185,179,204,.28);color:var(--text);padding:12px 20px;font-size:15px;min-height:48px;border:1px solid rgba(185,179,204,.45);}
@@ -186,7 +186,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .summary-num-neg{color:#8a3535;}
 .summary-num-zero{color:var(--muted);}
 
-.currency-toggle{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;background:var(--surface-2);padding:6px;border-radius:16px;border:1px solid var(--line);}
+.currency-toggle{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;background:var(--surface-2);padding:6px;border-radius:16px;border:1px solid var(--line);}
 .currency-btn{padding:8px;border:none;border-radius:14px;background:transparent;cursor:pointer;font-weight:900;font-size:15px;transition:background .2s,color .2s;min-height:40px;color:var(--muted);}
 .currency-btn.active{background:rgba(140,147,170,.20);color:var(--text);border:1px solid rgba(140,147,170,.30);}
 
@@ -267,7 +267,11 @@ input[type="file"]{display:none;}
 .sett-mode-desc{font-size:11px;font-weight:700;color:var(--muted);text-align:center;}
 
 /* カテゴリ選択 */
-.cat-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.cat-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.cat-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;}
+.cat-row>label{margin-bottom:0 !important;}
+.cat-row .cat-picker{margin-bottom:0;}
+.cat-edit-btn{padding:4px 10px;font-size:11px;font-weight:800;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);cursor:pointer;}
 .cat-btn{padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--text);font-size:13px;font-weight:800;cursor:pointer;transition:background .15s,border-color .15s;}
 .cat-btn.active{background:rgba(140,147,170,.22);border-color:rgba(140,147,170,.55);}
 .cat-custom-input{flex:1;min-width:100px;padding:8px 12px;border:1.5px solid var(--line);border-radius:999px;font-size:13px;font-weight:800;background:var(--surface-2);color:var(--text);}
@@ -306,6 +310,10 @@ input[type="file"]{display:none;}
 /* form row / list mode / date */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .form-row .input-group input{min-width:0;}
+/* iOS Safari の日付欄は独自の幅・高さを持つので、普通の入力欄に揃える */
+.input-group input[type="date"]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;height:46px;line-height:22px;text-align:left;}
+.input-group input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0;}
+.input-group input[type="number"],.input-group select{height:46px;}
 .list-mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;background:var(--surface-2);padding:4px;border-radius:14px;border:1px solid var(--line);}
 .list-mode-toggle button{padding:8px;border:none;border-radius:11px;background:transparent;color:var(--muted);font-weight:900;font-size:13px;cursor:pointer;}
 .list-mode-toggle button.active{background:rgba(140,147,170,.20);color:var(--text);}
@@ -316,7 +324,7 @@ input[type="file"]{display:none;}
 
 /* 自分の精算バー */
 .me-bar{display:flex;align-items:center;gap:8px;margin:-4px 0 10px;padding:6px 8px 6px 12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);cursor:pointer;}
-.me-bar .me-main{flex:1;min-width:0;font-size:13px;font-weight:800;color:var(--muted);line-height:1.5;}
+.me-bar .me-main{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:13px;font-weight:800;color:var(--muted);line-height:1.5;}
 .me-bar .me-main b{color:var(--text);}
 .me-bar .me-recv{color:#4f8f78;font-weight:900;}
 .me-bar .me-pay{color:#c06f6f;font-weight:900;}
@@ -347,8 +355,34 @@ input[type="file"]{display:none;}
 .share-actions .primary{grid-column:1/-1;background:rgba(139,184,168,.35);border-color:rgba(139,184,168,.5);}
 .invite-note{margin-bottom:12px;padding:10px 14px;background:rgba(147,167,214,.14);border:1px solid rgba(147,167,214,.4);border-radius:14px;font-size:13px;font-weight:800;color:var(--text);line-height:1.6;}
 
+/* 記録フォームを直感的に */
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{padding:9px 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface-2);color:var(--text);font-size:14px;font-weight:900;cursor:pointer;transition:background .15s,border-color .15s;}
+.chip.active{background:rgba(139,184,168,.30);border-color:rgba(139,184,168,.8);}
+.checkbox-item{cursor:pointer;transition:background .15s,border-color .15s,opacity .15s;}
+.checkbox-item.on{background:rgba(139,184,168,.18);border-color:rgba(139,184,168,.6);}
+.checkbox-item:not(.on){opacity:.55;}
+.checkbox-item label{flex:1;}
+#participantsCheckbox{display:flex;flex-wrap:wrap;gap:8px;}
+#participantsCheckbox .checkbox-item{padding:8px 12px;border-radius:999px;border-width:2px;gap:0;}
+#participantsCheckbox .checkbox-item input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;}
+#participantsCheckbox .checkbox-item label{flex:none;margin:0;font-size:14px;font-weight:900;}
+#participantsCheckbox .checkbox-item{flex:0 0 auto;min-width:0;}
+#participantsCheckbox .checkbox-item label::before{content:'';}
+#participantsCheckbox .checkbox-item.on label::before{content:'✓';margin-right:3px;font-size:12px;color:#4f8f78;}
+.input-group label.label-row{display:flex;align-items:center;justify-content:space-between;}
+.mini-link{padding:3px 10px;font-size:11px;font-weight:800;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);cursor:pointer;}
+.split-preview{margin:-4px 0 12px;font-size:13px;font-weight:800;color:var(--muted);text-align:center;}
+.split-preview b{color:var(--text);font-size:15px;}
+.invalid{border-color:rgba(217,140,140,.9) !important;box-shadow:0 0 0 3px rgba(217,140,140,.18) !important;border-radius:14px;}
+.chip-row.invalid,.checkbox-group.invalid{padding:4px;border:2px solid;}
+.setup-hint{display:none;margin-bottom:12px;padding:12px 14px;background:rgba(147,167,214,.14);border:1px solid rgba(147,167,214,.4);border-radius:14px;font-size:13px;font-weight:800;color:var(--text);line-height:1.6;}
+.setup-hint.show{display:block;}
+.setup-hint button{display:block;width:100%;margin-top:8px;padding:10px;border-radius:12px;border:1px solid rgba(139,184,168,.5);background:rgba(139,184,168,.35);color:var(--text);font-weight:900;font-size:14px;cursor:pointer;}
+.expense-body{cursor:pointer;}
+
 /* top bar & tabs */
-.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:-10px -10px 12px;padding:10px;padding-top:calc(10px + env(safe-area-inset-top));background:var(--bg);}
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:calc(-10px - env(safe-area-inset-top)) -10px 12px;padding:10px;padding-top:calc(10px + env(safe-area-inset-top));background:var(--bg);}
 .topbar-trip{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);font-size:15px;font-weight:900;box-shadow:var(--shadow);}
 .topbar-total{flex-shrink:0;text-align:right;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 12px;box-shadow:var(--shadow);}
 .topbar-total .t{font-size:10px;color:var(--muted);font-weight:800;}
@@ -358,7 +392,7 @@ input[type="file"]{display:none;}
 #sec-expense{display:none;}
 #cardExpense.collapsed{display:block;}
 .tab-panel.active{display:block;}
-.tabbar{display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom));}
+.tabbar{display:flex;justify-content:space-around;padding:8px 6px calc(14px + env(safe-area-inset-bottom));}
 .tab-btn{flex:1;max-width:160px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;border:none;border-radius:14px;background:transparent;color:var(--muted);font-size:11px;font-weight:900;cursor:pointer;}
 .tab-btn .ic{font-size:20px;line-height:1.1;filter:grayscale(1);opacity:.6;}
 .tab-btn.active{background:rgba(185,179,204,.22);color:var(--text);}
@@ -417,7 +451,7 @@ input[type="file"]{display:none;}
   </div>
 
   <div class="me-bar" id="meBar" onclick="openMySettlement()">
-    <div class="me-main" id="meText">👤 自分を選ぶと、あなたの精算額がここに出ます</div>
+    <div class="me-main" id="meText">👤 自分を選ぶと精算額を表示</div>
     <button class="me-change" onclick="event.stopPropagation();chooseMe()">自分を選ぶ</button>
   </div>
 
@@ -431,6 +465,7 @@ input[type="file"]{display:none;}
       <span class="card-chevron open">▶</span>
     </div>
     <div class="card-body" id="cardExpense">
+    <div class="setup-hint" id="setupHint">👋 まずは一緒に旅行するメンバーを登録しましょう。<button onclick="goToMemberSetup()">メンバーを登録する</button></div>
     <div class="edit-banner" id="expenseEditBanner">
       <span class="edit-banner-text">✏️ 支払いを編集中</span>
       <button class="edit-banner-cancel" onclick="cancelEditExpense()">キャンセル</button>
@@ -441,15 +476,17 @@ input[type="file"]{display:none;}
       <button class="currency-btn" data-cur="KRW" onclick="setCurrency('KRW')">ウォン</button>
     </div>
     <div class="input-group"><label>項目名</label><input type="text" id="expenseName" placeholder="例: ランチ代" maxlength="100"></div>
-    <div class="input-group"><label>カテゴリ <button type="button" onclick="openCatManager()" style="margin-left:8px;padding:3px 10px;font-size:11px;font-weight:800;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);cursor:pointer;">＋ 編集</button></label>
+    <div class="input-group cat-row"><label>カテゴリ</label>
   <div class="cat-picker" id="catPicker"></div>
+  <button type="button" class="cat-edit-btn" onclick="openCatManager()">＋ 編集</button>
 </div>
 <div class="form-row">
   <div class="input-group"><label>金額</label><input type="number" id="expenseAmount" placeholder="0" min="0" max="10000000" step="0.01" inputmode="decimal"></div>
   <div class="input-group"><label>日付</label><input type="date" id="expenseDate"></div>
 </div>
-    <div class="input-group"><label>支払った人</label><select id="paidBy"><option value="">選択</option></select></div>
-    <div class="input-group"><label>参加者</label><div class="checkbox-group" id="participantsCheckbox"></div></div>
+    <div class="input-group"><label>支払った人</label><div class="chip-row" id="paidByChips"></div><select id="paidBy" hidden><option value="">選択</option></select></div>
+    <div class="input-group"><label class="label-row"><span>割り勘する人</span><button type="button" class="mini-link" id="toggleAllBtn" onclick="toggleAllParticipants()">全員を外す</button></label><div class="checkbox-group" id="participantsCheckbox"></div></div>
+    <div class="split-preview" id="splitPreview"></div>
     <button class="btn btn-primary" id="expenseSubmitBtn" onclick="submitExpense()">追加</button>
     </div>
   </div>
@@ -1391,6 +1428,7 @@ window.onload=async()=>{
 
 function initAppViews(){
   if(!members.length)members=[''];
+  ['expenseName','expenseAmount'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.dataset.bound){el.dataset.bound='1';el.addEventListener('input',()=>{el.classList.remove('invalid');refreshFormHelpers();});}});
   const dateInput=document.getElementById('expenseDate');if(dateInput&&!dateInput.value)dateInput.value=todayStr();
   updateMemberSelects();updateMemberDisplay();updateFocusMemberSelect();showRateDisplay();
   updateSettCards();
@@ -1463,6 +1501,7 @@ function updateMemberList(){
   });
 }
 function updateMemberSelects(){
+  const prevPayer=document.getElementById('paidBy').value;
   const opts=[{v:'',t:'選択'},...members.map((m,i)=>({v:i,t:m||`メンバー${i+1}`}))];
   ['paidBy'].forEach(id=>{
     const s=document.getElementById(id);s.innerHTML='';
@@ -1473,8 +1512,91 @@ function updateMemberSelects(){
     const div=document.createElement('div');div.className='checkbox-item';
     const cb=document.createElement('input');cb.type='checkbox';cb.id=`participant${i}`;cb.value=i;cb.checked=true;
     const lbl=document.createElement('label');lbl.htmlFor=`participant${i}`;lbl.textContent=sanitize(m||`メンバー${i+1}`);
+    cb.onchange=()=>refreshFormHelpers();
+    div.onclick=e=>{if(e.target===div){cb.checked=!cb.checked;refreshFormHelpers();}};
+    div.style.position='relative';
     div.appendChild(cb);div.appendChild(lbl);pc.appendChild(div);
   });
+  const sel=document.getElementById('paidBy');
+  sel.value=(prevPayer!==''&&Number(prevPayer)<members.length)?prevPayer:String(defaultPayer());
+  refreshFormHelpers();
+}
+
+/* ===== 記録フォームの補助 ===== */
+let _lastPayer=null;
+// 支払った人の初期値: 自分 → 前回払った人
+function defaultPayer(){
+  const me=getMeIdx();
+  if(me>=0)return me;
+  if(_lastPayer!==null&&_lastPayer<members.length)return _lastPayer;
+  return '';
+}
+function setPaidBy(v){
+  document.getElementById('paidBy').value=String(v);
+  document.getElementById('paidByChips').classList.remove('invalid');
+  refreshFormHelpers();
+}
+function toggleAllParticipants(){
+  const boxes=members.map((_,i)=>document.getElementById(`participant${i}`)).filter(Boolean);
+  const allOn=boxes.every(b=>b.checked);
+  boxes.forEach(b=>b.checked=!allOn);
+  refreshFormHelpers();
+}
+function refreshFormHelpers(){
+  // 支払った人チップ
+  const chips=document.getElementById('paidByChips');
+  if(chips){
+    const cur=document.getElementById('paidBy').value;
+    chips.innerHTML='';
+    members.forEach((m,i)=>{
+      const b=document.createElement('button');b.type='button';
+      b.className='chip'+(cur===String(i)?' active':'');
+      b.textContent=sanitize(m||`メンバー${i+1}`);
+      b.onclick=()=>setPaidBy(i);
+      chips.appendChild(b);
+    });
+  }
+  // 参加者チップの見た目・全員ボタン
+  const boxes=members.map((_,i)=>document.getElementById(`participant${i}`)).filter(Boolean);
+  boxes.forEach(b=>b.parentElement.classList.toggle('on',b.checked));
+  const n=boxes.filter(b=>b.checked).length;
+  if(n)document.getElementById('participantsCheckbox').classList.remove('invalid');
+  const tBtn=document.getElementById('toggleAllBtn');if(tBtn)tBtn.textContent=n===boxes.length?'全員を外す':'全員を選択';
+  // 1人あたりの金額
+  const pv=document.getElementById('splitPreview');
+  if(pv){
+    const amt=validateNum(document.getElementById('expenseAmount').value);
+    if(!n)pv.innerHTML='割り勘する人を選んでください';
+    else if(amt)pv.innerHTML=`👥 ${n}人で割り勘 → 1人あたり <b>${fmtMoney(currentCurrency,amt/n)}</b>`;
+    else pv.innerHTML=`👥 ${n}人で割り勘`;
+  }
+  // メンバー未登録の案内
+  const hint=document.getElementById('setupHint');
+  if(hint)hint.classList.toggle('show',members.every(m=>!m));
+}
+// 入力漏れの欄を光らせて知らせる
+function validateExpenseForm(){
+  const nameEl=document.getElementById('expenseName'),amtEl=document.getElementById('expenseAmount');
+  const checks=[
+    [!sanitize(nameEl.value).trim(),nameEl,'項目名を入力してください'],
+    [validateNum(amtEl.value)===null,amtEl,'金額を入力してください'],
+    [isNaN(parseInt(document.getElementById('paidBy').value)),document.getElementById('paidByChips'),'支払った人を選んでください'],
+    [!members.some((_,i)=>document.getElementById(`participant${i}`)?.checked),document.getElementById('participantsCheckbox'),'割り勘する人を選んでください'],
+  ];
+  checks.forEach(([bad,el])=>el.classList.toggle('invalid',bad));
+  const first=checks.find(c=>c[0]);
+  if(first){
+    showToast('⚠ '+first[2]);
+    if(first[1].tagName==='INPUT')first[1].focus();
+    else first[1].scrollIntoView({behavior:'smooth',block:'center'});
+    return false;
+  }
+  return true;
+}
+function goToMemberSetup(){
+  showTab('settings');
+  if(document.getElementById('memberEdit').style.display==='none')toggleMemberEdit();
+  const first=document.querySelector('#memberList input');if(first)first.focus();
 }
 // 現在の選択状態を保持
 let _focusMemberIdx = 0;
@@ -1497,7 +1619,7 @@ function updateFocusMemberSelect(){
 }
 
 /* ===== 通貨 ===== */
-function setCurrency(c){currentCurrency=normCurrency(c);document.querySelectorAll('#expenseCurrencyToggle .currency-btn').forEach(b=>b.classList.toggle('active',b.dataset.cur===currentCurrency));}
+function setCurrency(c){currentCurrency=normCurrency(c);document.querySelectorAll('#expenseCurrencyToggle .currency-btn').forEach(b=>b.classList.toggle('active',b.dataset.cur===currentCurrency));refreshFormHelpers();}
 
 
 /* ===== カテゴリ ===== */
@@ -1597,9 +1719,10 @@ function submitExpense(){editingExpenseIdx>=0?updateExpense():addExpense();}
 function addExpense(){
   if(expenses.length>=MAX_EXPENSES){showToast(`⚠ 最大${MAX_EXPENSES}件まで`);return;}
   const name=sanitize(document.getElementById('expenseName').value).trim(),amt=validateNum(document.getElementById('expenseAmount').value),paidBy=parseInt(document.getElementById('paidBy').value);
-  if(!name||amt===null||isNaN(paidBy)){showToast('⚠ 必須項目を入力してください');return;}
+  if(!validateExpenseForm())return;
   const parts=[];members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb&&cb.checked)parts.push(i);});
   if(!parts.length){showToast('⚠ 参加者を選択してください');return;}
+  _lastPayer=paidBy;
   expenses.push({id:newExpenseId(),name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',date:getFormDate(),paidBy,participants:[...new Set(parts)],timestamp:new Date().toISOString()});
   clearExpenseForm();saveData();updateDisplay();showToast('✅ 支払いを追加しました');
 }
@@ -1609,11 +1732,12 @@ function startEditExpense(i){
   document.getElementById('expenseDate').value=e.date||'';
   setCurrency(e.currency);setCatPicker(e.category||DEFAULT_CATEGORIES[0]);members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
   document.getElementById('expenseSubmitBtn').textContent='更新';document.getElementById('expenseEditBanner').classList.add('visible');
+  refreshFormHelpers();
   showTab('add');showToast('✏️ 支払いを編集中');
 }
 function updateExpense(){
   const name=sanitize(document.getElementById('expenseName').value).trim(),amt=validateNum(document.getElementById('expenseAmount').value),paidBy=parseInt(document.getElementById('paidBy').value);
-  if(!name||amt===null||isNaN(paidBy)){showToast('⚠ 必須項目を入力してください');return;}
+  if(!validateExpenseForm())return;
   const parts=[];members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb&&cb.checked)parts.push(i);});
   if(!parts.length){showToast('⚠ 参加者を選択してください');return;}
   expenses[editingExpenseIdx]={...expenses[editingExpenseIdx],name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',date:getFormDate(),paidBy,participants:[...new Set(parts)]};
@@ -1627,6 +1751,9 @@ function clearExpenseForm(){
   editingExpenseIdx=-1;document.getElementById('expenseName').value='';document.getElementById('expenseAmount').value='';document.getElementById('paidBy').value='';
   members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb)cb.checked=true;});
   document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');resetCatPicker();setCatPicker(DEFAULT_CATEGORIES[0]);
+  document.querySelectorAll('#cardExpense .invalid').forEach(el=>el.classList.remove('invalid'));
+  document.getElementById('paidBy').value=String(defaultPayer());
+  refreshFormHelpers();
 }
 async function deleteExpense(i){
   const ok=await openConfirm('支払いを削除',`「${expenses[i].name}」を削除しますか？`);if(!ok)return;
@@ -1675,7 +1802,7 @@ function displayExpenses(){
       const amt=fmtMoney(e.currency,e.amount);
       const sub=byDate?safe(e.category||'その他'):fmtDay(e.date);
       const isEd=editingExpenseIdx===i;
-      html+=`<div class="expense-item${isEd?' is-editing':''}"><div class="expense-color-bar"></div><div class="expense-body"><div class="expense-header"><div class="expense-title">${nm} <span class="expense-date-chip">${sub}</span></div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip">💳 <b>${paid}</b></span><span class="expense-meta-chip">👥 ${parts}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button></div></div>`;
+      html+=`<div class="expense-item${isEd?' is-editing':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${nm} <span class="expense-date-chip">${sub}</span></div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip">💳 <b>${paid}</b></span><span class="expense-meta-chip">👥 ${parts}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button></div></div>`;
     });
     html+='</div></div>';
   });
@@ -1849,6 +1976,7 @@ async function chooseMe(){
   const picked=await appChoose('あなたはどのメンバー？',named.map(x=>x.m),{message:'この端末で選んだ人の精算額を上に表示します',current:cur<0?null:cur});
   if(picked===null||picked===undefined)return;
   try{localStorage.setItem(meKey(),named[picked].m);}catch(e){}
+  if(editingExpenseIdx<0)setPaidBy(named[picked].i);
   renderMeBar();
 }
 function openMySettlement(){
@@ -1864,7 +1992,7 @@ function renderMeBar(){
   if(!text)return;
   const me=getMeIdx();
   if(me<0){
-    text.innerHTML='👤 自分を選ぶと、あなたの精算額がここに出ます';
+    text.innerHTML='👤 自分を選ぶと精算額を表示';
     if(btn)btn.textContent='自分を選ぶ';
     return;
   }
@@ -1932,7 +2060,7 @@ function renderCatSummary(){
 }
 function updateDisplay(){
   updateSettCards();
-  updateMemberList();displayExpenses();renderCatSummary();calculateSettlement();renderPersonalViews();updateFooterTotal();renderMeBar();
+  updateMemberList();displayExpenses();renderCatSummary();calculateSettlement();renderPersonalViews();updateFooterTotal();renderMeBar();refreshFormHelpers();
 }
 
 /* ===== 保存・読込 ===== */
