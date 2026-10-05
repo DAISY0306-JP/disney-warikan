@@ -1272,28 +1272,27 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .bp-close{min-height:44px;border-radius:14px;border:1.5px solid #e6e6ea;background:#fff;color:#6b6676;font-weight:700;font-size:14px;cursor:pointer;}
 .bp-barcode{margin-top:14px;height:34px;}
 .bp-barcode svg{width:100%;height:34px;fill:#2e2a3d;}
-/* ===== 4. 出発案内板 ===== */
-.board{background:#1f1d29;border-radius:16px;padding:12px 10px 10px;margin-bottom:12px;}
-.board-head{display:flex;justify-content:space-between;align-items:center;padding:0 6px 8px;border-bottom:1px solid rgba(255,255,255,.1);}
-.board-title{display:inline-flex;align-items:center;gap:6px;color:#ffc94a;font-family:var(--round);font-size:15px;font-weight:800;letter-spacing:.14em;}
-.board-title svg{width:16px;height:16px;fill:#ffc94a;transform:rotate(45deg);}
-.board-title small{font-family:inherit;font-size:10px;letter-spacing:.1em;color:rgba(255,255,255,.55);margin-left:4px;}
-.board-clock{font-family:var(--round);font-size:14px;font-weight:800;color:#ffc94a;letter-spacing:.08em;font-variant-numeric:tabular-nums;}
-.board-list{display:flex;flex-direction:column;gap:0 !important;max-height:46vh;overflow-y:auto;}
-.board-row{display:flex;flex-direction:column;gap:4px;width:100%;padding:10px 8px;border:none;border-bottom:1px solid rgba(255,255,255,.07);background:none;text-align:left;cursor:pointer;color:#fff;border-radius:8px;}
-.board-row:last-child{border-bottom:none;}
-.board-row.current{background:rgba(255,201,74,.1);}
+/* ===== 4. 出発案内板（アプリの配色に合わせる） ===== */
+.board{background:#f7f7f9;border-radius:16px;padding:12px 10px 8px;margin-bottom:12px;}
+.board-head{display:flex;justify-content:space-between;align-items:center;padding:0 6px 8px;border-bottom:1.5px dashed rgb(var(--p-rgb) / .25);}
+.board-title{display:inline-flex;align-items:center;gap:6px;color:var(--p);font-family:var(--round);font-size:15px;font-weight:800;letter-spacing:.14em;}
+.board-title svg{width:16px;height:16px;fill:var(--p);transform:rotate(45deg);}
+.board-title small{font-family:inherit;font-size:10px;letter-spacing:.1em;color:#8a8594;margin-left:4px;}
+.board-clock{font-family:var(--round);font-size:14px;font-weight:800;color:var(--p);letter-spacing:.08em;font-variant-numeric:tabular-nums;}
+.board-list{display:flex;flex-direction:column;gap:6px !important;max-height:46vh;overflow-y:auto;padding-top:8px;}
+.board-row{position:relative;display:flex;flex-direction:column;gap:4px;width:100%;padding:10px 12px;border:none;background:#fff;text-align:left;cursor:pointer;color:var(--text);border-radius:12px;}
+.board-row.current{box-shadow:inset 0 0 0 1.5px var(--p);background:rgb(var(--p-rgb) / .05);}
 .br-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
 .br-name{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.br-status{flex:0 0 auto;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:5px;letter-spacing:.04em;}
-.br-status.checkin{background:#ffc94a;color:#1f1d29;}
-.br-status.flight{background:#35c98a;color:#0f2a1f;}
-.br-status.arrived{background:rgba(255,255,255,.16);color:#fff;}
-.br-status.done{background:transparent;color:#35c98a;border:1px solid #35c98a;}
-.br-status.none{background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.25);}
-.br-info{display:flex;gap:10px;align-items:center;font-family:var(--round);font-size:12px;font-weight:700;color:#ffc94a;letter-spacing:.06em;white-space:nowrap;overflow:hidden;}
-.br-info b{font-weight:800;}
-.br-info i{font-style:normal;margin-left:auto;font-size:10px;color:#1f1d29;background:#ffc94a;padding:1px 6px;border-radius:4px;}
+.br-status{flex:0 0 auto;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;letter-spacing:.04em;}
+.br-status.checkin{background:rgb(var(--p-rgb) / .12);color:var(--p);}
+.br-status.flight{background:var(--p);color:#fff;}
+.br-status.arrived{background:#ececf0;color:#6b6676;}
+.br-status.done{background:rgba(18,162,106,.1);color:var(--recv);}
+.br-status.none{background:transparent;color:#8a8594;box-shadow:inset 0 0 0 1px #dcdce2;}
+.br-info{display:flex;gap:10px;align-items:center;font-family:var(--round);font-size:12px;font-weight:700;color:rgb(var(--p-rgb) / .8);letter-spacing:.06em;white-space:nowrap;overflow:hidden;}
+.br-info b{font-weight:800;color:var(--p);}
+.br-info i{font-style:normal;margin-left:auto;font-size:10px;color:#fff;background:var(--p);padding:1px 7px;border-radius:999px;}
 /* ===== 6. 機内モード ===== */
 .offline-bar{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 6px);z-index:2250;transform:translate(-50%,-160%);display:flex;align-items:center;gap:6px;
   padding:6px 14px;border-radius:999px;background:#2e2a3d;color:#fff;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 6px 16px rgba(20,24,35,.25);transition:transform .35s ease;pointer-events:none;}
