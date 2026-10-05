@@ -966,6 +966,72 @@ body::before{background:var(--bg-plain);}
 .icon-pick .ci{width:22px;height:22px;margin:0;}
 .icon-pick.active{border-color:var(--cf);box-shadow:0 0 0 2px #fff inset;}
 .icon-pick-cancel{width:100%;margin-top:14px;min-height:46px;border-radius:14px;border:1.5px solid #e6e6ea;background:#fff;color:#6b6676;font-weight:700;font-size:14px;cursor:pointer;}
+
+/* ===== 設定タブの色味 ===== */
+#memberDisplay{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 !important;}
+.member-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 14px 5px 5px;border-radius:999px;background:#f7f7f9;font-size:15px;font-weight:700;color:var(--text);}
+.member-chip .av{width:24px;height:24px;}
+.member-item input{padding:12px 14px;border:1.5px solid #e6e6ea;border-radius:12px;background:#fff;}
+.member-item button{min-height:44px;padding:0 14px;border-radius:12px;background:#fff5f5;color:var(--pay);border:1px solid rgba(229,72,77,.25);font-weight:700;}
+.btn-add{background:rgb(var(--p-rgb) / .08);color:var(--p);border:1.5px dashed rgb(var(--p-rgb) / .4);font-weight:700;width:100%;}
+.rate-display{background:#f7f7f9;border:none;border-radius:14px;padding:12px 14px;}
+.rate-row span{font-weight:700;font-size:15px;color:var(--text);}
+.rate-flag{display:inline-block;margin-right:8px;padding:2px 7px;border-radius:6px;background:rgb(var(--p-rgb) / .1);color:var(--p);font-size:11px;font-weight:800;letter-spacing:.04em;vertical-align:2px;}
+.rate-fetch-btn{border:1.5px solid rgb(var(--p-rgb) / .35);background:#fff;color:var(--p);font-weight:800;}
+.rate-updated{color:#8a8594;}
+.rate-edit-row input{border-color:#e6e6ea;}
+.rate-save-btn{background:var(--p);color:#fff;border:none;}
+.rate-cancel-btn{background:#fff;color:#6b6676;border:1px solid #e6e6ea;}
+.settings-note{background:#f7f7f9;border:none;color:#6b6676;}
+.settings-disclaimer{color:#9a96a6;}
+
+.rate-row>span{display:inline-flex;align-items:center;}
+.rate-row .rate-flag{color:var(--p);font-size:11px;font-weight:800;vertical-align:0;}
+
+/* ===== 残っていた古い配色の統一 ===== */
+/* くわしい内訳 */
+.personal-legend{background:#f7f7f9;border:none;line-height:1.8;margin-bottom:14px;font-size:13px;}
+.personal-card{background:#f7f7f9;border:none;}
+.personal-card-header{border-bottom-color:#ececf0;}
+.personal-card-name{display:flex;align-items:center;gap:8px;font-weight:800;}
+.personal-card-name .av{width:24px;height:24px;}
+.stat-row+.stat-row{border-top-color:#ececf0;}
+.net-badge{border:none;font-weight:800;}
+.net-plus{background:rgba(18,162,106,.1);color:var(--recv);}
+.net-minus{background:rgba(229,72,77,.1);color:var(--pay);}
+.net-zero{background:#ececf0;color:#8a8594;}
+.c-recv,.c-net-p{color:var(--recv);}
+.c-pay,.c-net-m{color:var(--pay);}
+.detail-pick-title{font-size:13px;font-weight:700;color:#8a8594;margin-bottom:10px;}
+.member-btn-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));}
+.member-btn{display:inline-flex !important;align-items:center;justify-content:center;gap:6px;background:#fff !important;border:1.5px solid #e6e6ea !important;color:var(--text) !important;font-weight:700 !important;box-shadow:none !important;min-height:44px;padding:8px 10px !important;}
+.member-btn .av{width:22px;height:22px;}
+.member-btn.active{border-color:var(--p) !important;background:rgb(var(--p-rgb) / .07) !important;color:var(--p) !important;}
+.detail-title{display:flex;align-items:center;gap:8px;font-family:var(--round);font-size:16px;font-weight:800;color:var(--text);margin-bottom:12px;}
+.detail-title .av{width:24px;height:24px;}
+.share-btn{font-weight:800;box-shadow:none;}
+.share-btn-copy{background:#fff;color:var(--text);border:1.5px solid #e6e6ea;}
+.share-btn-share{background:var(--p);color:#fff;border:none;}
+.detail-section-header{border-bottom-color:#ececf0 !important;}
+.detail-section-title{color:#8a8594;}
+.detail-section-ccy{background:rgb(var(--p-rgb) / .1) !important;color:var(--p) !important;border:none !important;}
+.detail-tx-item{background:#f7f7f9 !important;border:none !important;}
+.detail-tx-amount{color:var(--text);font-family:var(--round);font-weight:800;}
+/* 確認・お知らせ・選択ダイアログ */
+.confirm-box,.info-box,.dlg-box{border:none;box-shadow:0 12px 32px rgba(20,24,35,.18);}
+.confirm-ok{background:var(--pay);color:#fff;border:none;font-weight:800;}
+.confirm-cancel,.dlg-cancel{background:#fff;color:#6b6676;border:1.5px solid #e6e6ea;font-weight:700;}
+.info-box button{background:var(--p);color:#fff;border:none;font-weight:800;}
+.dlg-choices button.active{border-color:var(--p);background:rgb(var(--p-rgb) / .07);color:var(--p);}
+/* 案内 */
+.setup-hint{background:rgb(var(--p-rgb) / .07);border:none;color:var(--text);font-weight:700;}
+.setup-hint button{background:var(--p);color:#fff;border:none;font-weight:800;}
+.invite-note{background:rgb(var(--p-rgb) / .08);border:none;color:var(--p);font-weight:700;}
+.toast{background:rgba(46,42,61,.92);font-weight:700;}
+
+.catsum-name{display:inline-flex;align-items:center;font-size:14px;font-weight:800;color:var(--text);}
+.catsum-name .ci{color:var(--cf);width:16px;height:16px;}
+.confirm-cancel{border:1.5px solid #e6e6ea !important;}
 </style>
 
 <link rel="apple-touch-icon" href="data:image/png;base64,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">
@@ -983,7 +1049,7 @@ body::before{background:var(--bg-plain);}
   </div>
   <div class="card auth-card">
     <div class="card-body">
-      <div class="invite-note" id="inviteNote" style="display:none;">🎫 旅行に招待されています。ログイン（または新規登録）すると自動で参加します。</div>
+      <div class="invite-note" id="inviteNote" style="display:none;">旅行に招待されています。ログイン（または新規登録）すると自動で参加します。</div>
       <div class="input-group">
         <label>メールアドレス</label>
         <input type="email" id="authEmail" placeholder="example@email.com" autocomplete="email">
@@ -1034,7 +1100,7 @@ body::before{background:var(--bg-plain);}
       <span class="card-chevron open">▶</span>
     </div>
     <div class="card-body" id="cardExpense">
-    <div class="setup-hint" id="setupHint">👋 まずは一緒に旅行するメンバーを登録しましょう。<button onclick="goToMemberSetup()">メンバーを登録する</button></div>
+    <div class="setup-hint" id="setupHint">まずは一緒に旅行するメンバーを登録しましょう。<button onclick="goToMemberSetup()">メンバーを登録する</button></div>
     <div class="edit-banner" id="expenseEditBanner">
       <span class="edit-banner-text">支払いを編集中</span>
       <span class="edit-banner-actions">
@@ -1135,14 +1201,14 @@ body::before{background:var(--bg-plain);}
       <span class="card-chevron">▶</span>
     </div>
     <div class="card-body collapsed" id="cardPersonal">
-      <div class="info-text" style="line-height:1.8;margin-bottom:14px;">
+      <div class="info-text personal-legend">
         <b>受取</b> ＝ 立て替えた分を他の人から回収するお金<br>
         <b>支払</b> ＝ 他の人に立て替えてもらった分を返すお金<br>
         <b>差引</b> ＝ 受取 − 支払（＋ = 受け取り超過、− = 支払い超過）
       </div>
       <div id="personalSummary"></div>
       <div class="hr" style="margin:16px 0;"></div>
-      <div style="font-size:13px;font-weight:900;color:var(--muted);margin-bottom:10px;letter-spacing:.2px;">📋 メンバーを選んで明細 ＆ シェア</div>
+      <div class="detail-pick-title">メンバーを選んで明細をシェア</div>
       <div class="member-btn-grid" id="focusMemberBtns"></div>
       <div id="personalDetails" style="margin-top:4px;"><p style="text-align:center;color:var(--muted);padding:10px;">メンバーを選ぶと明細が表示されます</p></div>
     </div>
@@ -1205,11 +1271,11 @@ body::before{background:var(--bg-plain);}
     <div class="card-body">
       <div id="rateDisplay" class="rate-display">
         <div class="rate-row">
-          <span id="rateText-USD">💱 $1 = ¥150.00</span>
+          <span id="rateText-USD">$1 = ¥150.00</span>
           <button class="btn-bluegray-sm" onclick="toggleRateEdit('USD')">変更</button>
         </div>
         <div class="rate-row" style="margin-top:8px;">
-          <span id="rateText-KRW">💱 ₩100 = ¥11.00</span>
+          <span id="rateText-KRW">₩100 = ¥11.00</span>
           <button class="btn-bluegray-sm" onclick="toggleRateEdit('KRW')">変更</button>
         </div>
         <button class="rate-fetch-btn" id="rateFetchBtn" onclick="fetchLatestRates()">最新レートを取得</button>
@@ -1229,8 +1295,8 @@ body::before{background:var(--bg-plain);}
     </div>
   </div>
 
-  <div class="settings-note">💾 データはログインアカウントに保存されます。必要に応じてJSONバックアップもできます。</div>
-  <div class="settings-disclaimer">⚠️ このアプリは個人が趣味で開発したものです。計算結果の正確性は保証されません。<br>実際の精算はご自身でご確認のうえ、自己責任でご利用ください。</div>
+  <div class="settings-note">データはログインアカウントに保存されます。念のため、バックアップ（JSON ファイル）を保存しておくこともできます。</div>
+  <div class="settings-disclaimer">このアプリは個人が趣味で開発したものです。計算結果の正確性は保証されません。<br>実際の精算はご自身でご確認のうえ、自己責任でご利用ください。</div>
   </div>
 </div>
 </div>
@@ -2024,7 +2090,7 @@ function applyRate(){
   const v=validateNum(document.getElementById('rateInput').value,min,1000);
   if(!v){showToast(`⚠ ${min}〜1000 の数値を入力してください`);return;}
   if(_rateEditCode==='KRW')krwRate=v;else exchangeRate=v;
-  localStorage.setItem('rateUpdatedAt',new Date().toISOString());saveData();showRateDisplay();cancelRateEdit();updateDisplay();showToast('💱 為替レートを更新しました');
+  localStorage.setItem('rateUpdatedAt',new Date().toISOString());saveData();showRateDisplay();cancelRateEdit();updateDisplay();showToast('為替レートを更新しました');
 }
 // 無料の為替API（APIキー不要）。1つ目が失敗したら2つ目を試す
 const RATE_SOURCES=[
@@ -2056,7 +2122,7 @@ async function fetchLatestRates(){
         try{localStorage.setItem('rateUpdatedAt',stamp);}catch(e){}
         saveData();showRateDisplay();cancelRateEdit();updateDisplay();
         const t=document.getElementById('rateUpdatedText');if(t)t.textContent=rateDateNote(date);
-        showToast('💱 最新レートに更新しました');
+        showToast('最新レートに更新しました');
         return;
       }catch(e){console.warn('rate fetch failed',src.url,e);}
     }
@@ -2066,8 +2132,8 @@ async function fetchLatestRates(){
   }
 }
 function showRateDisplay(){
-  const u=document.getElementById('rateText-USD');if(u)u.textContent=`💱 $1 = ¥${exchangeRate.toFixed(2)}`;
-  const k=document.getElementById('rateText-KRW');if(k)k.textContent=`💱 ₩100 = ¥${krwRate.toFixed(2)}`;
+  const u=document.getElementById('rateText-USD');if(u)u.innerHTML=`<span class="rate-flag">USD</span>$1 = ¥${exchangeRate.toFixed(2)}`;
+  const k=document.getElementById('rateText-KRW');if(k)k.innerHTML=`<span class="rate-flag">KRW</span>₩100 = ¥${krwRate.toFixed(2)}`;
 }
 
 /* ===== 日付・ID ===== */
@@ -2170,7 +2236,7 @@ function updateMemberDisplay(){
   const d=document.getElementById('memberDisplay');
   if(members.every(m=>!m)){d.innerHTML='<p style="color:var(--muted);">メンバーを設定してください</p>';return;}
   d.innerHTML='';
-  members.forEach(m=>{if(m){const s=document.createElement('span');s.style.cssText='display:inline-block;background:var(--surface-2);border:1px solid var(--line);padding:8px 16px;margin:5px;border-radius:999px;font-size:15px;font-weight:900;';s.textContent=m;d.appendChild(s);}});
+  members.forEach((m,i)=>{if(m){const s=document.createElement('span');s.className='member-chip';s.innerHTML=avatar(i)+esc(m);d.appendChild(s);}});
 }
 function addMember(){if(members.length>=MAX_MEMBERS){showToast(`⚠ 最大${MAX_MEMBERS}人まで`);return;}members.push('');updateMemberList();updateMemberSelects();updateFocusMemberSelect();saveData();}
 async function removeMember(i){
@@ -2345,7 +2411,7 @@ function updateFocusMemberSelect(){
     if(!m&&members.length===1) return;
     const btn=document.createElement('button');
     btn.className='member-btn' + (_focusMemberIdx===i?' active':'');
-    btn.textContent=sanitize(m||`メンバー${i+1}`);
+    btn.innerHTML=avatar(i)+esc(sanitize(m||`メンバー${i+1}`));
     btn.onclick=()=>{ _focusMemberIdx=i; updateFocusMemberSelect(); renderPersonalViews(); };
     grid.appendChild(btn);
   });
@@ -2741,7 +2807,7 @@ function renderPersonalViews(){
     const card=document.createElement('div');card.className='personal-card';
     card.innerHTML=`
       <div class="personal-card-header">
-        <div class="personal-card-name">👤 ${safe(m||`メンバー${i+1}`)}</div>
+        <div class="personal-card-name">${avatar(i)}${safe(m||`メンバー${i+1}`)}</div>
         <div class="personal-card-nets">${badges.join('')}</div>
       </div>
       <div class="personal-card-body">${rows.join('')}</div>
@@ -2770,7 +2836,7 @@ function renderPersonalViews(){
     const items=tx.length?tx.map(x=>txItem(x,c.code)).join(''):`<div class="detail-none">なし</div>`;
     return `<div class="detail-section">
         <div class="detail-section-header">
-          <span class="detail-section-badge">${badge}</span>
+          
           <span class="detail-section-title">${title}</span>
           <span class="detail-section-ccy">${c.code==='JPY'?'円':c.code}</span>
         </div>
@@ -2795,12 +2861,12 @@ function renderPersonalViews(){
   };
 
   details.innerHTML=
-    `<div style="font-size:15px;font-weight:900;color:var(--text);margin-bottom:12px;padding:4px 0;">🔎 ${safe(members[k])} の明細</div>`+
+    `<div class="detail-title">${avatar(k)}${safe(members[k])} の明細</div>`+
     `<div class="share-bar">
-      <button class="share-btn share-btn-copy" onclick="copyDetailText()">📋 テキストコピー</button>
-      <button class="share-btn share-btn-share" onclick="shareDetail()">🔗 シェア</button>
+      <button class="share-btn share-btn-copy" onclick="copyDetailText()">テキストをコピー</button>
+      <button class="share-btn share-btn-share" onclick="shareDetail()">シェアする</button>
     </div>`+
-    renderGroup('最終精算（相殺済み）','✅');
+    renderGroup('最終精算（相殺済み）','');
 
   // シェア用テキストをグローバルに保持
   window._currentShareText = buildShareText();
@@ -2872,7 +2938,7 @@ function renderCatSummary(){
   const el=document.getElementById('catSummaryContent');
   if(!el)return;
   if(!expenses.length){el.innerHTML='<p style="text-align:center;color:var(--muted);padding:8px;">まだ記録がありません</p>';return;}
-  const BAR_COLORS={JPY:'rgba(140,147,170,.55)',USD:'rgba(147,167,214,.55)',KRW:'rgba(139,184,168,.6)'};
+  const BAR_COLORS={JPY:'var(--p)',USD:'rgb(var(--p-rgb) / .6)',KRW:'rgb(var(--p-rgb) / .35)'};
   const catMap={},totals={},counts={};
   expenses.forEach(e=>{
     const cat=e.category||'その他',c=normCurrency(e.currency);
@@ -2887,7 +2953,7 @@ function renderCatSummary(){
   catOrder.forEach(cat=>{
     html+=`<div style="background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <span style="font-size:14px;font-weight:900;color:var(--text);">${catLabelHTML(cat)}</span>
+        <span class="catsum-name" style="${catStyle(cat)}">${catLabelHTML(cat)}</span>
         <span style="font-size:12px;font-weight:800;color:var(--accent-bluegray);">${counts[cat]}件</span>
       </div>`;
     CURRENCIES.forEach(c=>{
@@ -2905,9 +2971,9 @@ function renderCatSummary(){
     html+=`</div>`;
   });
   // 合計行
-  html+=`<div style="background:rgba(140,147,170,.10);border:1px solid rgba(140,147,170,.25);border-radius:14px;padding:12px 14px;">
+  html+=`<div style="background:rgb(var(--p-rgb) / .07);border-radius:14px;padding:12px 14px;">
     <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px;">合計</div>`;
-  CURRENCIES.forEach(c=>{if(totals[c.code]>0)html+=`<div style="font-size:15px;font-weight:900;color:var(--accent-bluegray);">${fmtPlain(c.code,totals[c.code])}</div>`;});
+  CURRENCIES.forEach(c=>{if(totals[c.code]>0)html+=`<div style="font-family:var(--round);font-size:16px;font-weight:800;color:var(--p);">${fmtPlain(c.code,totals[c.code])}</div>`;});
   html+=`</div></div>`;
   el.innerHTML=html;
 }
