@@ -2191,11 +2191,21 @@ function toggleSettled(key,amount,btn){
   }
 }
 const memberName=i=>safe(members[i]||`メンバー${i+1}`);
-const AV_COLORS=['#8a76d8','#e48aa8','#5aa9c9','#e3a04f','#5fb08e','#c47bd1','#7d93e0','#d9776a','#4fae9f','#b39a3c'];
+const AV_COLORS=['#8a76d8','#e48aa8','#4f8fd6','#e3a04f','#4fae7f','#c47bd1','#d9776a','#3fa9a8','#b39a3c','#7d93e0'];
+// 名前ごとに決まった色（ここに書いた人はどの旅行でも同じ色）
+const FIXED_AV_COLORS={'あやか':'#4fae7f','みさき':'#4f8fd6','みゆ':'#8a76d8'};
+// 固定色の人はその色、ほかの人は固定色とかぶらない色を順番に割り当てる
+function memberColors(){
+  const names=members.map(m=>String(m||'').trim());
+  const taken=new Set(names.map(n=>FIXED_AV_COLORS[n]).filter(Boolean));
+  const free=AV_COLORS.filter(c=>!taken.has(c));
+  let k=0;
+  return names.map(n=>FIXED_AV_COLORS[n]||free[(k++)%free.length]);
+}
 function avatar(i){
   const name=String(members[i]||`メンバー${i+1}`);
   const ch=[...name.trim()][0]||'?';
-  return`<span class="av" style="--a:${AV_COLORS[i%AV_COLORS.length]}">${esc(ch)}</span>`;
+  return`<span class="av" style="--a:${memberColors()[i]}">${esc(ch)}</span>`;
 }
 function calculateSettlement(){
   const txs=getSettlementTx();
