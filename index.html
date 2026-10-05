@@ -26,15 +26,12 @@
   --danger:#d98c8c;
   --shadow:0 10px 24px rgba(28,25,41,.08);
   --radius:18px;
-  --footer-h:84px;
+  --footer-h:64px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);min-height:100vh;padding:14px;padding-bottom:calc(var(--footer-h) + env(safe-area-inset-bottom) + 28px);color:var(--text);}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);min-height:100vh;padding:10px;padding-bottom:calc(var(--footer-h) + env(safe-area-inset-bottom) + 16px);color:var(--text);}
 .container{max-width:820px;margin:0 auto;}
 
-.header{background:var(--surface);padding:24px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;text-align:center;border:1px solid var(--line);}
-.header h1{color:var(--text);font-size:24px;margin-bottom:8px;letter-spacing:.2px;}
-.header p{color:var(--muted);font-size:13px;}
 
 .action-buttons{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
 .action-buttons button,.action-buttons label{padding:14px 16px;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;transition:transform .05s ease,filter .2s ease,opacity .2s;min-height:50px;}
@@ -45,14 +42,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .card{background:var(--surface);padding:0;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;border:1px solid var(--line);overflow:hidden;}
 .card-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:18px 20px;cursor:pointer;user-select:none;gap:10px;
+  padding:14px 16px;cursor:pointer;user-select:none;gap:10px;
   border-bottom:3px solid var(--accent);
 }
 .card-header:hover{background:var(--surface-2);}
-.card-header h2{color:var(--text);font-size:18px;margin:0;border:none;padding:0;flex:1;}
+.card-header h2{color:var(--text);font-size:16px;margin:0;border:none;padding:0;flex:1;}
 .card-chevron{font-size:14px;color:var(--muted);transition:transform .25s ease;flex-shrink:0;line-height:1;}
 .card-chevron.open{transform:rotate(90deg);}
-.card-body{padding:20px;display:block;}
+.card-body{padding:16px;display:block;}
 .card-body.collapsed{display:none;}
 /* メンバーボタン群 */
 .member-btn-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;}
@@ -67,9 +64,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 }
 @media(max-width:400px){.member-btn-grid{grid-template-columns:1fr;}}
 
-.input-group{margin-bottom:14px;}
+.input-group{margin-bottom:12px;}
 .input-group label{display:block;margin-bottom:6px;color:var(--muted);font-size:14px;font-weight:800;}
-.input-group input,.input-group select,.input-group textarea{width:100%;padding:16px;border:2px solid var(--line);border-radius:14px;font-size:16px;transition:border-color .2s,box-shadow .2s;background:var(--surface-2);color:var(--text);}
+.input-group input,.input-group select,.input-group textarea{width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:14px;font-size:16px;transition:border-color .2s,box-shadow .2s;background:var(--surface-2);color:var(--text);}
 .input-group input:focus,.input-group select:focus,.input-group textarea:focus{outline:none;border-color:rgba(140,147,170,.65);box-shadow:0 0 0 4px rgba(140,147,170,.12);}
 
 .member-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
@@ -306,17 +303,27 @@ input[type="file"]{display:none;}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--footer-h) + env(safe-area-inset-bottom) + 10px);background:rgba(78,74,99,.92);color:white;padding:10px 18px;border-radius:999px;font-weight:900;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:1200;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(-2px);}
 
+/* top bar & tabs */
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:-10px -10px 12px;padding:10px;padding-top:calc(10px + env(safe-area-inset-top));background:var(--bg);}
+.topbar-trip{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);font-size:15px;font-weight:900;box-shadow:var(--shadow);}
+.topbar-total{flex-shrink:0;text-align:right;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 12px;box-shadow:var(--shadow);}
+.topbar-total .t{font-size:10px;color:var(--muted);font-weight:800;}
+.topbar-total .v{font-size:16px;color:var(--text);font-weight:900;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.tabbar{display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom));}
+.tab-btn{flex:1;max-width:160px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;border:none;border-radius:14px;background:transparent;color:var(--muted);font-size:11px;font-weight:900;cursor:pointer;}
+.tab-btn .ic{font-size:20px;line-height:1.1;filter:grayscale(1);opacity:.6;}
+.tab-btn.active{background:rgba(185,179,204,.22);color:var(--text);}
+.tab-btn.active .ic{filter:none;opacity:1;}
+.settings-grid{display:grid !important;grid-template-columns:1fr 1fr;gap:8px;}
+.settings-grid button{min-height:44px;padding:10px 8px;}
+.settings-note{margin:0 0 8px;padding:10px 14px;background:rgba(139,184,168,.12);border:1px solid rgba(139,184,168,.35);border-radius:14px;font-size:12px;color:#3d6b5c;line-height:1.6;}
+.settings-disclaimer{text-align:center;padding:8px 12px 4px;font-size:11px;color:var(--muted);line-height:1.7;}
+
 /* footer */
 .footer-bar{position:fixed;left:0;right:0;bottom:0;z-index:999;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);}
-.footer-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;padding-bottom:calc(10px + env(safe-area-inset-bottom));}
-.footer-actions{display:flex;gap:10px;flex:1;}
-.footer-actions button{flex:1;padding:12px 10px;border-radius:16px;border:1px solid rgba(140,147,170,.22);background:rgba(140,147,170,.12);color:var(--text);font-weight:900;min-height:46px;cursor:pointer;}
-.footer-actions button:active{transform:scale(.99);}
-.footer-mini{width:160px;background:rgba(185,179,204,.14);border:1px solid rgba(185,179,204,.30);border-radius:16px;padding:10px 12px;text-align:right;}
-.footer-mini .t{font-size:11px;color:var(--muted);font-weight:800;}
-.footer-mini .v{font-size:14px;color:var(--text);font-weight:900;margin-top:2px;}
 
-@media(max-width:560px){.footer-inner{flex-direction:column;align-items:stretch;}.footer-mini{width:100%;text-align:left;}}
 @media(max-width:480px){.summary-grid{grid-template-columns:1fr;}.stat-row{grid-template-columns:42px 1fr 1fr 1fr;}.stat-val{font-size:12px;}}
 </style>
 
@@ -352,74 +359,17 @@ input[type="file"]{display:none;}
 
 <div id="appShell" style="display:none;">
 
-  <!-- ヘッダー -->
-
-  <div class="header">
-    <h1>💰 割り勘アプリ</h1>
-    <p>グループの支出を簡単管理</p>
-    <div class="action-buttons" style="flex-direction:row;">
-      <button class="btn-export" onclick="exportData()" style="flex:1;">📥 保存</button>
-      <label for="importFile" class="btn-import" style="flex:1;">📤 読込</label>
-      <button class="btn-export" onclick="location.reload()" style="flex:1;">🔄 更新</button>
-      <input type="file" id="importFile" accept=".json" onchange="importData(event)">
-    </div>
-    <div id="rateDisplay" class="rate-display">
-      <div class="rate-row">
-        <span id="rateText">💱 為替レート: $1 = ¥150.00</span>
-        <!-- ★変更ボタン → ブルーグレー -->
-        <button class="btn-bluegray-sm" onclick="toggleRateEdit()">変更</button>
-      </div>
-      <div class="rate-edit-row" id="rateEditRow">
-        <input type="number" id="rateInput" min="1" max="1000" step="0.01" placeholder="例: 150">
-        <button class="rate-save-btn" onclick="applyRate()">確定</button>
-        <button class="rate-cancel-btn" onclick="cancelRateEdit()">キャンセル</button>
-      </div>
+  <!-- 上部バー -->
+  <div class="topbar">
+    <select id="tripSelect" class="topbar-trip" onchange="selectTrip(this.value)" aria-label="旅行を選択"></select>
+    <div class="topbar-total">
+      <div class="t">合計（円換算）</div>
+      <div class="v" id="footerTotal">¥0</div>
     </div>
   </div>
 
-  <div class="card" id="tripCard">
-    <div class="card-header">
-      <h2>🧳 旅行データ</h2>
-      <button class="btn-bluegray-sm" onclick="signOut()">ログアウト</button>
-    </div>
-    <div class="card-body">
-      <div class="input-group">
-        <label>ログイン中</label>
-        <div class="info-text" id="loginUserText" style="margin-bottom:10px;">-</div>
-      </div>
-      <div class="input-group">
-        <label>旅行を選択</label>
-        <select id="tripSelect" onchange="selectTrip(this.value)"></select>
-      </div>
-      <div class="action-buttons" style="flex-direction:row;flex-wrap:wrap;">
-        <button class="btn-export" onclick="createTripPrompt()" style="flex:1;min-width:150px;">＋ 新しい旅行</button>
-        <button class="btn-export" onclick="renameCurrentTripPrompt()" style="flex:1;min-width:150px;">✏️ 名前変更</button>
-        <button class="btn-export" onclick="showShareCodePrompt()" style="flex:1;min-width:150px;">🔗 共有コード</button>
-        <button class="btn-export" onclick="joinTripByCodePrompt()" style="flex:1;min-width:150px;">🔑 コード参加</button>
-        <button class="btn-export" onclick="saveTripDataNow(true)" style="flex:1;min-width:150px;">☁️ 同期</button>
-      </div>
-      <p class="small" id="syncStatus" style="margin-top:10px;line-height:1.7;">変更は自動保存されます。</p>
-    </div>
-  </div>
-
-  <!-- メンバー -->
-
-  <div class="card">
-    <div class="card-header" onclick="toggleCard('cardMember',this)">
-      <h2>👥 メンバー</h2>
-      <button id="toggleMemberBtn" onclick="event.stopPropagation();toggleMemberEdit()" class="btn-bluegray-sm">編集</button>
-      <span class="card-chevron open">▶</span>
-    </div>
-    <div class="card-body" id="cardMember">
-      <div id="memberDisplay" style="padding:6px 0;"><p style="color:var(--muted);">メンバーを設定してください</p></div>
-      <div id="memberEdit" style="display:none;">
-        <div class="member-list" id="memberList"></div>
-        <button class="btn btn-add" onclick="addMember()">+ 追加</button>
-        <button class="btn btn-primary" onclick="saveMemberEdit()" style="margin-top:10px;">確定</button>
-      </div>
-    </div>
-  </div>
-
+  <!-- ===== 記録タブ ===== -->
+  <div class="tab-panel" data-tab="add">
   <!-- 支払い記録 -->
 
   <div class="card">
@@ -447,6 +397,10 @@ input[type="file"]{display:none;}
     </div>
   </div>
 
+  </div>
+
+  <!-- ===== 一覧タブ ===== -->
+  <div class="tab-panel" data-tab="list">
   <!-- 支払い一覧 -->
 
   <div class="card">
@@ -471,6 +425,10 @@ input[type="file"]{display:none;}
     </div>
   </div>
 
+  </div>
+
+  <!-- ===== 精算タブ ===== -->
+  <div class="tab-panel" data-tab="settle">
   <!-- 精算 -->
 
   <div class="card">
@@ -502,9 +460,9 @@ input[type="file"]{display:none;}
   <div class="card">
     <div class="card-header" onclick="toggleCard('cardPersonal',this)" id="sec-personal">
       <h2>👤 個人別まとめ</h2>
-      <span class="card-chevron open">▶</span>
+      <span class="card-chevron">▶</span>
     </div>
-    <div class="card-body" id="cardPersonal">
+    <div class="card-body collapsed" id="cardPersonal">
       <div class="info-text" style="line-height:1.8;margin-bottom:14px;">
         <b>受取</b> ＝ 立て替えた分を他の人から回収するお金<br>
         <b>支払</b> ＝ 他の人に立て替えてもらった分を返すお金<br>
@@ -516,6 +474,73 @@ input[type="file"]{display:none;}
       <div class="member-btn-grid" id="focusMemberBtns"></div>
       <div id="personalDetails" style="margin-top:4px;"><p style="text-align:center;color:var(--muted);padding:10px;">メンバーを選ぶと明細が表示されます</p></div>
     </div>
+  </div>
+  </div>
+
+  <!-- ===== 設定タブ ===== -->
+  <div class="tab-panel" data-tab="settings">
+  <div class="card" id="tripCard">
+    <div class="card-header">
+      <h2>🧳 旅行データ</h2>
+      <button class="btn-bluegray-sm" onclick="signOut()">ログアウト</button>
+    </div>
+    <div class="card-body">
+      <p class="small" style="margin-bottom:4px;">ログイン中: <span id="loginUserText">-</span></p>
+      <div class="action-buttons settings-grid">
+        <button class="btn-export" onclick="createTripPrompt()">＋ 新しい旅行</button>
+        <button class="btn-export" onclick="renameCurrentTripPrompt()">✏️ 名前変更</button>
+        <button class="btn-export" onclick="showShareCodePrompt()">🔗 共有コード</button>
+        <button class="btn-export" onclick="joinTripByCodePrompt()">🔑 コード参加</button>
+        <button class="btn-export" onclick="saveTripDataNow(true)">☁️ 同期</button>
+        <button class="btn-export" onclick="location.reload()">🔄 再読み込み</button>
+      </div>
+      <p class="small" id="syncStatus" style="margin-top:10px;line-height:1.7;">変更は自動保存されます。</p>
+    </div>
+  </div>
+
+  <!-- メンバー -->
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard('cardMember',this)">
+      <h2>👥 メンバー</h2>
+      <button id="toggleMemberBtn" onclick="event.stopPropagation();toggleMemberEdit()" class="btn-bluegray-sm">編集</button>
+      <span class="card-chevron open">▶</span>
+    </div>
+    <div class="card-body" id="cardMember">
+      <div id="memberDisplay" style="padding:6px 0;"><p style="color:var(--muted);">メンバーを設定してください</p></div>
+      <div id="memberEdit" style="display:none;">
+        <div class="member-list" id="memberList"></div>
+        <button class="btn btn-add" onclick="addMember()">+ 追加</button>
+        <button class="btn btn-primary" onclick="saveMemberEdit()" style="margin-top:10px;">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h2>💱 為替・バックアップ</h2></div>
+    <div class="card-body">
+      <div id="rateDisplay" class="rate-display">
+        <div class="rate-row">
+          <span id="rateText">💱 為替レート: $1 = ¥150.00</span>
+          <!-- ★変更ボタン → ブルーグレー -->
+          <button class="btn-bluegray-sm" onclick="toggleRateEdit()">変更</button>
+        </div>
+        <div class="rate-edit-row" id="rateEditRow">
+          <input type="number" id="rateInput" min="1" max="1000" step="0.01" placeholder="例: 150">
+          <button class="rate-save-btn" onclick="applyRate()">確定</button>
+          <button class="rate-cancel-btn" onclick="cancelRateEdit()">キャンセル</button>
+        </div>
+      </div>
+      <div class="action-buttons" style="flex-direction:row;">
+        <button class="btn-export" onclick="exportData()" style="flex:1;">📥 JSON保存</button>
+        <label for="importFile" class="btn-import" style="flex:1;">📤 JSON読込</label>
+        <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-note">💾 データはログインアカウントに保存されます。必要に応じてJSONバックアップもできます。</div>
+  <div class="settings-disclaimer">⚠️ このアプリは個人が趣味で開発したものです。計算結果の正確性は保証されません。<br>実際の精算はご自身でご確認のうえ、自己責任でご利用ください。</div>
   </div>
 </div>
 </div>
@@ -529,12 +554,6 @@ input[type="file"]{display:none;}
   </div>
 </div>
 
-<div style="margin:0 16px 8px;padding:10px 14px;background:rgba(139,184,168,.12);border:1px solid rgba(139,184,168,.35);border-radius:14px;font-size:12px;color:#3d6b5c;line-height:1.6;">
-  💾 データはログインアカウントに保存されます。必要に応じてJSONバックアップもできます。
-</div>
-<div style="text-align:center;padding:12px 20px 24px;font-size:11px;color:var(--muted);line-height:1.7;">
-  ⚠️ このアプリは個人が趣味で開発したものです。計算結果の正確性は保証されません。<br>実際の精算はご自身でご確認のうえ、自己責任でご利用ください。
-</div>
 
 <div class="cat-modal-overlay" id="catModalOverlay" onclick="if(event.target===this)closeCatManager()">
   <div class="cat-modal">
@@ -558,19 +577,12 @@ input[type="file"]{display:none;}
   </div>
 </div>
 
-<div class="footer-bar" id="footerBar" style="display:none;">
-  <div class="footer-inner">
-    <div class="footer-actions">
-      <button onclick="scrollToSection('sec-expense')">＋ 支出</button>
-      <button onclick="scrollToSection('sec-settlement')">精算</button>
-      <button onclick="scrollToSection('sec-personal')">個人</button>
-    </div>
-    <div class="footer-mini">
-      <div class="t">概算合計（USD→JPY）</div>
-      <div class="v" id="footerTotal">¥0</div>
-    </div>
-  </div>
-</div>
+<nav class="footer-bar tabbar" id="footerBar" style="display:none;">
+  <button class="tab-btn" data-tab="add" onclick="showTab('add')"><span class="ic">➕</span><span>記録</span></button>
+  <button class="tab-btn" data-tab="list" onclick="showTab('list')"><span class="ic">📝</span><span>一覧</span></button>
+  <button class="tab-btn" data-tab="settle" onclick="showTab('settle')"><span class="ic">💳</span><span>精算</span></button>
+  <button class="tab-btn" data-tab="settings" onclick="showTab('settings')"><span class="ic">⚙️</span><span>設定</span></button>
+</nav>
 
 <script>
 /* ===== 定数 ===== */
@@ -677,7 +689,8 @@ async function showLoggedIn(){
   const app=document.getElementById('appShell');
   if(app)app.style.display='block';
   const footer=document.getElementById('footerBar');
-  if(footer)footer.style.display='block';
+  if(footer)footer.style.display='flex';
+  restoreTab();
 
   const loginText=document.getElementById('loginUserText');
   if(loginText)loginText.textContent=currentUser?.email||'-';
@@ -1003,7 +1016,7 @@ function initAppViews(){
   renderCatPicker();
   updateDisplay();
   const app=document.getElementById('appShell');if(app)app.style.display='block';
-  const footer=document.getElementById('footerBar');if(footer)footer.style.display='block';
+  const footer=document.getElementById('footerBar');if(footer)footer.style.display='flex';
 }
 
 /* ===== メンバー ===== */
@@ -1209,7 +1222,7 @@ function startEditExpense(i){
   document.getElementById('expenseName').value=e.name;document.getElementById('expenseAmount').value=e.amount;document.getElementById('paidBy').value=String(e.paidBy);
   setCurrency(e.currency);setCatPicker(e.category||DEFAULT_CATEGORIES[0]);members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
   document.getElementById('expenseSubmitBtn').textContent='更新';document.getElementById('expenseEditBanner').classList.add('visible');
-  scrollToSection('sec-expense');showToast('✏️ 支払いを編集中');
+  showTab('add');showToast('✏️ 支払いを編集中');
 }
 function updateExpense(){
   const name=sanitize(document.getElementById('expenseName').value).trim(),amt=validateNum(document.getElementById('expenseAmount').value),paidBy=parseInt(document.getElementById('paidBy').value);
@@ -1610,6 +1623,20 @@ function toggleCard(bodyId, headerEl){
   const isOpen=!body.classList.contains('collapsed');
   body.classList.toggle('collapsed', isOpen);
   if(chevron) chevron.classList.toggle('open', !isOpen);
+}
+
+/* ===== タブ ===== */
+function showTab(name){
+  if(!document.querySelector(`.tab-panel[data-tab="${name}"]`))name='add';
+  document.querySelectorAll('.tab-panel').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));
+  window.scrollTo(0,0);
+  try{localStorage.setItem('warikanTab',name);}catch(e){}
+}
+function restoreTab(){
+  let name='add';
+  try{name=localStorage.getItem('warikanTab')||'add';}catch(e){}
+  showTab(name);
 }
 
 /* ===== スクロール ===== */
