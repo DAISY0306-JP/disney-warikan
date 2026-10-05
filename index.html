@@ -902,7 +902,7 @@ body::before{background:var(--bg-plain);}
  * 余白を「中身（透明なブロック）」として最後に置き、確実にスクロール範囲に含める。
  */
 .container{padding-bottom:0 !important;}
-.container::after{content:'';display:block;height:calc(var(--footer-h) + env(safe-area-inset-bottom) + 20px);}
+.container::after{content:'';display:block;height:calc(var(--tabbar-h,calc(var(--footer-h) + env(safe-area-inset-bottom))) + 48px);}
 
 /* ===== ログイン画面 ===== */
 .auth-shell{padding-top:12px;}
@@ -931,6 +931,41 @@ body::before{background:var(--bg-plain);}
 .cat-group-label{display:inline-flex;align-items:center;}
 
 .cat-group-label .ci{color:var(--cf,currentColor);width:16px;height:16px;}
+
+/* カテゴリ管理シート */
+.cat-modal{padding:8px 16px calc(16px + env(safe-area-inset-bottom));background:#fff;}
+.cat-modal .sheet-grip{margin:4px auto 10px;}
+.cat-modal-title{font-family:var(--round);font-size:16px;font-weight:800;text-align:center;margin-bottom:14px;}
+.cat-manage-list{gap:6px;}
+.cat-manage-item{gap:6px;background:#f7f7f9;border:none;padding:8px 8px 8px 10px;}
+.cat-manage-ic{flex-shrink:0;display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--cb);color:var(--cf);}
+.cat-manage-ic .ci{width:18px;height:18px;margin:0;}
+.cat-manage-item input{min-width:0;font-weight:700;padding:6px 4px;}
+.cat-manage-item input:focus{background:#fff;border-radius:8px;box-shadow:0 0 0 2px rgb(var(--p-rgb) / .25);}
+.cat-manage-move,.cat-manage-del{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;gap:2px;height:32px;min-width:32px;padding:0 6px;border-radius:10px;border:1px solid #e6e6ea;background:#fff;color:#8a8594;cursor:pointer;}
+.cat-manage-move svg,.cat-manage-del svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.cat-manage-move:disabled{opacity:.3;}
+.cat-manage-del{color:var(--pay);border-color:rgba(229,72,77,.25);background:#fff5f5;}
+.cat-manage-del span{font-size:11px;font-weight:700;white-space:nowrap;}
+.cat-add-input{border:1.5px solid #e6e6ea;background:#fff;}
+.cat-add-input:focus{border-color:var(--p);}
+.cat-add-btn{background:rgb(var(--p-rgb) / .1);color:var(--p);font-weight:800;}
+.cat-done-btn{margin-top:14px;}
+
+/* アイコンを選ぶ */
+.cat-manage-ic{position:relative;border:none;cursor:pointer;padding:0;}
+.cat-ic-edit{position:absolute;right:-3px;bottom:-3px;width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--cf,#999);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M15 5l4 4L8 20H4v-4z'/%3E%3C/svg%3E");background-size:8px;background-repeat:no-repeat;background-position:center;}
+.cat-add-row{align-items:center;}
+.cat-add-row .cat-manage-ic{width:44px;height:44px;border-radius:12px;}
+.cat-add-row .cat-manage-ic .ci{width:20px;height:20px;}
+.icon-pick-overlay{z-index:2100;}
+.icon-pick-overlay .sheet{background:#fff;}
+.icon-pick-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;}
+.icon-pick{aspect-ratio:1;display:grid;place-items:center;border-radius:12px;border:1.5px solid transparent;background:var(--cb);color:var(--cf);cursor:pointer;padding:0;}
+.icon-pick .ci{width:22px;height:22px;margin:0;}
+.icon-pick.active{border-color:var(--cf);box-shadow:0 0 0 2px #fff inset;}
+.icon-pick-cancel{width:100%;margin-top:14px;min-height:46px;border-radius:14px;border:1.5px solid #e6e6ea;background:#fff;color:#6b6676;font-weight:700;font-size:14px;cursor:pointer;}
 </style>
 
 <link rel="apple-touch-icon" href="data:image/png;base64,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">
@@ -1212,13 +1247,15 @@ body::before{background:var(--bg-plain);}
 
 <div class="cat-modal-overlay" id="catModalOverlay" onclick="if(event.target===this)closeCatManager()">
   <div class="cat-modal">
-    <div class="cat-modal-title">📂 カテゴリを管理</div>
+    <div class="sheet-grip"></div>
+    <div class="cat-modal-title">カテゴリを管理</div>
     <div class="cat-manage-list" id="catManageList"></div>
     <div class="cat-add-row">
-      <input type="text" id="catAddInput" class="cat-add-input" placeholder="新しいカテゴリ名" maxlength="30">
+      <button type="button" class="cat-manage-ic" id="catAddIcon" aria-label="アイコンを選ぶ" onclick="pickNewCatIcon()"></button>
+      <input type="text" id="catAddInput" class="cat-add-input" placeholder="新しいカテゴリ名" maxlength="30" oninput="renderNewCatIcon()">
       <button class="cat-add-btn" onclick="addCatFromModal()">追加</button>
     </div>
-    <button onclick="closeCatManager()" style="width:100%;margin-top:14px;padding:14px;border:none;border-radius:16px;background:rgba(140,147,170,.18);color:var(--text);font-weight:900;font-size:15px;cursor:pointer;">完了</button>
+    <button class="btn btn-primary cat-done-btn" onclick="closeCatManager()">完了</button>
   </div>
 </div>
 <div class="sheet-overlay" id="tripSheet" onclick="if(event.target===this)closeTripSheet()">
@@ -1230,6 +1267,14 @@ body::before{background:var(--bg-plain);}
       <button onclick="closeTripSheet();createTripPrompt()">＋ 新しい旅行</button>
       <button onclick="closeTripSheet();joinTripByCodePrompt()">コードで参加</button>
     </div>
+  </div>
+</div>
+<div class="sheet-overlay icon-pick-overlay" id="iconPickOverlay" onclick="if(event.target===this)closeIconPicker()">
+  <div class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title" id="iconPickTitle">アイコンを選ぶ</div>
+    <div class="icon-pick-grid" id="iconPickGrid"></div>
+    <button class="icon-pick-cancel" onclick="closeIconPicker()">キャンセル</button>
   </div>
 </div>
 <div class="dlg-overlay" id="dlgOverlay">
@@ -1269,7 +1314,8 @@ const MAX_MEMBERS=10,MAX_EXPENSES=100,MAX_DEPOSITS=100,MAX_FILE_SIZE=1024*1024,M
 /* ===== 状態 ===== */
 let members=[],expenses=[],deposits=[];
 let currentCurrency='JPY',currentDepositCurrency='JPY';
-let settled={}; // 精算済みの送金: { 'from>to>通貨': 済にしたときの金額 }
+let settled={};
+let catIcons={}; // カテゴリごとに選んだアイコン { カテゴリ名: アイコン名 } // 精算済みの送金: { 'from>to>通貨': 済にしたときの金額 }
 let exchangeRate=150,krwRate=11,settlementMode='direct'; // exchangeRate: $1あたりの円 / krwRate: ₩100あたりの円
 const CURRENCIES=[
   {code:'JPY',label:'円',sym:'¥',dec:0},
@@ -1311,7 +1357,29 @@ const CAT_ICON_PATHS={
   park:'<path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.3L12 15.5 7.1 18l.9-5.3-4-3.9 5.5-.8z"/>',
   other:'<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>',
   tag:'<path d="M3 12V4h8l10 10-8 8z"/><path d="M7.5 7.5h.01" stroke-width="2.8"/>',
+  bus:'<rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16M7 21v-3M17 21v-3"/><path d="M8 14.5h.01M16 14.5h.01" stroke-width="2.6"/>',
+  ship:'<path d="M3 15l2 5h14l2-5-9-3z"/><path d="M6 13V8h12v5M12 8V4"/>',
+  bike:'<circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-8h5l3 8M10 8h-2M12 16l3-8"/>',
+  pin:'<path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>',
+  camera:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/>',
+  drink:'<path d="M6 3h12l-1.5 7a4.5 4.5 0 0 1-9 0z"/><path d="M12 14.5V20M8.5 20h7"/>',
+  sweets:'<path d="M8 11l4 10 4-10"/><path d="M7 11a5 5 0 0 1 10 0z"/>',
+  onsen:'<path d="M4 15c0 3.3 3.6 5 8 5s8-1.7 8-5"/><path d="M4 15h16"/><path d="M8.5 11c-1-1.5 1-2.5 0-4M12 11c-1-1.5 1-2.5 0-4M15.5 11c-1-1.5 1-2.5 0-4"/>',
+  mountain:'<path d="M2 20l7-12 4 6 3-4 6 10z"/><path d="M7.5 10.5l1.5 1.5 1.5-1.5"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  umbrella:'<path d="M3 12a9 9 0 0 1 18 0z"/><path d="M12 12v7a2 2 0 0 0 4 0M12 3V2"/>',
+  medical:'<rect x="4" y="6" width="16" height="14" rx="2"/><path d="M9 6V4h6v2M12 10v6M9 13h6"/>',
+  wifi:'<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><path d="M12 19.5h.01" stroke-width="3"/>',
+  cart:'<path d="M3 4h2.5l2.2 11h10.3l2-8H6.5"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/>',
+  shirt:'<path d="M8 3l-5 3 2 4 3-1.5V21h8V8.5l3 1.5 2-4-5-3a4 4 0 0 1-8 0z"/>',
+  cosme:'<rect x="8" y="12" width="8" height="9" rx="1.5"/><path d="M9.5 12V7l5-3v8"/>',
+  music:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+  coin:'<circle cx="12" cy="12" r="9"/><path d="M8.5 7.5l3.5 5 3.5-5M12 12.5V17M9 12.5h6M9 15h6"/>',
 };
+// 選べるアイコンの並び（30個）
+const CAT_ICON_KEYS=['meal','cafe','drink','sweets','bag','cart','gift','shirt','cosme',
+  'plane','train','bus','car','ship','bike','bed','onsen','ticket','park','music','camera','pin',
+  'mountain','sun','umbrella','medical','wifi','coin','tag','other'];
 const CAT_ICON_RULES=[
   [/食|ランチ|ディナー|朝ご|昼ご|夕ご|ご飯|ごはん|レストラン|飲/,'meal'],[/航空|飛行|フライト|空港/,'plane'],
   [/交通|電車|鉄道|バス|地下鉄|タクシー|移動/,'train'],[/レンタカー|車|ガソリン|駐車|高速/,'car'],
@@ -1320,11 +1388,18 @@ const CAT_ICON_RULES=[
 ];
 // 先頭の絵文字を外した表示名
 const catText=cat=>String(cat).replace(/^[\p{Extended_Pictographic}️‍\s]+/u,'').trim()||String(cat);
-function catIconSvg(cat){
-  const name=catText(cat),hit=CAT_ICON_RULES.find(([re])=>re.test(name));
-  return`<svg class="ci" viewBox="0 0 24 24" aria-hidden="true">${CAT_ICON_PATHS[hit?hit[1]:'tag']}</svg>`;
-}
+// カテゴリ名から自動で選ぶアイコン
+function autoIconKey(cat){const hit=CAT_ICON_RULES.find(([re])=>re.test(catText(cat)));return hit?hit[1]:'tag';}
+// 自分で選んだアイコン（catIcons）があればそれ、なければ自動
+const catIconKey=cat=>{const k=(typeof catIcons==='object'&&catIcons)?catIcons[cat]:null;return CAT_ICON_PATHS[k]?k:autoIconKey(cat);};
+const iconSvgByKey=k=>`<svg class="ci" viewBox="0 0 24 24" aria-hidden="true">${CAT_ICON_PATHS[k]||CAT_ICON_PATHS.tag}</svg>`;
+function catIconSvg(cat){return iconSvgByKey(catIconKey(cat));}
 const catLabelHTML=cat=>`${catIconSvg(cat)}${safe(catText(cat))}`;
+function normalizeCatIcons(o){
+  const out={};
+  if(o&&typeof o==='object')Object.keys(o).sort().forEach(k=>{const v=o[k];const name=sanitize(k);if(name&&typeof v==='string'&&CAT_ICON_PATHS[v])out[name]=v;});
+  return out;
+}
 function normalizeCats(arr){
   let c=Array.isArray(arr)?arr.map(x=>sanitize(x)).filter(Boolean):[];
   if(!c.length||(c.length===1&&c[0]===FALLBACK_CAT))c=[...DEFAULT_CATEGORIES];
@@ -1435,7 +1510,7 @@ async function showLoggedIn(){
   startRemotePolling();
 }
 function getDataObject(){
-  return {members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,categories:_cats,updatedAt:new Date().toISOString()};
+  return {members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,catIcons,categories:_cats,updatedAt:new Date().toISOString()};
 }
 function getBlankTripData(){
   return {
@@ -1447,6 +1522,7 @@ function getBlankTripData(){
     settled:{},
     settlementMode:'direct',
     categories:[...DEFAULT_CATEGORIES],
+    catIcons:{},
     updatedAt:new Date().toISOString()
   };
 }
@@ -1456,6 +1532,7 @@ function applyDataObject(raw){
   members=nd.members;expenses=nd.expenses;deposits=nd.deposits;exchangeRate=nd.exchangeRate;krwRate=nd.krwRate;settled=nd.settled;
   if(raw.settlementMode==='min'||raw.settlementMode==='direct')settlementMode=raw.settlementMode;
   _cats=normalizeCats(raw.categories);
+  catIcons=normalizeCatIcons(raw.catIcons);
   if(!_cats.includes(_currentCat))_currentCat=_cats.includes(FALLBACK_CAT)?FALLBACK_CAT:_cats[0];
 }
 async function loadTrips(){
@@ -1728,7 +1805,7 @@ async function selectTrip(id){
  * data_json.rev を版番号として使い、保存時に「自分が最後に読んだ版」のときだけ上書きする。
  * 他の人が先に保存していた場合は、最新を取り直して支払い1件ごとにマージしてから保存し直す。
  */
-const SYNC_KEYS=['members','expenses','deposits','exchangeRate','krwRate','settlementMode','settled','categories'];
+const SYNC_KEYS=['members','expenses','deposits','exchangeRate','krwRate','settlementMode','settled','catIcons','categories'];
 let _syncBase=null,_syncRev=null,_saving=false,_saveAgain=false,_pollTimer=null;
 const sameJSON=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const revOf=raw=>Number.isFinite(raw?.rev)?raw.rev:null;
@@ -1738,7 +1815,7 @@ function toSyncView(raw){
   const nd=normalizeData(raw);
   const cats=normalizeCats(raw.categories);
   const sm=(raw.settlementMode==='min'||raw.settlementMode==='direct')?raw.settlementMode:settlementMode;
-  return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,settlementMode:sm,settled:nd.settled,categories:cats};
+  return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,settlementMode:sm,settled:nd.settled,catIcons:normalizeCatIcons(raw.catIcons),categories:cats};
 }
 function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);}
 // base: 最後にサーバーと一致していた状態 / local: 自分の今の状態 / server: サーバーの最新
@@ -2320,7 +2397,7 @@ function resetCatPicker(){
 
 /* カテゴリ管理モーダル */
 function openCatManager(){
-  renderCatManageList();
+  renderCatManageList();_newCatIcon=null;renderNewCatIcon();
   document.getElementById('catModalOverlay').classList.add('active');
 }
 function closeCatManager(){
@@ -2334,46 +2411,83 @@ function renderCatManageList(){
     const usedCount=expenses.filter(e=>(e.category||'その他')===cat).length;
     const div=document.createElement('div');div.className='cat-manage-item';
     // 上下ボタン
-    const upBtn=document.createElement('button');upBtn.className='cat-manage-move';upBtn.textContent='↑';upBtn.disabled=i===0;
+    const upBtn=document.createElement('button');upBtn.className='cat-manage-move';upBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>';upBtn.setAttribute('aria-label','上へ');upBtn.disabled=i===0;
     upBtn.onclick=()=>{[_cats[i-1],_cats[i]]=[_cats[i],_cats[i-1]];renderCatManageList();};
-    const downBtn=document.createElement('button');downBtn.className='cat-manage-move';downBtn.textContent='↓';downBtn.disabled=i===_cats.length-1;
+    const downBtn=document.createElement('button');downBtn.className='cat-manage-move';downBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';downBtn.setAttribute('aria-label','下へ');downBtn.disabled=i===_cats.length-1;
     downBtn.onclick=()=>{[_cats[i],_cats[i+1]]=[_cats[i+1],_cats[i]];renderCatManageList();};
     // 名前入力
-    const inp=document.createElement('input');inp.type='text';inp.value=cat;inp.maxLength=30;
+    // カテゴリのアイコン（カテゴリの色の丸）
+    const ic=document.createElement('button');ic.type='button';ic.className='cat-manage-ic';ic.setAttribute('aria-label','アイコンを選ぶ');ic.style.cssText=catStyle(cat);ic.innerHTML=catIconSvg(cat)+'<i class="cat-ic-edit"></i>';
+    ic.onclick=()=>openIconPicker(_cats[i],k=>{catIcons[_cats[i]]=k;saveData();renderCatManageList();renderCatPicker();updateDisplay();});
+    // 名前入力（先頭の絵文字は表示しない。名前を書き換えたときだけ保存し直す）
+    const inp=document.createElement('input');inp.type='text';inp.value=catText(cat);inp.maxLength=30;
+    inp.oninput=()=>{const v=inp.value.trim()||cat;ic.style.cssText=catStyle(v);ic.innerHTML=(catIcons[cat]?catIconSvg(cat):iconSvgByKey(autoIconKey(v)))+'<i class="cat-ic-edit"></i>';};
     inp.onchange=e=>{
       const newVal=e.target.value.trim();
-      if(!newVal){showToast('⚠ 空にはできません');inp.value=cat;return;}
+      if(!newVal){showToast('⚠ 空にはできません');inp.value=catText(cat);return;}
+      if(newVal===catText(cat))return;
+      if(_cats.includes(newVal)){showToast('⚠ 同じ名前のカテゴリがあります');inp.value=catText(cat);return;}
       expenses.forEach(ex=>{if(ex.category===_cats[i])ex.category=newVal;});
       if(_currentCat===_cats[i])_currentCat=newVal;
+      if(catIcons[_cats[i]]){catIcons[newVal]=catIcons[_cats[i]];delete catIcons[_cats[i]];}
       _cats[i]=newVal;saveData();
     };
     // 削除ボタン（使用中なら警告付き）
     const del=document.createElement('button');del.className='cat-manage-del';
-    del.textContent=usedCount>0?`削除(${usedCount}件)`:'削除';
+    del.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'+(usedCount>0?`<span>${usedCount}件</span>`:'');del.setAttribute('aria-label','削除');
     del.onclick=async()=>{
       if(_cats.length<=1){showToast('⚠ 最低1つ必要です');return;}
       if(usedCount>0){
-        const ok=await openConfirm('カテゴリを削除',`「${cat}」は${usedCount}件の支出で使用中です。削除すると「その他」に変更されます。`);
+        const ok=await openConfirm('カテゴリを削除',`「${catText(cat)}」は${usedCount}件の支出で使用中です。削除すると「その他」に変更されます。`);
         if(!ok)return;
         expenses.forEach(ex=>{if(ex.category===cat)ex.category='その他';});
         if(!_cats.includes('その他')&&!_cats.filter((_,j)=>j!==i).includes('その他')){}
         saveData();
       }
+      delete catIcons[cat];
       _cats.splice(i,1);
       if(_currentCat===cat)_currentCat=_cats[0];
       renderCatManageList();
     };
-    div.appendChild(upBtn);div.appendChild(downBtn);div.appendChild(inp);div.appendChild(del);
+    div.appendChild(ic);div.appendChild(inp);div.appendChild(upBtn);div.appendChild(downBtn);div.appendChild(del);
     list.appendChild(div);
   });
 }
+let _newCatIcon=null;
+function renderNewCatIcon(){
+  const b=document.getElementById('catAddIcon');if(!b)return;
+  const v=document.getElementById('catAddInput').value.trim()||'新しいカテゴリ';
+  b.style.cssText=catStyle(v);
+  b.innerHTML=iconSvgByKey(_newCatIcon||autoIconKey(v))+'<i class="cat-ic-edit"></i>';
+}
+function pickNewCatIcon(){
+  const v=document.getElementById('catAddInput').value.trim()||'新しいカテゴリ';
+  openIconPicker(v,k=>{_newCatIcon=k;renderNewCatIcon();},_newCatIcon||autoIconKey(v));
+}
+/* ===== アイコンを選ぶシート ===== */
+let _iconPickCb=null;
+function openIconPicker(cat,cb,current){
+  _iconPickCb=cb;
+  const cur=current||catIconKey(cat);
+  document.getElementById('iconPickTitle').textContent=`「${catText(cat)}」のアイコン`;
+  const grid=document.getElementById('iconPickGrid');grid.style.cssText=catStyle(cat);
+  grid.innerHTML=CAT_ICON_KEYS.map(k=>`<button type="button" class="icon-pick${k===cur?' active':''}" onclick="chooseIcon('${k}')">${iconSvgByKey(k)}</button>`).join('');
+  document.getElementById('iconPickOverlay').classList.add('active');
+}
+function chooseIcon(k){
+  document.getElementById('iconPickOverlay').classList.remove('active');
+  const cb=_iconPickCb;_iconPickCb=null;if(cb)cb(k);
+}
+function closeIconPicker(){document.getElementById('iconPickOverlay').classList.remove('active');_iconPickCb=null;}
 function addCatFromModal(){
   const inp=document.getElementById('catAddInput');
   const val=inp.value.trim();
   if(!val){showToast('⚠ カテゴリ名を入力してください');return;}
   if(_cats.includes(val)){showToast('⚠ 既に存在します');return;}
   _cats.push(val);inp.value='';
-  renderCatManageList();showToast(`✅ 「${val}」を追加しました`);
+  if(_newCatIcon)catIcons[val]=_newCatIcon;
+  _newCatIcon=null;renderNewCatIcon();saveData();
+  renderCatManageList();renderCatPicker();showToast(`✅ 「${val}」を追加しました`);
 }
 
 /* ===== 支出 CRUD ===== */
@@ -2831,7 +2945,7 @@ function loadData(){
 
 /* ===== エクスポート・インポート ===== */
 function exportData(){
-  const d={members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,categories:_cats,exportDate:new Date().toISOString()};
+  const d={members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,catIcons,categories:_cats,exportDate:new Date().toISOString()};
   const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');
   a.href=u;a.download='warikan_'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(u);
 }
@@ -2897,7 +3011,14 @@ function showTab(name){
   if(name==='add')renderCatPicker(); // 選択中のカテゴリが見える位置にスクロール
   try{localStorage.setItem('warikanTab',name);}catch(e){}
 }
+// 下のタブの実際の高さ（ホームバー分を含む）を測り、中身の最後の余白に使う
+function syncTabbarHeight(){
+  const f=document.getElementById('footerBar');
+  if(f&&f.offsetHeight)document.documentElement.style.setProperty('--tabbar-h',f.offsetHeight+'px');
+}
+window.addEventListener('resize',syncTabbarHeight);
 function restoreTab(){
+  requestAnimationFrame(syncTabbarHeight);
   let name='add';
   try{name=localStorage.getItem('warikanTab')||'add';}catch(e){}
   showTab(name);
