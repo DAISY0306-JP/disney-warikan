@@ -1974,8 +1974,8 @@ function qrSVG(text){
   for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;
   return`<svg viewBox="0 0 ${n+m*2} ${n+m*2}" shape-rendering="crispEdges" aria-label="招待用のQRコード"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#2e2a3d"/></svg>`;
 }
-// ゲート番号は、みんなが出会った 2013 年から
-const BP_GATE='13';
+// ゲート番号は旅行ごとにランダム（同じ旅行ではいつも同じ番号）
+function gateNo(){let h=7;for(const ch of String(currentTripId||'trip'))h=(h*37+ch.charCodeAt(0))>>>0;return String(3+h%146);}
 async function openBoardingPass(){
   const card=document.getElementById('bpCard');
   const f=AIRPORT[tripMeta.from],t=AIRPORT[tripMeta.to];
@@ -1988,7 +1988,7 @@ async function openBoardingPass(){
     <div class="bp-trip">${esc(trip?.name||'旅行')}</div>
     <div class="bp-grid">
       ${cell('FLIGHT',flightNo(tripMeta))}${cell('DATE',tripDatesText(tripMeta)||'未定')}
-      ${cell('GATE',BP_GATE)}${cell('SEAT',me>=0?seatNo(me):'—')}
+      ${cell('GATE',gateNo())}${cell('SEAT',me>=0?seatNo(me):'—')}
     </div>
     <div class="bp-pax">${members.map((m,i)=>`<span>${avatar(i)}${memberName(i)}<em>${seatNo(i)}</em></span>`).join('')}</div>
     <div class="bp-perf"></div>
@@ -3533,23 +3533,63 @@ function setSettlementMode(mode){
   updateSettCards();updateDisplay();
 }
 
-// 今の精算のしかたでの送金リスト（通貨ごと）
+// 済にした送金（実際に払ったお金）
+function paidTransfers(){
+  const out=[];
+  Object.keys(settled||{}).forEach(k=>{
+    const m=/^(\d+)>(\d+)>(JPY|USD|KRW)$/.exec(k),v=Number(settled[k]);
+    if(m&&+m[1]<members.length&&+m[2]<members.length&&isFinite(v)&&v>0)out.push({from:+m[1],to:+m[2],code:m[3],amount:v,paid:true});
+  });
+  return out;
+}
+// A→B→C→A のように一周する送金は、いちばん小さい額だけ全員分を減らして消す
+function cancelCycles(tx){
+  tx=tx.map(t=>({...t}));
+  for(let guard=0;guard<100;guard++){
+    const live=tx.filter(t=>t.amount>0.01);
+    let cycle=null;
+    const dfs=(node,path,seen)=>{
+      for(const e of live.filter(t=>t.from===node)){
+        const k=path.findIndex(p=>p.from===e.to);
+        if(k>=0){cycle=[...path.slice(k),e];return true;}
+        if(seen.has(e.to))continue;
+        seen.add(e.to);
+        if(dfs(e.to,[...path,e],seen))return true;
+      }
+      return false;
+    };
+    for(const t of live){if(dfs(t.from,[],new Set([t.from])))break;}
+    if(!cycle)break;
+    const m=Math.min(...cycle.map(e=>e.amount));
+    cycle.forEach(e=>e.amount-=m);
+  }
+  return tx.filter(t=>t.amount>0.01);
+}
+// 送金リスト（通貨ごと）。済にした送金はそのまま「済」として残し、
+// 残りの貸し借りだけを今の精算のしかたで計算する（しかたを変えても済は消えない）
 function getSettlementTx(){
+  const paid=paidTransfers();
   const mat=settlementMode==='direct'?buildDirectMatrix(false):null;
   const bal=mat?null:calculateExpenseBalances();
-  const list=[];
-  CURRENCIES.forEach(c=>{
-    (mat?netMatrix(mat[c.code]):calculateSettlementTransactions(bal[c.code])).forEach(t=>list.push({...t,code:c.code}));
+  paid.forEach(p=>{
+    if(mat)mat[p.code][p.to][p.from]+=p.amount; // 払った分は、受け取った人から払った人への借りとして相殺
+    else{bal[p.code][p.from]+=p.amount;bal[p.code][p.to]-=p.amount;}
   });
-  return list;
+  const list=[...paid];
+  CURRENCIES.forEach(c=>{
+    const hasPaid=paid.some(p=>p.code===c.code);
+    // 払った分を相殺すると、人をまたいでぐるっと回る送金ができることがあるので、その分を打ち消す
+    (mat?(hasPaid?cancelCycles(netMatrix(mat[c.code])):netMatrix(mat[c.code])):calculateSettlementTransactions(bal[c.code]))
+      .filter(t=>roundCur(c.code,t.amount)>0)
+      .forEach(t=>list.push({...t,code:c.code,paid:false}));
+  });
+  // 人の順に並べる（済にしても行の位置があまり動かないように）
+  const ci=c=>CURRENCIES.findIndex(x=>x.code===c);
+  return list.sort((a,b)=>a.from-b.from||a.to-b.to||ci(a.code)-ci(b.code)||(b.paid-a.paid));
 }
 const settleKey=t=>`${t.from}>${t.to}>${t.code}`;
-// done: 済 / changed: 済にした後で金額が変わった / open: まだ
-function settleState(t){
-  const v=settled[settleKey(t)];
-  if(v==null)return'open';
-  return roundCur(t.code,v)===roundCur(t.code,t.amount)?'done':'changed';
-}
+// done: 済 / open: まだ
+const settleState=t=>t.paid?'done':'open';
 /* ===== 済にしたとき、チケットの半券がパキッと切り離される ===== */
 function prepareTear(btn){
   const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -3569,19 +3609,19 @@ function prepareTear(btn){
   return piece;
 }
 function playTear(key,piece){
-  const item=document.querySelector(`.settlement-item[data-key="${CSS.escape(key)}"]`);
+  const item=document.querySelector(`.settlement-item.done[data-key="${CSS.escape(key)}"]`);
   if(item){item.classList.add('tearing');setTimeout(()=>item.classList.remove('tearing'),950);}
   document.body.appendChild(piece);
   requestAnimationFrame(()=>piece.classList.add('go'));
   try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}
   setTimeout(()=>piece.remove(),1000);
 }
-function toggleSettled(key,amount,btn){
+function toggleSettled(key,amount,btn,isPaid){
   let tear=null;
-  if(settled[key]!=null&&roundCur(key.split('>')[2],settled[key])===roundCur(key.split('>')[2],amount)){
+  if(isPaid){
     delete settled[key];showToast('「済」を取り消しました');
   }else{
-    settled[key]=amount;showToast('✅ 済にしました');
+    settled[key]=(Number(settled[key])||0)+amount;showToast('✅ 済にしました');
     tear=btn?prepareTear(btn):null;
   }
   saveData();updateDisplay();renderMeBar();
@@ -3634,11 +3674,10 @@ function calculateSettlement(){
   const doneCount=txs.filter(t=>settleState(t)==='done').length;
   const rows=txs.map(t=>{
     const st=settleState(t),key=settleKey(t);
-    const note=st==='changed'?`<div class="sett-note">${iconSvg('warn')}金額が変わりました（${fmtPlain(t.code,settled[key])} で済にしていました）</div>`:'';
     return`<div class="settlement-item${st==='done'?' done':''}" data-key="${key}">
-      <div class="settlement-text">${avatar(t.from)}${memberName(t.from)} → ${avatar(t.to)}${memberName(t.to)}${note}</div>
+      <div class="settlement-text">${avatar(t.from)}${memberName(t.from)} → ${avatar(t.to)}${memberName(t.to)}</div>
       <div class="settlement-amount">${fmtMoney(t.code,t.amount)}</div>
-      <span class="sett-stub"><button class="sett-done-btn" onclick="toggleSettled('${key}',${t.amount},this)">${st==='done'?'✓ 済':'済にする'}</button></span>
+      <span class="sett-stub"><button class="sett-done-btn" onclick="toggleSettled('${key}',${t.amount},this,${st==='done'})">${st==='done'?'✓ 済':'済にする'}</button></span>
     </div>`;
   }).join('');
   const pass=document.getElementById('tripPass');
