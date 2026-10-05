@@ -1796,6 +1796,7 @@ function dayLabel(date){
   if(!tripMeta.start)return fmtDay(date);
   const diff=Math.round((new Date(date+'T00:00:00')-new Date(tripMeta.start+'T00:00:00'))/86400000);
   if(diff<0)return`出発前 · ${fmtDay(date)}`;
+  if(tripMeta.end&&date>tripMeta.end)return`帰国後 · ${fmtDay(date)}`;
   return`Day ${diff+1} · ${fmtDay(date)}`;
 }
 function renderPassRoute(){
