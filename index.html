@@ -1053,6 +1053,12 @@ body::before{background:var(--bg-plain);}
 .policy-body ul{padding-left:1.2em;}
 .policy-body li{margin:2px 0;}
 .policy-date{margin-top:12px;color:#8a8594;font-size:12px;}
+
+/* iPhone の Safari が文字を勝手に大きくする（文字サイズの自動調整）のを止める */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+/* 「◯◯さんの精算」は搭乗券と色を分け、白いカード＋左のアクセントにする */
+.sett-summary{background:#fff !important;border:1.5px solid #ececf0;border-left:4px solid var(--p);border-radius:16px;}
+.sett-summary-title{color:var(--p);}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
