@@ -1332,8 +1332,14 @@ function applyRate(){
 // 無料の為替API（APIキー不要）。1つ目が失敗したら2つ目を試す
 const RATE_SOURCES=[
   {url:'https://api.frankfurter.dev/v1/latest?base=JPY&symbols=USD,KRW',pick:j=>({rates:j.rates,date:j.date})},
-  {url:'https://open.er-api.com/v6/latest/JPY',pick:j=>({rates:j.rates,date:(j.time_last_update_utc||'').slice(5,16)})},
+  {url:'https://open.er-api.com/v6/latest/JPY',pick:j=>({rates:j.rates,date:j.time_last_update_unix?localDateStr(new Date(j.time_last_update_unix*1000)):''})},
 ];
+// レートは平日に1日1回発表されるので、発表日を曜日つきで示す
+function rateDateNote(date){
+  if(!isDateStr(date))return'✅ 最新レートを取得しました';
+  const when=date===todayStr()?'今日':fmtDay(date);
+  return`✅ ${when}発表の最新レートです（平日に1日1回更新。土日・祝日や今日の発表前は、直前の平日の分になります）`;
+}
 async function fetchLatestRates(){
   const btn=document.getElementById('rateFetchBtn');
   if(btn){btn.disabled=true;btn.textContent='取得中...';}
@@ -1352,7 +1358,7 @@ async function fetchLatestRates(){
         const stamp=new Date().toISOString();
         try{localStorage.setItem('rateUpdatedAt',stamp);}catch(e){}
         saveData();showRateDisplay();cancelRateEdit();updateDisplay();
-        const t=document.getElementById('rateUpdatedText');if(t)t.textContent=`最新レートを取得しました${date?`（${date} 時点）`:''}`;
+        const t=document.getElementById('rateUpdatedText');if(t)t.textContent=rateDateNote(date);
         showToast('💱 最新レートに更新しました');
         return;
       }catch(e){console.warn('rate fetch failed',src.url,e);}
