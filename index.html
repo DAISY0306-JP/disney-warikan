@@ -1170,6 +1170,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .an-lbl{font-size:10px;font-weight:800;letter-spacing:.16em;color:#ff9a9d;}
 .an-msg{font-size:13.5px;font-weight:700;line-height:1.5;}
 @media (prefers-reduced-motion:reduce){.announce{transition:opacity .2s;}.announce.show .an-ic svg,.tab-badge.show,.pc-time::before{animation:none;}.tab-panel[data-tab="list"] .expense-item.is-fresh{animation:none;background:rgb(var(--p-rgb) / .08) !important;}}
+
+/* 項目名のアイコン */
+.item-ic{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-right:7px;border-radius:8px;background:rgb(var(--p-rgb) / .09);vertical-align:-6px;}
+.item-ic .ci{width:15px;height:15px;margin:0;stroke:var(--p);}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -3079,7 +3083,23 @@ function addCatFromModal(){
 /* ===== 支出 CRUD ===== */
 /* ===== よく使う項目 ===== */
 // この旅行で何度も使った項目（回数→新しさの順）。少ないときは定番で埋める
-const QUICK_PRESETS=[['タクシー','train'],['コンビニ','bag'],['カフェ','cafe'],['ランチ','meal'],['夕食','meal'],['地下鉄','train']];
+// [項目名, 入れたいカテゴリのアイコン（前から順に探す）]
+const QUICK_PRESETS=[['タクシー',['car','train']],['コンビニ',['cart','bag']],['カフェ',['cafe','meal']],['ランチ',['meal']],['夕食',['meal']],['地下鉄',['train']]];
+// 項目名から選ぶアイコン（当てはまらなければカテゴリのアイコン）
+const ITEM_ICON_RULES=[
+  [/カフェ|コーヒー|珈琲|スタバ|ラテ|ティー|紅茶/,'cafe'],[/ケーキ|スイーツ|アイス|パン|ドーナツ|かき氷|ホットク|デザート/,'sweets'],
+  [/ビール|酒|ワイン|バー|居酒屋|マッコリ|ソジュ|飲み会/,'drink'],
+  [/朝食|朝ご|昼食|ランチ|夕食|夜ご|ディナー|ご飯|ごはん|焼肉|サムギョプサル|ラーメン|寿司|レストラン|食堂|弁当/,'meal'],
+  [/タクシー|レンタカー|ガソリン|駐車|Uber|カカオT/i,'car'],[/バス|リムジン/,'bus'],[/電車|地下鉄|鉄道|新幹線|AREX|メトロ|T-?money|交通カード/i,'train'],
+  [/飛行機|航空|フライト|空港/,'plane'],[/船|フェリー|クルーズ/,'ship'],[/自転車|サイクル/,'bike'],
+  [/ホテル|宿|旅館|民泊|Airbnb/i,'bed'],[/温泉|サウナ|スパ|チムジルバン|マッサージ|エステ/,'onsen'],
+  [/コンビニ|スーパー|マート|ドラッグ/,'cart'],[/お土産|土産|ギフト|プレゼント/,'gift'],[/服|洋服|靴|帽子/,'shirt'],
+  [/コスメ|化粧|オリーブヤング|パック/,'cosme'],[/チケット|入場|ツアー|パス/,'ticket'],[/写真|プリクラ|カメラ|フォト/,'camera'],
+  [/カラオケ|ライブ|コンサート|ミュージカル/,'music'],[/薬|病院|クリニック/,'medical'],[/Wi-?Fi|SIM|ワイファイ/i,'wifi'],
+  [/両替|ATM|手数料/i,'coin'],[/傘/,'umbrella'],[/山|ハイキング|登山/,'mountain'],[/ビーチ|海/,'sun'],
+];
+function itemIconKey(name,cat){const n=String(name||'');const hit=ITEM_ICON_RULES.find(([re])=>re.test(n));return hit?hit[1]:catIconKey(cat||FALLBACK_CAT);}
+const itemIconSvg=(name,cat)=>iconSvgByKey(itemIconKey(name,cat));
 function quickItems(){
   const map=new Map();
   expenses.forEach((e,i)=>{
@@ -3088,10 +3108,11 @@ function quickItems(){
     cur.count++;cur.last=i;cur.e=e;map.set(key,cur);
   });
   const list=[...map.values()].sort((a,b)=>b.count-a.count||b.last-a.last).slice(0,8);
-  for(const[name,icon]of QUICK_PRESETS){
+  for(const[name,icons]of QUICK_PRESETS){
     if(list.length>=6)break;
     if(map.has(name))continue;
-    const cat=_cats.find(c=>catIconKey(c)===icon)||FALLBACK_CAT;
+    let cat=FALLBACK_CAT;
+    for(const ic of icons){const c=_cats.find(c=>catIconKey(c)===ic);if(c){cat=c;break;}}
     list.push({name,count:0,e:null,cat});
   }
   return list;
@@ -3101,7 +3122,7 @@ function renderQuickRow(){
   if(editingExpenseIdx>=0||!members.some(m=>String(m||'').trim())){row.innerHTML='';row.style.display='none';return;}
   const items=quickItems();
   row.style.display=items.length?'flex':'none';
-  row.innerHTML=items.map((q,k)=>`<button type="button" class="quick-chip${q.count?'':' preset'}" onclick="applyQuick(${k})">${catIconSvg(q.e?(q.e.category||FALLBACK_CAT):q.cat)}${safe(q.name)}</button>`).join('');
+  row.innerHTML=items.map((q,k)=>`<button type="button" class="quick-chip${q.count?'':' preset'}" onclick="applyQuick(${k})">${itemIconSvg(q.name,q.e?q.e.category:q.cat)}${safe(q.name)}</button>`).join('');
   row._items=items;
 }
 // 金額以外（項目名・カテゴリ・通貨・割り勘する人）を前回と同じにする
@@ -3213,7 +3234,7 @@ function displayExpenses(){
       const who=e.participants.length===members.length?`全員（${e.participants.length}人）`:parts;
       const isEd=editingExpenseIdx===i,fresh=_fresh.get(e.id);
       const freshTag=fresh?`<span class="fresh-tag">${fresh==='new'?'NEW':'更新'}</span>`:'';
-      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip"><b>${paid}</b> が支払い</span><span class="expense-meta-chip">${who}</span><span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button></div></div>`;
+      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}<span class="item-ic">${itemIconSvg(e.name,e.category)}</span>${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip"><b>${paid}</b> が支払い</span><span class="expense-meta-chip">${who}</span><span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button></div></div>`;
     });
     html+='</div></div>';
   });
