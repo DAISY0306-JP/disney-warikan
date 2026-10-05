@@ -381,6 +381,31 @@ input[type="file"]{display:none;}
 .setup-hint button{display:block;width:100%;margin-top:8px;padding:10px;border-radius:12px;border:1px solid rgba(139,184,168,.5);background:rgba(139,184,168,.35);color:var(--text);font-weight:900;font-size:14px;cursor:pointer;}
 .expense-body{cursor:pointer;}
 
+/* 精算タブ */
+.sett-summary{padding:14px;margin-bottom:14px;background:rgba(139,184,168,.12);border:1px solid rgba(139,184,168,.4);border-radius:16px;}
+.sett-summary-title{font-size:13px;font-weight:900;color:var(--muted);margin-bottom:6px;}
+.sett-line{font-size:16px;font-weight:800;color:var(--text);line-height:1.6;padding:2px 0;}
+.sett-line .pay{color:#c06f6f;}
+.sett-line .recv{color:#4f8f78;}
+.sett-line.done{opacity:.5;text-decoration:line-through;}
+.sett-line .estimate,.settlement-amount .estimate{font-size:11px;font-weight:700;color:var(--muted);margin-left:2px;}
+.sett-empty{font-size:15px;font-weight:800;color:var(--text);}
+.sett-progress{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:900;color:var(--muted);margin:0 2px 8px;}
+.settlement-item.done{opacity:.55;}
+.settlement-item.done .settlement-amount{color:var(--muted);text-decoration:line-through;}
+.sett-done-btn{flex-shrink:0;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap;}
+.settlement-item.done .sett-done-btn{background:rgba(139,184,168,.35);border-color:rgba(139,184,168,.6);color:var(--text);}
+.sett-note{font-size:11px;font-weight:800;color:#b0853a;margin-top:2px;}
+.sett-mode-title{font-size:13px;font-weight:900;color:var(--muted);margin:16px 2px 8px;}
+.topbar-total .s{font-size:10px;color:var(--muted);font-weight:800;}
+/* カテゴリは1行で横にスクロール */
+.cat-row{flex-wrap:nowrap !important;}
+.cat-row .cat-picker{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1;min-width:0;}
+.cat-row .cat-picker::-webkit-scrollbar{display:none;}
+.cat-row .cat-btn{white-space:nowrap;flex-shrink:0;}
+.cat-row>label{flex-shrink:0;}
+.cat-edit-btn{flex-shrink:0;}
+
 /* top bar & tabs */
 .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:calc(-10px - env(safe-area-inset-top)) -10px 12px;padding:10px;padding-top:calc(10px + env(safe-area-inset-top));background:var(--bg);}
 .topbar-trip{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);font-size:15px;font-weight:900;box-shadow:var(--shadow);}
@@ -447,6 +472,7 @@ input[type="file"]{display:none;}
     <div class="topbar-total">
       <div class="t">合計（円換算）</div>
       <div class="v" id="footerTotal">¥0</div>
+      <div class="s" id="perPersonTotal"></div>
     </div>
   </div>
 
@@ -531,25 +557,27 @@ input[type="file"]{display:none;}
 
   <div class="card">
     <div class="card-header" onclick="toggleCard('cardSettlement',this)" id="sec-settlement">
-      <h2>💳 精算（支出のみ）</h2>
+      <h2>💳 精算</h2>
       <span class="card-chevron open">▶</span>
     </div>
     <div class="card-body" id="cardSettlement">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+    <div id="settSummary"></div>
+    <div id="settlementList"></div>
+    <div class="sett-mode-title">精算のしかた</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       <label class="sett-mode-card" id="settCard-direct">
         <input type="radio" name="settMode" value="direct" onchange="setSettlementMode('direct')" style="display:none;">
         <div class="sett-mode-icon">💳</div>
-        <div class="sett-mode-name">立替者へ直接</div>
-        <div class="sett-mode-desc">おすすめ</div>
+        <div class="sett-mode-name">払ってくれた人に返す</div>
+        <div class="sett-mode-desc">わかりやすい（おすすめ）</div>
       </label>
       <label class="sett-mode-card" id="settCard-min">
         <input type="radio" name="settMode" value="min" onchange="setSettlementMode('min')" style="display:none;">
         <div class="sett-mode-icon">🗜️</div>
-        <div class="sett-mode-name">最小精算</div>
-        <div class="sett-mode-desc">送金回数を圧縮</div>
+        <div class="sett-mode-name">送金回数を減らす</div>
+        <div class="sett-mode-desc">まとめて少ない回数に</div>
       </label>
     </div>
-    <div id="settlementList"></div>
     </div>
   </div>
 
@@ -557,7 +585,7 @@ input[type="file"]{display:none;}
 
   <div class="card">
     <div class="card-header" onclick="toggleCard('cardPersonal',this)" id="sec-personal">
-      <h2>👤 個人別まとめ</h2>
+      <h2>📋 くわしい内訳</h2>
       <span class="card-chevron">▶</span>
     </div>
     <div class="card-body collapsed" id="cardPersonal">
@@ -719,6 +747,7 @@ const MAX_MEMBERS=10,MAX_EXPENSES=100,MAX_DEPOSITS=100,MAX_FILE_SIZE=1024*1024,M
 /* ===== 状態 ===== */
 let members=[],expenses=[],deposits=[];
 let currentCurrency='JPY',currentDepositCurrency='JPY';
+let settled={}; // 精算済みの送金: { 'from>to>通貨': 済にしたときの金額 }
 let exchangeRate=150,krwRate=11,settlementMode='direct'; // exchangeRate: $1あたりの円 / krwRate: ₩100あたりの円
 const CURRENCIES=[
   {code:'JPY',label:'円',sym:'¥',dec:0},
@@ -729,8 +758,15 @@ const CUR=Object.fromEntries(CURRENCIES.map(c=>[c.code,c]));
 const normCurrency=c=>CUR[c]?c:'JPY';
 let editingExpenseIdx=-1,editingDepositIdx=-1;
 const DEFAULT_TRIP_NAME='NEW_TRIP';
-const DEFAULT_CATEGORIES=['その他'];
-let currentCategory=DEFAULT_CATEGORIES[0];
+const FALLBACK_CAT='その他';
+const DEFAULT_CATEGORIES=['🍽 食事','🚃 交通','🏨 宿泊','🎟 チケット','🛍 買い物',FALLBACK_CAT];
+let currentCategory=FALLBACK_CAT;
+// カテゴリ一覧を整える（「その他」だけの古い旅行には定番カテゴリを足す）
+function normalizeCats(arr){
+  let c=Array.isArray(arr)?arr.map(x=>sanitize(x)).filter(Boolean):[];
+  if(!c.length||(c.length===1&&c[0]===FALLBACK_CAT))c=[...DEFAULT_CATEGORIES];
+  return c;
+}
 let _lastDepositRefunds=null;
 
 
@@ -836,7 +872,7 @@ async function showLoggedIn(){
   startRemotePolling();
 }
 function getDataObject(){
-  return {members,expenses,deposits,exchangeRate,krwRate,settlementMode,categories:_cats,updatedAt:new Date().toISOString()};
+  return {members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,categories:_cats,updatedAt:new Date().toISOString()};
 }
 function getBlankTripData(){
   return {
@@ -845,6 +881,7 @@ function getBlankTripData(){
     deposits:[],
     exchangeRate:150,
     krwRate:11,
+    settled:{},
     settlementMode:'direct',
     categories:[...DEFAULT_CATEGORIES],
     updatedAt:new Date().toISOString()
@@ -853,11 +890,10 @@ function getBlankTripData(){
 function applyDataObject(raw){
   raw=raw||{};
   const nd=normalizeData(raw);
-  members=nd.members;expenses=nd.expenses;deposits=nd.deposits;exchangeRate=nd.exchangeRate;krwRate=nd.krwRate;
+  members=nd.members;expenses=nd.expenses;deposits=nd.deposits;exchangeRate=nd.exchangeRate;krwRate=nd.krwRate;settled=nd.settled;
   if(raw.settlementMode==='min'||raw.settlementMode==='direct')settlementMode=raw.settlementMode;
-  if(Array.isArray(raw.categories)&&raw.categories.length){_cats=raw.categories.map(x=>sanitize(x)).filter(Boolean);}
-  if(!_cats.length)_cats=[...DEFAULT_CATEGORIES];
-  if(!_cats.includes(_currentCat))_currentCat=_cats[0];
+  _cats=normalizeCats(raw.categories);
+  if(!_cats.includes(_currentCat))_currentCat=_cats.includes(FALLBACK_CAT)?FALLBACK_CAT:_cats[0];
 }
 async function loadTrips(){
   if(!sb||!currentUser)return;
@@ -1109,7 +1145,7 @@ async function selectTrip(id){
  * data_json.rev を版番号として使い、保存時に「自分が最後に読んだ版」のときだけ上書きする。
  * 他の人が先に保存していた場合は、最新を取り直して支払い1件ごとにマージしてから保存し直す。
  */
-const SYNC_KEYS=['members','expenses','deposits','exchangeRate','krwRate','settlementMode','categories'];
+const SYNC_KEYS=['members','expenses','deposits','exchangeRate','krwRate','settlementMode','settled','categories'];
 let _syncBase=null,_syncRev=null,_saving=false,_saveAgain=false,_pollTimer=null;
 const sameJSON=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const revOf=raw=>Number.isFinite(raw?.rev)?raw.rev:null;
@@ -1117,10 +1153,9 @@ const revOf=raw=>Number.isFinite(raw?.rev)?raw.rev:null;
 function toSyncView(raw){
   raw=raw||{};
   const nd=normalizeData(raw);
-  let cats=Array.isArray(raw.categories)?raw.categories.map(x=>sanitize(x)).filter(Boolean):[];
-  if(!cats.length)cats=[...DEFAULT_CATEGORIES];
+  const cats=normalizeCats(raw.categories);
   const sm=(raw.settlementMode==='min'||raw.settlementMode==='direct')?raw.settlementMode:settlementMode;
-  return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,settlementMode:sm,categories:cats};
+  return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,settlementMode:sm,settled:nd.settled,categories:cats};
 }
 function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);}
 // base: 最後にサーバーと一致していた状態 / local: 自分の今の状態 / server: サーバーの最新
@@ -1332,8 +1367,14 @@ function applyRate(){
 // 無料の為替API（APIキー不要）。1つ目が失敗したら2つ目を試す
 const RATE_SOURCES=[
   {url:'https://api.frankfurter.dev/v1/latest?base=JPY&symbols=USD,KRW',pick:j=>({rates:j.rates,date:j.date})},
-  {url:'https://open.er-api.com/v6/latest/JPY',pick:j=>({rates:j.rates,date:(j.time_last_update_utc||'').slice(5,16)})},
+  {url:'https://open.er-api.com/v6/latest/JPY',pick:j=>({rates:j.rates,date:j.time_last_update_unix?localDateStr(new Date(j.time_last_update_unix*1000)):''})},
 ];
+// レートは平日に1日1回発表されるので、発表日を曜日つきで示す
+function rateDateNote(date){
+  if(!isDateStr(date))return'✅ 最新レートを取得しました';
+  const when=date===todayStr()?'今日':fmtDay(date);
+  return`✅ ${when}発表の最新レートです（平日に1日1回更新。土日・祝日や今日の発表前は、直前の平日の分になります）`;
+}
 async function fetchLatestRates(){
   const btn=document.getElementById('rateFetchBtn');
   if(btn){btn.disabled=true;btn.textContent='取得中...';}
@@ -1352,7 +1393,7 @@ async function fetchLatestRates(){
         const stamp=new Date().toISOString();
         try{localStorage.setItem('rateUpdatedAt',stamp);}catch(e){}
         saveData();showRateDisplay();cancelRateEdit();updateDisplay();
-        const t=document.getElementById('rateUpdatedText');if(t)t.textContent=`最新レートを取得しました${date?`（${date} 時点）`:''}`;
+        const t=document.getElementById('rateUpdatedText');if(t)t.textContent=rateDateNote(date);
         showToast('💱 最新レートに更新しました');
         return;
       }catch(e){console.warn('rate fetch failed',src.url,e);}
@@ -1387,7 +1428,7 @@ function legacyExpenseId(e){
 
 /* ===== データ正規化 ===== */
 function normalizeData(input){
-  const out={members:[''],expenses:[],deposits:[],exchangeRate,krwRate};
+  const out={members:[''],expenses:[],deposits:[],exchangeRate,krwRate,settled:{}};
   if(!input||typeof input!=='object')return out;
   if(Array.isArray(input.members)){const m=input.members.slice(0,MAX_MEMBERS).map(x=>sanitize(x));out.members=m.length?m:[''];}
   const mLen=out.members.length;
@@ -1416,6 +1457,12 @@ function normalizeData(input){
   }
   const r=validateNum(input.exchangeRate,1,1000);if(r)out.exchangeRate=r;
   const rk=validateNum(input.krwRate,0.01,1000);if(rk)out.krwRate=rk;
+  if(input.settled&&typeof input.settled==='object'){
+    Object.keys(input.settled).sort().forEach(k=>{
+      const m=/^(\d+)>(\d+)>(JPY|USD|KRW)$/.exec(k),v=Number(input.settled[k]);
+      if(m&&Number(m[1])<mLen&&Number(m[2])<mLen&&isFinite(v)&&v>0)out.settled[k]=v;
+    });
+  }
   return out;
 }
 
@@ -1488,6 +1535,13 @@ async function removeMember(i){
     holder=clampInt(holder,0,members.length-1);from=clampInt(from,0,members.length-1);
     if(holder===null||from===null||holder===from)return null;return{...d,holder,from};
   }).filter(Boolean);
+  const shifted={};
+  Object.keys(settled).forEach(k=>{
+    const [f,t,c]=k.split('>');let a=Number(f),b=Number(t);
+    if(a===i||b===i)return;if(a>i)a--;if(b>i)b--;
+    shifted[`${a}>${b}>${c}`]=settled[k];
+  });
+  settled=shifted;
   updateMemberList();updateMemberSelects();updateFocusMemberSelect();saveData();updateDisplay();
 }
 function updateMemberName(i,v){members[i]=sanitize(v);updateMemberSelects();updateFocusMemberSelect();saveData();updateDisplay();}
@@ -1631,12 +1685,13 @@ function loadCats(){
   // Supabase版では、初期カテゴリは旅行データ内の categories を優先する。
   // 端末に残った古いlocalStorageカテゴリは、新規旅行へ自動反映しない。
   _cats=[...DEFAULT_CATEGORIES];
-  _currentCat=_cats[0];
+  _currentCat=FALLBACK_CAT;
 }
 
 function renderCatPicker(){
   const picker=document.getElementById('catPicker');
   if(!picker)return;
+  const prevScroll=picker.scrollLeft;
   picker.innerHTML='';
   _cats.forEach(cat=>{
     const btn=document.createElement('button');
@@ -1645,6 +1700,12 @@ function renderCatPicker(){
     btn.onclick=()=>{_currentCat=cat;renderCatPicker();};
     picker.appendChild(btn);
   });
+  picker.scrollLeft=prevScroll;
+  const a=picker.querySelector('.cat-btn.active');
+  if(a){
+    const left=a.offsetLeft-picker.offsetLeft,right=left+a.offsetWidth;
+    if(left<picker.scrollLeft||right>picker.scrollLeft+picker.clientWidth)picker.scrollLeft=Math.max(0,right-picker.clientWidth+8);
+  }
 }
 
 function setCatPicker(cat){
@@ -1730,7 +1791,7 @@ function startEditExpense(i){
   const e=expenses[i];editingExpenseIdx=i;
   document.getElementById('expenseName').value=e.name;document.getElementById('expenseAmount').value=e.amount;document.getElementById('paidBy').value=String(e.paidBy);
   document.getElementById('expenseDate').value=e.date||'';
-  setCurrency(e.currency);setCatPicker(e.category||DEFAULT_CATEGORIES[0]);members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
+  setCurrency(e.currency);setCatPicker(e.category||FALLBACK_CAT);members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
   document.getElementById('expenseSubmitBtn').textContent='更新';document.getElementById('expenseEditBanner').classList.add('visible');
   refreshFormHelpers();
   showTab('add');showToast('✏️ 支払いを編集中');
@@ -1750,7 +1811,7 @@ function clearExpenseForm(){
   if(editingExpenseIdx>=0)document.getElementById('expenseDate').value=todayStr();
   editingExpenseIdx=-1;document.getElementById('expenseName').value='';document.getElementById('expenseAmount').value='';document.getElementById('paidBy').value='';
   members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb)cb.checked=true;});
-  document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');resetCatPicker();setCatPicker(DEFAULT_CATEGORIES[0]);
+  document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');resetCatPicker();setCatPicker(FALLBACK_CAT);
   document.querySelectorAll('#cardExpense .invalid').forEach(el=>el.classList.remove('invalid'));
   document.getElementById('paidBy').value=String(defaultPayer());
   refreshFormHelpers();
@@ -1845,27 +1906,66 @@ function setSettlementMode(mode){
   updateSettCards();updateDisplay();
 }
 
-function calculateSettlement(){
+// 今の精算のしかたでの送金リスト（通貨ごと）
+function getSettlementTx(){
   const mat=settlementMode==='direct'?buildDirectMatrix(false):null;
   const bal=mat?null:calculateExpenseBalances();
-  // 通貨ごとの精算を from→to のキーでまとめる
-  const pairMap={},pairs=[];
+  const list=[];
   CURRENCIES.forEach(c=>{
-    const tx=mat?netMatrix(mat[c.code]):calculateSettlementTransactions(bal[c.code]);
-    tx.forEach(s=>{
-      const k=`${s.from}_${s.to}`;
-      if(!pairMap[k]){pairMap[k]={from:s.from,to:s.to,amts:[]};pairs.push(pairMap[k]);}
-      pairMap[k].amts.push(fmtMoney(c.code,s.amount));
-    });
+    (mat?netMatrix(mat[c.code]):calculateSettlementTransactions(bal[c.code])).forEach(t=>list.push({...t,code:c.code}));
   });
-  const html=pairs.length?pairs.map(p=>{
-    const [main,...rest]=p.amts;
-    const amtHtml=rest.length
-      ?`<div style="text-align:right"><div class="settlement-amount">${main}</div>${rest.map(a=>`<div class="settlement-amount-sub">${a}</div>`).join('')}</div>`
-      :`<div class="settlement-amount">${main}</div>`;
-    return `<div class="settlement-item"><div class="settlement-text">${safe(members[p.from])} → ${safe(members[p.to])}</div>${amtHtml}</div>`;
-  }).join(''):`<div class="small" style="text-align:center;color:var(--muted);padding:8px;">なし</div>`;
-  document.getElementById('settlementList').innerHTML=html;
+  return list;
+}
+const settleKey=t=>`${t.from}>${t.to}>${t.code}`;
+// done: 済 / changed: 済にした後で金額が変わった / open: まだ
+function settleState(t){
+  const v=settled[settleKey(t)];
+  if(v==null)return'open';
+  return roundCur(t.code,v)===roundCur(t.code,t.amount)?'done':'changed';
+}
+function toggleSettled(key,amount){
+  if(settled[key]!=null&&roundCur(key.split('>')[2],settled[key])===roundCur(key.split('>')[2],amount)){
+    delete settled[key];showToast('「済」を取り消しました');
+  }else{
+    settled[key]=amount;showToast('✅ 済にしました');
+  }
+  saveData();updateDisplay();renderMeBar();
+}
+const memberName=i=>safe(members[i]||`メンバー${i+1}`);
+function calculateSettlement(){
+  const txs=getSettlementTx();
+  // あなたの精算（ふつうの文で）
+  const me=getMeIdx(),sum=document.getElementById('settSummary');
+  if(sum){
+    if(me<0){
+      sum.innerHTML=`<div class="sett-summary"><div class="sett-empty">👤 <button class="mini-link" onclick="chooseMe()">自分を選ぶ</button> と、あなたが払う・受け取る金額がここに出ます</div></div>`;
+    }else{
+      const mine=txs.filter(t=>t.from===me||t.to===me);
+      const lines=mine.map(t=>{
+        const done=settleState(t)==='done';
+        const amt=fmtMoney(t.code,t.amount);
+        const text=t.from===me
+          ?`<b>${memberName(t.to)}</b> に <span class="pay">${amt}</span> 払う`
+          :`<b>${memberName(t.from)}</b> から <span class="recv">${amt}</span> 受け取る`;
+        return`<div class="sett-line${done?' done':''}">${done?'✓ ':''}${text}</div>`;
+      }).join('');
+      sum.innerHTML=`<div class="sett-summary"><div class="sett-summary-title">${memberName(me)}さんの精算</div>${lines||'<div class="sett-empty">精算はありません 🎉</div>'}</div>`;
+    }
+  }
+  // 全員の精算（済にできる）
+  const doneCount=txs.filter(t=>settleState(t)==='done').length;
+  const rows=txs.map(t=>{
+    const st=settleState(t),key=settleKey(t);
+    const note=st==='changed'?`<div class="sett-note">⚠ 金額が変わりました（${fmtPlain(t.code,settled[key])} で済にしていました）</div>`:'';
+    return`<div class="settlement-item${st==='done'?' done':''}">
+      <div class="settlement-text">${memberName(t.from)} → ${memberName(t.to)}${note}</div>
+      <div class="settlement-amount">${fmtMoney(t.code,t.amount)}</div>
+      <button class="sett-done-btn" onclick="toggleSettled('${key}',${t.amount})">${st==='done'?'✓ 済':'済にする'}</button>
+    </div>`;
+  }).join('');
+  document.getElementById('settlementList').innerHTML=txs.length
+    ?`<div class="sett-progress"><span>全員の精算</span><span>${doneCount} / ${txs.length} 件 済</span></div>${rows}`
+    :`<div class="small" style="text-align:center;color:var(--muted);padding:8px;">精算はありません</div>`;
   _lastDepositRefunds=null;
 }
 
@@ -1977,7 +2077,7 @@ async function chooseMe(){
   if(picked===null||picked===undefined)return;
   try{localStorage.setItem(meKey(),named[picked].m);}catch(e){}
   if(editingExpenseIdx<0)setPaidBy(named[picked].i);
-  renderMeBar();
+  renderMeBar();calculateSettlement();
 }
 function openMySettlement(){
   const me=getMeIdx();
@@ -1997,23 +2097,24 @@ function renderMeBar(){
     return;
   }
   if(btn)btn.textContent='変更';
-  // 残高 = 立て替えた額 − 自分の負担額（＋なら受け取り、−なら支払い）
-  const bal=calculateExpenseBalances();
-  const recv=[],pay=[];
-  CURRENCIES.forEach(c=>{
-    const v=roundCur(c.code,bal[c.code][me]||0);
-    if(v>0)recv.push(fmtPlain(c.code,v));else if(v<0)pay.push(fmtPlain(c.code,-v));
-  });
+  // 精算タブと同じ送金リストから、「済」にしていない分だけを合計する
+  const mine=getSettlementTx().filter(t=>t.from===me||t.to===me);
+  const pay={},recv={};
+  mine.filter(t=>settleState(t)!=='done').forEach(t=>{const m=t.from===me?pay:recv;m[t.code]=(m[t.code]||0)+t.amount;});
+  const fmtSum=m=>CURRENCIES.filter(c=>m[c.code]).map(c=>fmtPlain(c.code,m[c.code])).join(' + ');
   const parts=[];
-  if(recv.length)parts.push(`<span class="me-recv">${recv.join(' + ')} 受け取り</span>`);
-  if(pay.length)parts.push(`<span class="me-pay">${pay.join(' + ')} 支払い</span>`);
-  text.innerHTML=`👤 <b>${safe(members[me])}</b>：${parts.length?parts.join('・'):'精算なし'}`;
+  if(Object.keys(pay).length)parts.push(`<span class="me-pay">${fmtSum(pay)} 払う</span>`);
+  if(Object.keys(recv).length)parts.push(`<span class="me-recv">${fmtSum(recv)} 受け取る</span>`);
+  const status=parts.length?parts.join('・'):mine.length?'<span class="me-recv">✓ 精算完了</span>':'精算なし';
+  text.innerHTML=`👤 <b>${safe(members[me])}</b>：${status}`;
 }
 
 /* ===== フッター・メイン更新 ===== */
 function updateFooterTotal(){
   let yen=0;(expenses||[]).forEach(e=>{yen+=Number(e.amount||0)*yenPer(normCurrency(e.currency));});
   const ft=document.getElementById('footerTotal');if(ft)ft.textContent=fmtPlain('JPY',yen);
+  const n=members.filter(Boolean).length,pp=document.getElementById('perPersonTotal');
+  if(pp)pp.textContent=n>1&&yen>0?`1人あたり ${fmtPlain('JPY',yen/n)}`:'';
 }
 function renderCatSummary(){
   const el=document.getElementById('catSummaryContent');
@@ -2092,7 +2193,7 @@ function loadData(){
 
 /* ===== エクスポート・インポート ===== */
 function exportData(){
-  const d={members,expenses,deposits,exchangeRate,krwRate,settlementMode,categories:_cats,exportDate:new Date().toISOString()};
+  const d={members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,categories:_cats,exportDate:new Date().toISOString()};
   const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');
   a.href=u;a.download='warikan_'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(u);
 }
@@ -2155,6 +2256,7 @@ function showTab(name){
   document.querySelectorAll('.tab-panel').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));
   document.querySelectorAll('.tab-btn').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));
   window.scrollTo(0,0);
+  if(name==='add')renderCatPicker(); // 選択中のカテゴリが見える位置にスクロール
   try{localStorage.setItem('warikanTab',name);}catch(e){}
 }
 function restoreTab(){
