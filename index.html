@@ -1214,6 +1214,18 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .quick-chip{height:30px;}
 #splitPreview{margin-top:-5px !important;margin-bottom:7px !important;}
 #expenseSubmitBtn{height:46px !important;min-height:0 !important;}
+
+/* 支払った人・割り勘する人のチップを同じ大きさに */
+#paidByChips .chip,#participantsCheckbox .checkbox-item{box-sizing:border-box;height:34px !important;min-height:0 !important;display:inline-flex !important;align-items:center;padding:0 12px 0 5px !important;font-size:14px !important;line-height:1 !important;border-width:1.5px !important;}
+#participantsCheckbox .checkbox-item label{display:inline-flex;align-items:center;gap:5px;font-size:14px !important;line-height:1 !important;padding:0 !important;margin:0 !important;}
+#paidByChips .chip{gap:5px !important;}
+#participantsCheckbox .checkbox-item input{position:absolute !important;opacity:0 !important;width:1px !important;height:1px !important;margin:0 !important;pointer-events:none;}
+#paidByChips .chip .av,#participantsCheckbox .checkbox-item .av{width:24px !important;height:24px !important;}
+/* トーストのアイコン */
+.toast{display:inline-flex;align-items:center;gap:6px;}
+.toast .ti{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.toast .ti.ok{stroke:#5ee0a8;}.toast .ti.warn{stroke:#ff9a9d;}
+.sett-note .ti{width:13px;height:13px;vertical-align:-2px;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1900,7 +1912,7 @@ function closeInfoPopup(){
   const overlay=document.getElementById('infoOverlay');
   if(overlay)overlay.classList.remove('active');
 }
-function setSyncStatus(msg){const el=document.getElementById('syncStatus');if(el)el.textContent=msg||'';}
+function setSyncStatus(msg){const el=document.getElementById('syncStatus');if(el)el.textContent=splitIcon(msg||'').text;}
 function showLoggedOut(msg='ログインしてください'){
   const auth=document.getElementById('authShell');if(auth)auth.style.display='block';
   const app=document.getElementById('appShell');if(app)app.style.display='none';
@@ -2571,8 +2583,27 @@ function usedCurrencies(){
 }
 
 /* ===== トースト ===== */
+// 先頭の絵文字 → アイコン
+const TOAST_ICONS={
+  ok:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  warn:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5h.01"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  cloud:'<path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.5A3.8 3.8 0 0 1 17.5 18z"/>',
+  sync:'<path d="M20 11a8 8 0 0 0-14.3-4.3L4 9M4 4v5h5M4 13a8 8 0 0 0 14.3 4.3L20 15M20 20v-5h-5"/>',
+  copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/>',
+  party:'<path d="M4 20l5-14 9 9z"/><path d="M14 4v2M19 9h2M17 6l1.5-1.5"/>',
+};
+const EMOJI_ICON=[[/^✅\s*/,'ok'],[/^⚠️?\s*/,'warn'],[/^🗑️?\s*/,'trash'],[/^✏️?\s*/,'edit'],[/^☁️?\s*/,'cloud'],[/^🔄\s*/,'sync'],[/^📋\s*/,'copy'],[/^🎉\s*/,'party']];
+const iconSvg=(k,cls='ti')=>`<svg class="${cls} ${k}" viewBox="0 0 24 24" aria-hidden="true">${TOAST_ICONS[k]}</svg>`;
+function splitIcon(msg){
+  msg=String(msg??'');
+  for(const[re,k]of EMOJI_ICON)if(re.test(msg))return{k,text:msg.replace(re,'')};
+  return{k:null,text:msg};
+}
 function showToast(msg='OK'){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  const t=document.getElementById('toast'),{k,text}=splitIcon(msg);
+  t.innerHTML=(k?iconSvg(k):'')+`<span>${esc(text)}</span>`;t.classList.add('show');
   clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.remove('show'),1600);
 }
 
@@ -2652,9 +2683,9 @@ const RATE_SOURCES=[
 ];
 // レートは平日に1日1回発表されるので、発表日を曜日つきで示す
 function rateDateNote(date){
-  if(!isDateStr(date))return'✅ 最新レートを取得しました';
+  if(!isDateStr(date))return'最新レートを取得しました';
   const when=date===todayStr()?'今日':fmtDay(date);
-  return`✅ ${when}発表の最新レートです（平日に1日1回更新。土日・祝日や今日の発表前は、直前の平日の分になります）`;
+  return`${when}発表の最新レートです（平日に1日1回更新。土日・祝日や今日の発表前は、直前の平日の分になります）`;
 }
 async function fetchLatestRates(){
   const btn=document.getElementById('rateFetchBtn');
@@ -3294,7 +3325,7 @@ function displayExpenses(){
       const who=e.participants.length===members.length?`全員（${e.participants.length}人）`:parts;
       const isEd=editingExpenseIdx===i,fresh=_fresh.get(e.id);
       const freshTag=fresh?`<span class="fresh-tag">${fresh==='new'?'NEW':'更新'}</span>`:'';
-      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}<span class="item-ic">${itemIconSvg(e.name,e.category)}</span>${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip"><b>${paid}</b> が支払い</span><span class="expense-meta-chip">${who}</span><span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button></div></div>`;
+      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}<span class="item-ic">${itemIconSvg(e.name,e.category)}</span>${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip"><b>${paid}</b> が支払い</span><span class="expense-meta-chip">${who}</span><span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">削除</button></div></div>`;
     });
     html+='</div></div>';
   });
@@ -3431,14 +3462,14 @@ function calculateSettlement(){
           :`<b>${memberName(t.from)}</b> から <span class="recv">${amt}</span> 受け取る`;
         return`<div class="sett-line${done?' done':''}">${done?'✓ ':''}${text}</div>`;
       }).join('');
-      sum.innerHTML=`<div class="sett-summary"><div class="sett-summary-title">${memberName(me)}さんの精算</div>${lines||'<div class="sett-empty">精算はありません 🎉</div>'}</div>`;
+      sum.innerHTML=`<div class="sett-summary"><div class="sett-summary-title">${memberName(me)}さんの精算</div>${lines||'<div class="sett-empty">精算はありません</div>'}</div>`;
     }
   }
   // 全員の精算（済にできる）
   const doneCount=txs.filter(t=>settleState(t)==='done').length;
   const rows=txs.map(t=>{
     const st=settleState(t),key=settleKey(t);
-    const note=st==='changed'?`<div class="sett-note">⚠ 金額が変わりました（${fmtPlain(t.code,settled[key])} で済にしていました）</div>`:'';
+    const note=st==='changed'?`<div class="sett-note">${iconSvg('warn')}金額が変わりました（${fmtPlain(t.code,settled[key])} で済にしていました）</div>`:'';
     return`<div class="settlement-item${st==='done'?' done':''}" data-key="${key}">
       <div class="settlement-text">${avatar(t.from)}${memberName(t.from)} → ${avatar(t.to)}${memberName(t.to)}${note}</div>
       <div class="settlement-amount">${fmtMoney(t.code,t.amount)}</div>
@@ -3535,7 +3566,7 @@ function renderPersonalViews(){
       }).join('\n');
       return `【最終精算（${c.label}）】\n${rows}`;
     }).filter(Boolean).join('\n\n');
-    return `💰 割り勘明細 — ${name}\n${'─'.repeat(20)}\n${sections}\n${'─'.repeat(20)}\n※ WARITABI より`;
+    return `【割り勘明細】${name}\n${'─'.repeat(20)}\n${sections}\n${'─'.repeat(20)}\n※ WARITABI より`;
   };
 
   details.innerHTML=
