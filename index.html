@@ -1059,6 +1059,77 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 /* 「◯◯さんの精算」は搭乗券と色を分け、白いカード＋左のアクセントにする */
 .sett-summary{background:#fff !important;border:1.5px solid #ececf0;border-left:4px solid var(--p);border-radius:16px;}
 .sett-summary-title{color:var(--p);}
+
+/* ===== 搭乗券の経路・便名 ===== */
+.pass-route{display:flex;align-items:baseline;gap:8px;max-width:100%;border:none;background:none;padding:0;cursor:pointer;color:rgb(var(--p-rgb) / .75);font-size:11px;font-weight:800;letter-spacing:.1em;text-align:left;white-space:nowrap;overflow:hidden;}
+.pr-codes{font-family:var(--round);font-size:13px;font-weight:800;color:var(--p);letter-spacing:.06em;}
+.pr-codes i{font-style:normal;margin:0 4px;font-size:11px;}
+.pr-meta{font-weight:700;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;}
+.pr-set{text-decoration:underline;text-underline-offset:3px;}
+.ti-route{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end;}
+.ti-plane{color:var(--p);font-size:18px;padding-bottom:22px;}
+.trip-info-sheet,.passport-sheet{background:#fff;}
+.trip-info-sheet select,.trip-info-sheet input{height:46px;}
+/* パタパタ表示 */
+.rate-eq{margin-right:6px;}
+.flaps{display:inline-flex;gap:2px;}
+.flap{display:inline-grid;place-items:center;min-width:15px;height:24px;padding:0 2px;border-radius:4px;background:#2e2a3d;color:#fff;font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:700;position:relative;}
+.flap::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(255,255,255,.18);}
+.flap.flip{animation:flapflip .5s ease-out both;}
+@keyframes flapflip{0%{transform:rotateX(90deg);opacity:.2}60%{transform:rotateX(-12deg);opacity:1}100%{transform:rotateX(0)}}
+/* パスポート */
+.passport-open{width:100%;margin-top:12px;min-height:44px;border-radius:14px;border:1.5px dashed rgb(var(--p-rgb) / .45);background:rgb(var(--p-rgb) / .06);color:var(--p);font-weight:800;font-size:14px;cursor:pointer;}
+.passport-sheet{max-height:88vh;}
+.passport-cover{text-align:center;padding:18px 12px 16px;margin-bottom:14px;border-radius:16px;background:#3b2f63;color:#e8d9a8;}
+.pc-emblem{font-size:28px;line-height:1;}
+.pc-title{font-family:var(--round);font-size:22px;font-weight:800;letter-spacing:.3em;margin-top:4px;}
+.pc-sub{font-size:12px;letter-spacing:.2em;opacity:.85;}
+.pc-count{margin-top:8px;font-size:12px;font-weight:700;color:#fff;opacity:.9;}
+.passport-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 12px;padding:6px 4px 10px;background:repeating-linear-gradient(0deg,#fbfaf6,#fbfaf6 22px,#f3f1ea 23px);border-radius:12px;}
+.stamp{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--sc);}
+.st-ring{width:128px;height:128px;border-radius:50%;border:3px solid var(--sc);box-shadow:inset 0 0 0 5px #fff,inset 0 0 0 7px var(--sc);display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;opacity:.92;}
+.st-flag{font-size:20px;line-height:1;}
+.st-code{font-family:var(--round);font-size:24px;font-weight:800;letter-spacing:.08em;line-height:1.1;}
+.st-city{font-size:11px;font-weight:800;max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.st-date{font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;}
+.st-label{margin-top:2px;padding:1px 8px;border-radius:999px;background:var(--sc);color:#fff;font-size:10px;font-weight:800;}
+.stamp.pending{--sc:#b8b5c4 !important;}
+.stamp.pending .st-ring{border-style:dashed;box-shadow:none;}
+.stamp.pending .st-label{background:#d8d6e0;color:#6b6676;}
+.st-name{font-size:12px;font-weight:700;color:#6b6676;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* 画像でシェア */
+.share-result-btn{width:100%;margin-top:10px;min-height:46px;border-radius:14px;border:1.5px solid rgb(var(--p-rgb) / .35);background:#fff;color:var(--p);font-weight:800;font-size:14px;cursor:pointer;}
+/* レシート */
+.receipt-slip{position:fixed;z-index:3000;width:220px;transform:translateX(-50%);background:#fff;border-radius:6px 6px 0 0;box-shadow:0 8px 20px rgba(30,25,50,.18);padding:10px 14px 12px;font-family:ui-monospace,Menlo,monospace;color:#2e2a3d;pointer-events:none;
+  animation:receipt 1.9s ease-out forwards;clip-path:inset(0 0 100% 0);}
+.receipt-slip::after{content:'';position:absolute;left:0;right:0;bottom:-8px;height:8px;
+  background:linear-gradient(45deg,transparent 33.333%,#fff 33.333%,#fff 66.667%,transparent 66.667%),linear-gradient(-45deg,transparent 33.333%,#fff 33.333%,#fff 66.667%,transparent 66.667%);background-size:12px 24px;background-position:0 -16px;}
+.rs-head{text-align:center;font-size:11px;letter-spacing:.3em;color:#8a8594;border-bottom:1px dashed #d8d6e0;padding-bottom:6px;margin-bottom:6px;}
+.rs-row{display:flex;justify-content:space-between;gap:8px;font-size:13px;}
+.rs-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rs-row .estimate{display:none;}
+.rs-foot{margin-top:6px;font-size:10px;color:#8a8594;text-align:right;}
+@keyframes receipt{0%{clip-path:inset(0 0 100% 0);transform:translate(-50%,0)}35%{clip-path:inset(0 0 0 0);transform:translate(-50%,8px)}75%{opacity:1;transform:translate(-50%,8px)}100%{opacity:0;clip-path:inset(0 0 0 0);transform:translate(-50%,40px)}}
+/* 着陸 */
+.landing-overlay{display:none;position:fixed;inset:0;z-index:3100;background:rgba(255,255,255,.92);align-items:center;justify-content:center;}
+.landing-overlay.active{display:flex;}
+.landing-scene{text-align:center;}
+.landing-svg{width:300px;height:190px;overflow:visible;}
+.ld-runway{stroke:#2e2a3d;stroke-width:6;stroke-linecap:round;}
+.ld-dash{stroke:#fff;stroke-width:2;stroke-dasharray:12 12;}
+.ld-plane path{fill:var(--p);}
+.ld-plane{transform:translate(20px,20px) scale(2.2);}
+.landing-overlay.play .ld-plane{animation:land 1.6s cubic-bezier(.3,.1,.3,1) forwards;}
+@keyframes land{0%{transform:translate(-10px,10px) scale(2.2) rotate(18deg)}70%{transform:translate(170px,150px) scale(2.2) rotate(4deg)}100%{transform:translate(250px,152px) scale(2.2) rotate(0)}}
+.landing-title{font-family:var(--round);font-size:30px;font-weight:800;color:var(--p);margin-top:6px;opacity:0;}
+.landing-sub{font-size:15px;font-weight:700;color:#2e2a3d;margin-top:6px;opacity:0;}
+.landing-sub2{font-size:12px;font-weight:600;color:#8a8594;margin-top:4px;opacity:0;}
+.landing-overlay.play .landing-title,.landing-overlay.play .landing-sub,.landing-overlay.play .landing-sub2{animation:fadeup .5s ease-out 1.4s forwards;}
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.receipt-slip,.flap.flip{animation:none;}}
+
+.rate-row .flap{color:#fff !important;font-size:14px !important;font-weight:700 !important;}
+.rate-row .rate-eq{color:var(--text);}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1100,7 +1171,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   <!-- 上部バー -->
   <div class="pass" id="tripPass">
     <div class="pass-top">
-      <div class="pass-lbl">✈︎ TRIP</div>
+      <button type="button" class="pass-route" id="passRoute" onclick="openTripInfo()"></button>
       <button type="button" class="pass-trip" id="tripNameBtn" onclick="openTripSheet()">旅行を選択</button>
       <select id="tripSelect" hidden onchange="selectTrip(this.value)" aria-label="旅行を選択"></select>
     </div>
@@ -1204,6 +1275,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <div class="card-body" id="cardSettlement">
     <div id="settSummary"></div>
     <div id="settlementList"></div>
+    <button class="share-result-btn" onclick="shareTripImage()">精算結果を画像でシェア</button>
     <div class="sett-mode-title">精算のしかた</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       <label class="sett-mode-card" id="settCard-direct">
@@ -1256,6 +1328,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
       <div class="action-buttons settings-grid">
         <button class="btn-export" onclick="createTripPrompt()">＋ 新しい旅行</button>
         <button class="btn-export" onclick="renameCurrentTripPrompt()">名前変更</button>
+        <button class="btn-export" onclick="openTripInfo()">行き先と日程</button>
+        <button class="btn-export" onclick="openPassport()">旅のパスポート</button>
         <button class="btn-export" onclick="saveTripDataNow(true)">今すぐ同期</button>
         <button class="btn-export" onclick="location.reload()">再読み込み</button>
       </div>
@@ -1370,6 +1444,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <div class="sheet-grip"></div>
     <div class="sheet-title">旅行を選ぶ</div>
     <div class="sheet-list" id="tripSheetList"></div>
+    <button class="passport-open" onclick="openPassport()">旅のパスポートを見る</button>
     <div class="sheet-actions">
       <button onclick="closeTripSheet();createTripPrompt()">＋ 新しい旅行</button>
       <button onclick="closeTripSheet();joinTripByCodePrompt()">コードで参加</button>
@@ -1416,6 +1491,44 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <button class="btn btn-primary" style="margin-top:12px;" onclick="closePolicy()">閉じる</button>
   </div>
 </div>
+<div class="sheet-overlay" id="tripInfoOverlay" onclick="if(event.target===this)closeTripInfo()">
+  <div class="sheet trip-info-sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title">行き先と日程</div>
+    <div class="ti-route">
+      <div class="input-group"><label>出発</label><select id="tiFrom"></select></div>
+      <div class="ti-plane">✈︎</div>
+      <div class="input-group"><label>行き先</label><select id="tiTo"></select></div>
+    </div>
+    <div class="form-row">
+      <div class="input-group"><label>出発日</label><input type="date" id="tiStart"></div>
+      <div class="input-group"><label>帰国日</label><input type="date" id="tiEnd"></div>
+    </div>
+    <p class="small" style="margin:-2px 0 12px;">日程を入れると、一覧の日付が「Day 1」「Day 2」と表示されます。</p>
+    <button class="btn btn-primary" onclick="saveTripInfo()">保存</button>
+    <button class="icon-pick-cancel" onclick="closeTripInfo()">キャンセル</button>
+  </div>
+</div>
+<div class="sheet-overlay passport-overlay" id="passportOverlay" onclick="if(event.target===this)closePassport()">
+  <div class="sheet passport-sheet">
+    <div class="sheet-grip"></div>
+    <div class="passport-cover"><div class="pc-emblem">✈︎</div><div class="pc-title">PASSPORT</div><div class="pc-sub">旅のパスポート</div><div class="pc-count" id="passportCount"></div></div>
+    <div class="passport-grid" id="passportGrid"></div>
+    <button class="icon-pick-cancel" onclick="closePassport()">閉じる</button>
+  </div>
+</div>
+<div class="landing-overlay" id="landingOverlay" onclick="closeLanding()">
+  <div class="landing-scene">
+    <svg class="landing-svg" viewBox="0 0 320 200" aria-hidden="true">
+      <path class="ld-runway" d="M20 170 H300"/>
+      <path class="ld-dash" d="M40 170 H290"/>
+      <g class="ld-plane"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" transform="translate(-12 -12) rotate(90 12 12)"/></g>
+    </svg>
+    <div class="landing-title">精算完了！</div>
+    <div class="landing-sub" id="landingDest">無事に着陸しました</div>
+    <div class="landing-sub2">ご搭乗ありがとうございました</div>
+  </div>
+</div>
 <div class="dlg-overlay" id="dlgOverlay">
   <div class="dlg-box">
     <div class="dlg-title" id="dlgTitle"></div>
@@ -1454,7 +1567,9 @@ const MAX_MEMBERS=10,MAX_EXPENSES=100,MAX_DEPOSITS=100,MAX_FILE_SIZE=1024*1024,M
 let members=[],expenses=[],deposits=[];
 let currentCurrency='JPY',currentDepositCurrency='JPY';
 let settled={};
-let catIcons={}; // カテゴリごとに選んだアイコン { カテゴリ名: アイコン名 } // 精算済みの送金: { 'from>to>通貨': 済にしたときの金額 }
+let catIcons={};
+let tripMeta={from:'TYO',to:'',start:'',end:''}; // 出発地・行き先（空港コード）と日程
+let completedAt=''; // 全員の精算が終わった日 // カテゴリごとに選んだアイコン { カテゴリ名: アイコン名 } // 精算済みの送金: { 'from>to>通貨': 済にしたときの金額 }
 let exchangeRate=150,krwRate=11,settlementMode='direct'; // exchangeRate: $1あたりの円 / krwRate: ₩100あたりの円
 const CURRENCIES=[
   {code:'JPY',label:'円',sym:'¥',dec:0},
@@ -1534,6 +1649,61 @@ const catIconKey=cat=>{const k=(typeof catIcons==='object'&&catIcons)?catIcons[c
 const iconSvgByKey=k=>`<svg class="ci" viewBox="0 0 24 24" aria-hidden="true">${CAT_ICON_PATHS[k]||CAT_ICON_PATHS.tag}</svg>`;
 function catIconSvg(cat){return iconSvgByKey(catIconKey(cat));}
 const catLabelHTML=cat=>`${catIconSvg(cat)}${safe(catText(cat))}`;
+/* ===== 旅の情報（空港・日程） ===== */
+const AIRPORTS=[
+  ['TYO','東京','🇯🇵'],['OSA','大阪','🇯🇵'],['NGO','名古屋','🇯🇵'],['FUK','福岡','🇯🇵'],['SPK','札幌','🇯🇵'],['OKA','沖縄','🇯🇵'],
+  ['SEL','ソウル','🇰🇷'],['PUS','釜山','🇰🇷'],['TPE','台北','🇹🇼'],['HKG','香港','🇭🇰'],['SHA','上海','🇨🇳'],
+  ['BKK','バンコク','🇹🇭'],['SGN','ホーチミン','🇻🇳'],['DAD','ダナン','🇻🇳'],['MNL','マニラ','🇵🇭'],['CEB','セブ','🇵🇭'],
+  ['SIN','シンガポール','🇸🇬'],['KUL','クアラルンプール','🇲🇾'],['DPS','バリ','🇮🇩'],
+  ['HNL','ホノルル','🇺🇸'],['GUM','グアム','🇺🇸'],['LAX','ロサンゼルス','🇺🇸'],['MCO','オーランド','🇺🇸'],['NYC','ニューヨーク','🇺🇸'],['LAS','ラスベガス','🇺🇸'],
+  ['PAR','パリ','🇫🇷'],['LON','ロンドン','🇬🇧'],['ROM','ローマ','🇮🇹'],['BCN','バルセロナ','🇪🇸'],['SYD','シドニー','🇦🇺'],
+];
+const AIRPORT=Object.fromEntries(AIRPORTS.map(a=>[a[0],{code:a[0],city:a[1],flag:a[2]}]));
+function normalizeTripMeta(m){
+  m=(m&&typeof m==='object')?m:{};
+  const code=c=>AIRPORT[c]?c:'';
+  const out={from:code(m.from)||'TYO',to:code(m.to),start:isDateStr(m.start)?m.start:'',end:isDateStr(m.end)?m.end:''};
+  if(out.start&&out.end&&out.end<out.start)out.end=out.start;
+  return out;
+}
+const shortDay=d=>{if(!isDateStr(d))return'';const[,m,dd]=d.split('-').map(Number);return`${m}/${dd}`;};
+function flightNo(meta){
+  if(isDateStr(meta.start)){const[,m,d]=meta.start.split('-');return`WT ${m}${d}`;}
+  let h=0;for(const ch of String(currentTripId||'trip'))h=(h*31+ch.charCodeAt(0))>>>0;return`WT ${String(100+h%900)}`;
+}
+function tripDatesText(meta){
+  if(!meta.start)return'';
+  if(!meta.end||meta.end===meta.start)return shortDay(meta.start);
+  return`${shortDay(meta.start)}–${shortDay(meta.end)}`;
+}
+// 旅行の何日目か（出発日が Day 1）
+function dayLabel(date){
+  if(!isDateStr(date))return fmtDay(date);
+  if(!tripMeta.start)return fmtDay(date);
+  const diff=Math.round((new Date(date+'T00:00:00')-new Date(tripMeta.start+'T00:00:00'))/86400000);
+  if(diff<0)return`出発前 · ${fmtDay(date)}`;
+  return`Day ${diff+1} · ${fmtDay(date)}`;
+}
+function renderPassRoute(){
+  const el=document.getElementById('passRoute');if(!el)return;
+  const f=AIRPORT[tripMeta.from],t=AIRPORT[tripMeta.to];
+  if(!t){el.innerHTML='<span class="pr-set">✈\ufe0e 行き先と日程を設定</span>';return;}
+  el.innerHTML=`<span class="pr-codes">${f?f.code:'---'}<i>✈\ufe0e</i>${t.code}</span><span class="pr-meta">${flightNo(tripMeta)}${tripDatesText(tripMeta)?' · '+tripDatesText(tripMeta):''}</span>`;
+}
+function openTripInfo(){
+  const opts=sel=>AIRPORTS.map(([c,city,flag])=>`<option value="${c}"${c===sel?' selected':''}>${flag} ${city}（${c}）</option>`).join('');
+  document.getElementById('tiFrom').innerHTML=opts(tripMeta.from);
+  document.getElementById('tiTo').innerHTML='<option value="">選んでください</option>'+opts(tripMeta.to);
+  document.getElementById('tiStart').value=tripMeta.start||'';
+  document.getElementById('tiEnd').value=tripMeta.end||'';
+  document.getElementById('tripInfoOverlay').classList.add('active');
+}
+function closeTripInfo(){document.getElementById('tripInfoOverlay').classList.remove('active');}
+function saveTripInfo(){
+  tripMeta=normalizeTripMeta({from:document.getElementById('tiFrom').value,to:document.getElementById('tiTo').value,
+    start:document.getElementById('tiStart').value,end:document.getElementById('tiEnd').value});
+  closeTripInfo();saveData();renderPassRoute();updateDisplay();showToast('旅の情報を保存しました');
+}
 function normalizeCatIcons(o){
   const out={};
   if(o&&typeof o==='object')Object.keys(o).sort().forEach(k=>{const v=o[k];const name=sanitize(k);if(name&&typeof v==='string'&&CAT_ICON_PATHS[v])out[name]=v;});
@@ -1704,7 +1874,7 @@ async function showLoggedIn(){
   startRemotePolling();
 }
 function getDataObject(){
-  return {members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,catIcons,categories:_cats,updatedAt:new Date().toISOString()};
+  return {members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,catIcons,tripMeta,completedAt,categories:_cats,updatedAt:new Date().toISOString()};
 }
 function getBlankTripData(){
   return {
@@ -1717,6 +1887,8 @@ function getBlankTripData(){
     settlementMode:'direct',
     categories:[...DEFAULT_CATEGORIES],
     catIcons:{},
+    tripMeta:{from:'TYO',to:'',start:'',end:''},
+    completedAt:'',
     updatedAt:new Date().toISOString()
   };
 }
@@ -1727,6 +1899,8 @@ function applyDataObject(raw){
   if(raw.settlementMode==='min'||raw.settlementMode==='direct')settlementMode=raw.settlementMode;
   _cats=normalizeCats(raw.categories);
   catIcons=normalizeCatIcons(raw.catIcons);
+  tripMeta=normalizeTripMeta(raw.tripMeta);
+  completedAt=isDateStr(raw.completedAt)?raw.completedAt:'';
   if(!_cats.includes(_currentCat))_currentCat=_cats.includes(FALLBACK_CAT)?FALLBACK_CAT:_cats[0];
 }
 async function loadTrips(){
@@ -1776,10 +1950,102 @@ function openTripSheet(){
 }
 function closeTripSheet(){document.getElementById('tripSheet').classList.remove('active');}
 async function pickTrip(id){closeTripSheet();if(id!==currentTripId)await selectTrip(id);}
+/* ===== 旅のパスポート ===== */
+const STAMP_COLORS=['#ff5a5f','#2f7bff','#12a26a','#8b5cf6','#ff8a1f','#00a3a3'];
+async function openPassport(){
+  closeTripSheet();
+  const ov=document.getElementById('passportOverlay'),grid=document.getElementById('passportGrid');
+  grid.innerHTML='<p class="small" style="grid-column:1/-1;text-align:center;padding:16px;">読み込み中…</p>';
+  ov.classList.add('active');
+  let rows=[];
+  if(sb&&currentUser){
+    const {data,error}=await sb.from('trips').select('id,name,updated_at,meta:data_json->tripMeta,done:data_json->>completedAt').order('updated_at',{ascending:false});
+    if(!error&&Array.isArray(data))rows=data;
+  }
+  if(!rows.length)rows=trips.map(t=>({id:t.id,name:t.name}));
+  if(!rows.some(r=>r.id===currentTripId)&&currentTripId)rows.unshift({id:currentTripId,name:trips.find(t=>t.id===currentTripId)?.name||'この旅行'});
+  // 表示中の旅行は手元の最新を使う
+  rows=rows.map(r=>r.id===currentTripId?{...r,meta:tripMeta,done:completedAt}:r);
+  const done=rows.filter(r=>isDateStr(r.done)).length;
+  document.getElementById('passportCount').textContent=`${done} / ${rows.length} 旅 精算完了`;
+  grid.innerHTML=rows.map((r,i)=>{
+    const m=normalizeTripMeta(r.meta),dest=AIRPORT[m.to],ok=isDateStr(r.done);
+    const color=STAMP_COLORS[i%STAMP_COLORS.length],rot=((i*37)%17)-8;
+    const date=ok?r.done.replace(/-/g,'.'):(m.start?m.start.replace(/-/g,'.'):'');
+    return`<div class="stamp${ok?'':' pending'}" style="--sc:${color};transform:rotate(${rot}deg)">
+      <div class="st-ring">
+        <div class="st-flag">${dest?dest.flag:'✈\ufe0e'}</div>
+        <div class="st-code">${dest?dest.code:'TRIP'}</div>
+        <div class="st-city">${esc(dest?dest.city:(r.name||'旅行'))}</div>
+        <div class="st-date">${date||'----.--.--'}</div>
+        <div class="st-label">${ok?'精算完了':'旅の途中'}</div>
+      </div>
+      <div class="st-name">${esc(r.name||'')}</div>
+    </div>`;}).join('')||'<p class="small" style="grid-column:1/-1;text-align:center;">旅行がまだありません</p>';
+}
+function closePassport(){document.getElementById('passportOverlay').classList.remove('active');}
+
+/* ===== 精算結果を画像でシェア ===== */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function buildShareCanvas(){
+  const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const P=getComputedStyle(document.documentElement).getPropertyValue('--p').trim()||'#ff5a5f';
+  const RF="'M PLUS Rounded 1c',-apple-system,'Hiragino Sans',sans-serif",SF="-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif";
+  x.fillStyle='#ffffff';x.fillRect(0,0,W,H);
+  // 搭乗券
+  const bx=60,by=70,bw=W-120,bh=560;
+  x.fillStyle='#fff1f1';roundRect(x,bx,by,bw,bh,48);x.fill();
+  x.fillStyle='#ffffff';[[bx,by+250],[bx+bw,by+250]].forEach(([cx,cy])=>{x.beginPath();x.arc(cx,cy,26,0,Math.PI*2);x.fill();});
+  x.strokeStyle=P;x.globalAlpha=.4;x.lineWidth=5;x.setLineDash([18,14]);x.beginPath();x.moveTo(bx+40,by+250);x.lineTo(bx+bw-40,by+250);x.stroke();x.setLineDash([]);x.globalAlpha=1;
+  const f=AIRPORT[tripMeta.from],t=AIRPORT[tripMeta.to];
+  x.fillStyle=P;x.font=`800 112px ${RF}`;x.textBaseline='alphabetic';
+  x.fillText(`${f?f.code:'---'} ✈︎ ${t?t.code:'---'}`,bx+56,by+150);
+  x.font=`700 34px ${SF}`;x.globalAlpha=.75;x.fillText(`${flightNo(tripMeta)}${tripDatesText(tripMeta)?'  ·  '+tripDatesText(tripMeta):''}`,bx+60,by+205);x.globalAlpha=1;
+  const name=(trips.find(z=>z.id===currentTripId)?.name)||'旅行';
+  x.fillStyle='#2e2a3d';x.font=`800 50px ${RF}`;x.fillText(name.length>16?name.slice(0,16)+'…':name,bx+56,by+330);
+  let yen=0;expenses.forEach(e=>{yen+=Number(e.amount||0)*yenPer(normCurrency(e.currency));});
+  const n=members.filter(Boolean).length;
+  const cells=[['合計（円換算）',fmtPlain('JPY',yen)],['1人あたり',n>1?fmtPlain('JPY',yen/n):'-'],['メンバー',`${n}人`]];
+  cells.forEach(([l,v],i)=>{const cx=bx+56+i*330;x.fillStyle=P;x.globalAlpha=.7;x.font=`700 28px ${SF}`;x.fillText(l,cx,by+420);x.globalAlpha=1;x.fillStyle=i===0?P:'#2e2a3d';x.font=`800 ${i===0?60:46}px ${RF}`;x.fillText(v,cx,by+490);});
+  // 精算一覧
+  const txs=getSettlementTx();x.fillStyle='#8a8594';x.font=`700 32px ${SF}`;x.fillText('精算',80,720);
+  let y=760;
+  const MAXR=4;
+  txs.slice(0,MAXR).forEach(tx=>{
+    const done=settleState(tx)==='done';
+    x.fillStyle=done?'#f1f1f4':'#f7f7f9';roundRect(x,60,y,W-120,96,28);x.fill();
+    x.fillStyle=done?'#a19db3':'#2e2a3d';x.font=`700 38px ${SF}`;
+    x.fillText(`${members[tx.from]||''} → ${members[tx.to]||''}`,100,y+62);
+    x.textAlign='right';x.font=`800 42px ${RF}`;x.fillText((done?'✓ ':'')+fmtPlain(tx.code,tx.amount),W-100,y+64);x.textAlign='left';
+    y+=112;
+  });
+  if(txs.length>MAXR){x.fillStyle='#8a8594';x.font=`600 30px ${SF}`;x.fillText(`ほか ${txs.length-MAXR} 件`,90,y+34);}
+  if(!txs.length){x.fillStyle='#8a8594';x.font=`600 34px ${SF}`;x.fillText('精算はありません',90,y+40);}
+  // 精算完了スタンプ
+  if(txs.length&&txs.every(tx=>settleState(tx)==='done')){
+    x.save();x.translate(W-205,by+150);x.rotate(-.22);x.strokeStyle=P;x.lineWidth=7;roundRect(x,-135,-50,270,100,20);x.stroke();
+    x.lineWidth=3;roundRect(x,-123,-38,246,76,14);x.stroke();x.fillStyle=P;x.font=`900 46px ${RF}`;x.textAlign='center';x.fillText('精算完了',0,16);x.restore();x.textAlign='left';
+  }
+  x.fillStyle=P;x.font=`800 38px ${RF}`;x.textAlign='center';x.fillText('WARITABI',W/2,H-56);x.fillStyle='#b0aebb';x.font=`600 24px ${SF}`;x.fillText('旅の割り勘アプリ',W/2,H-24);x.textAlign='left';
+  return c;
+}
+async function shareTripImage(){
+  const c=buildShareCanvas();
+  const blob=await new Promise(r=>c.toBlob(r,'image/png'));
+  const file=new File([blob],'waritabi.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:'WARITABI'});return;}catch(e){if(e&&e.name==='AbortError')return;}
+  }
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='waritabi.png';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  showToast('画像を保存しました');
+}
 async function createTripPrompt(){
   const name=await appPrompt('新しい旅行',{message:'旅行名を入力してください',placeholder:'例: ソウル旅行',okText:'作成'});
   if(!name||!name.trim())return;
   await createTrip(name.trim(),getBlankTripData(),true);
+  openTripInfo();
 }
 async function renameCurrentTripPrompt(){
   if(!currentTripId){
@@ -1999,7 +2265,7 @@ async function selectTrip(id){
  * data_json.rev を版番号として使い、保存時に「自分が最後に読んだ版」のときだけ上書きする。
  * 他の人が先に保存していた場合は、最新を取り直して支払い1件ごとにマージしてから保存し直す。
  */
-const SYNC_KEYS=['members','expenses','deposits','exchangeRate','krwRate','settlementMode','settled','catIcons','categories'];
+const SYNC_KEYS=['members','expenses','deposits','exchangeRate','krwRate','settlementMode','settled','catIcons','tripMeta','completedAt','categories'];
 let _syncBase=null,_syncRev=null,_saving=false,_saveAgain=false,_pollTimer=null;
 const sameJSON=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const revOf=raw=>Number.isFinite(raw?.rev)?raw.rev:null;
@@ -2009,7 +2275,7 @@ function toSyncView(raw){
   const nd=normalizeData(raw);
   const cats=normalizeCats(raw.categories);
   const sm=(raw.settlementMode==='min'||raw.settlementMode==='direct')?raw.settlementMode:settlementMode;
-  return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,settlementMode:sm,settled:nd.settled,catIcons:normalizeCatIcons(raw.catIcons),categories:cats};
+  return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,settlementMode:sm,settled:nd.settled,catIcons:normalizeCatIcons(raw.catIcons),tripMeta:normalizeTripMeta(raw.tripMeta),completedAt:isDateStr(raw.completedAt)?raw.completedAt:'',categories:cats};
 }
 function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);}
 // base: 最後にサーバーと一致していた状態 / local: 自分の今の状態 / server: サーバーの最新
@@ -2218,7 +2484,7 @@ function applyRate(){
   const v=validateNum(document.getElementById('rateInput').value,min,1000);
   if(!v){showToast(`⚠ ${min}〜1000 の数値を入力してください`);return;}
   if(_rateEditCode==='KRW')krwRate=v;else exchangeRate=v;
-  localStorage.setItem('rateUpdatedAt',new Date().toISOString());saveData();showRateDisplay();cancelRateEdit();updateDisplay();showToast('為替レートを更新しました');
+  localStorage.setItem('rateUpdatedAt',new Date().toISOString());saveData();showRateDisplay(true);cancelRateEdit();updateDisplay();showToast('為替レートを更新しました');
 }
 // 無料の為替API（APIキー不要）。1つ目が失敗したら2つ目を試す
 const RATE_SOURCES=[
@@ -2248,7 +2514,7 @@ async function fetchLatestRates(){
         exchangeRate=newUsd;krwRate=newKrw;
         const stamp=new Date().toISOString();
         try{localStorage.setItem('rateUpdatedAt',stamp);}catch(e){}
-        saveData();showRateDisplay();cancelRateEdit();updateDisplay();
+        saveData();showRateDisplay(true);cancelRateEdit();updateDisplay();
         const t=document.getElementById('rateUpdatedText');if(t)t.textContent=rateDateNote(date);
         showToast('最新レートに更新しました');
         return;
@@ -2259,9 +2525,13 @@ async function fetchLatestRates(){
     if(btn){btn.disabled=false;btn.textContent='最新レートを取得';}
   }
 }
-function showRateDisplay(){
-  const u=document.getElementById('rateText-USD');if(u)u.innerHTML=`<span class="rate-flag">USD</span>$1 = ¥${exchangeRate.toFixed(2)}`;
-  const k=document.getElementById('rateText-KRW');if(k)k.innerHTML=`<span class="rate-flag">KRW</span>₩100 = ¥${krwRate.toFixed(2)}`;
+// 空港の発着掲示板のような、1文字ずつの板で数字を表示する
+function flapHTML(text,animate){
+  return`<span class="flaps">${[...String(text)].map((ch,i)=>`<span class="flap${animate?' flip':''}"${animate?` style="animation-delay:${i*45}ms"`:''}>${esc(ch)}</span>`).join('')}</span>`;
+}
+function showRateDisplay(animate){
+  const u=document.getElementById('rateText-USD');if(u)u.innerHTML=`<span class="rate-flag">USD</span><span class="rate-eq">$1 =</span>${flapHTML('¥'+exchangeRate.toFixed(2),animate)}`;
+  const k=document.getElementById('rateText-KRW');if(k)k.innerHTML=`<span class="rate-flag">KRW</span><span class="rate-eq">₩100 =</span>${flapHTML('¥'+krwRate.toFixed(2),animate)}`;
 }
 
 /* ===== 日付・ID ===== */
@@ -2331,6 +2601,7 @@ window.onload=async()=>{
 
 function initAppViews(){
   if(!members.length)members=[''];
+  renderPassRoute();
   renderTripName();
   ['expenseName','expenseAmount'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.dataset.bound){el.dataset.bound='1';el.addEventListener('input',()=>{el.classList.remove('invalid');refreshFormHelpers();});}});
   const dateInput=document.getElementById('expenseDate');if(dateInput&&!dateInput.value)dateInput.value=todayStr();
@@ -2431,6 +2702,30 @@ function updateMemberSelects(){
   const sel=document.getElementById('paidBy');
   sel.value=(prevPayer!==''&&Number(prevPayer)<members.length)?prevPayer:String(defaultPayer());
   refreshFormHelpers();
+}
+
+/* ===== 着陸の演出（全員の精算が終わったとき） ===== */
+function playLanding(){
+  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ov=document.getElementById('landingOverlay');
+  if(reduce||!ov){showToast('🎉 全員の精算が終わりました！');return;}
+  const dest=AIRPORT[tripMeta.to];
+  document.getElementById('landingDest').textContent=dest?`${dest.city}（${dest.code}）に着陸しました`:'無事に着陸しました';
+  ov.classList.remove('play');void ov.offsetWidth;ov.classList.add('active','play');
+  clearTimeout(window.__landT);window.__landT=setTimeout(()=>ov.classList.remove('active','play'),3200);
+}
+function closeLanding(){const ov=document.getElementById('landingOverlay');ov.classList.remove('active','play');}
+
+/* ===== レシートが出てくる演出（支払いを追加したとき） ===== */
+function printReceipt(name,amountHTML){
+  try{
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const btn=document.getElementById('expenseSubmitBtn');const r=btn.getBoundingClientRect();
+    const slip=document.createElement('div');slip.className='receipt-slip';
+    slip.innerHTML=`<div class="rs-head">RECEIPT</div><div class="rs-row"><span>${esc(name)}</span><b>${amountHTML}</b></div><div class="rs-foot">${dayLabel(getFormDate())}</div>`;
+    slip.style.left=(r.left+r.width/2)+'px';slip.style.top=(r.top+r.height-6)+'px';
+    document.body.appendChild(slip);setTimeout(()=>slip.remove(),1900);
+  }catch(e){}
 }
 
 /* ===== はじける星 ===== */
@@ -2695,7 +2990,7 @@ function addExpense(){
   if(!parts.length){showToast('⚠ 参加者を選択してください');return;}
   _lastPayer=paidBy;
   expenses.push({id:newExpenseId(),name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',date:getFormDate(),paidBy,participants:[...new Set(parts)],timestamp:new Date().toISOString()});
-  sparkBurst(document.getElementById('expenseSubmitBtn'));
+  printReceipt(name,fmtMoney(currentCurrency,amt));
   clearExpenseForm();saveData();updateDisplay();showToast('✅ 支払いを追加しました');
 }
 function startEditExpense(i){
@@ -2767,7 +3062,7 @@ function displayExpenses(){
     g.items.forEach(({e})=>{ const c=normCurrency(e.currency); tot[c]=(tot[c]||0)+e.amount; });
     const totParts=CURRENCIES.filter(c=>tot[c.code]>0).map(c=>fmtPlain(c.code,tot[c.code]));
     const totStr=totParts.join(' + ')||'¥0';
-    const label=byDate?fmtDay(key):key;
+    const label=byDate?dayLabel(key):key;
     const gid=`catg_${gi}`;
     html+=`<div class="cat-group"><div class="cat-group-header" onclick="toggleCatGroup('${gid}',this)"><span style="display:flex;align-items:center;gap:8px;"><span class="cat-group-toggle open">▶</span><span class="cat-group-label"${byDate?'':` style="${catStyle(label)}"`}>${byDate?safe(label):catLabelHTML(label)}</span></span><span class="cat-group-total">${totStr}</span></div><div class="cat-group-body" id="${gid}">`;
     g.items.forEach(({e,i})=>{
@@ -2847,11 +3142,7 @@ function toggleSettled(key,amount,btn){
   saveData();updateDisplay();renderMeBar();
   // 全員の精算が終わったらお祝い
   const txs=getSettlementTx();
-  if(btn&&txs.length&&txs.every(t=>settleState(t)==='done')){
-    showToast('🎉 全員の精算が終わりました！');
-    const tot=document.getElementById('tripPass');
-    if(tot){sparkBurst(tot,16,110);setTimeout(()=>sparkBurst(tot,12,80),250);}
-  }
+  if(btn&&txs.length&&txs.every(t=>settleState(t)==='done'))playLanding();
 }
 const memberName=i=>safe(members[i]||`メンバー${i+1}`);
 const AV_COLORS=['#8b5cf6','#ff4f9a','#2f7bff','#ff8a1f','#1fb57d','#c03fd1','#00b0b0','#f2b705','#4f5bd5','#7cbf3a'];
@@ -2905,7 +3196,13 @@ function calculateSettlement(){
     </div>`;
   }).join('');
   const pass=document.getElementById('tripPass');
-  if(pass)pass.classList.toggle('complete',txs.length>0&&doneCount===txs.length);
+  const complete=txs.length>0&&doneCount===txs.length;
+  if(pass)pass.classList.toggle('complete',complete);
+  // 精算が全部終わった日を記録（パスポートのスタンプに使う）
+  if(!_isApplyingRemote){
+    if(complete&&!completedAt){completedAt=todayStr();saveData();}
+    else if(!complete&&completedAt){completedAt='';saveData();}
+  }
   document.getElementById('settlementList').innerHTML=txs.length
     ?`<div class="sett-progress"><span>全員の精算</span><span>${doneCount} / ${txs.length} 件 済</span></div>${rows}`
     :`<div class="small" style="text-align:center;color:var(--muted);padding:8px;">精算はありません</div>`;
@@ -3142,7 +3439,7 @@ function loadData(){
 
 /* ===== エクスポート・インポート ===== */
 function exportData(){
-  const d={members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,catIcons,categories:_cats,exportDate:new Date().toISOString()};
+  const d={members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,catIcons,tripMeta,completedAt,categories:_cats,exportDate:new Date().toISOString()};
   const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');
   a.href=u;a.download='warikan_'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(u);
 }
