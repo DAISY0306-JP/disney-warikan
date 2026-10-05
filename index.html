@@ -303,6 +303,17 @@ input[type="file"]{display:none;}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--footer-h) + env(safe-area-inset-bottom) + 10px);background:rgba(78,74,99,.92);color:white;padding:10px 18px;border-radius:999px;font-weight:900;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:1200;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(-2px);}
 
+/* form row / list mode / date */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-row .input-group input{min-width:0;}
+.list-mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;background:var(--surface-2);padding:4px;border-radius:14px;border:1px solid var(--line);}
+.list-mode-toggle button{padding:8px;border:none;border-radius:11px;background:transparent;color:var(--muted);font-weight:900;font-size:13px;cursor:pointer;}
+.list-mode-toggle button.active{background:rgba(140,147,170,.20);color:var(--text);}
+.expense-date-chip{font-size:11px;color:var(--muted);font-weight:800;}
+.rate-fetch-btn{width:100%;margin-top:10px;padding:10px;border-radius:12px;border:1px solid rgba(147,167,214,.45);background:rgba(147,167,214,.18);color:var(--text);font-weight:900;font-size:13px;cursor:pointer;}
+.rate-fetch-btn:disabled{opacity:.5;cursor:default;}
+.rate-updated{font-size:11px;color:var(--muted);margin-top:6px;}
+
 /* top bar & tabs */
 .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:-10px -10px 12px;padding:10px;padding-top:calc(10px + env(safe-area-inset-top));background:var(--bg);}
 .topbar-trip{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);font-size:15px;font-weight:900;box-shadow:var(--shadow);}
@@ -391,7 +402,10 @@ input[type="file"]{display:none;}
     <div class="input-group"><label>カテゴリ <button type="button" onclick="openCatManager()" style="margin-left:8px;padding:3px 10px;font-size:11px;font-weight:800;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);cursor:pointer;">＋ 編集</button></label>
   <div class="cat-picker" id="catPicker"></div>
 </div>
-<div class="input-group"><label>金額</label><input type="number" id="expenseAmount" placeholder="0" min="0" max="10000000" step="0.01" inputmode="decimal"></div>
+<div class="form-row">
+  <div class="input-group"><label>金額</label><input type="number" id="expenseAmount" placeholder="0" min="0" max="10000000" step="0.01" inputmode="decimal"></div>
+  <div class="input-group"><label>日付</label><input type="date" id="expenseDate"></div>
+</div>
     <div class="input-group"><label>支払った人</label><select id="paidBy"><option value="">選択</option></select></div>
     <div class="input-group"><label>参加者</label><div class="checkbox-group" id="participantsCheckbox"></div></div>
     <button class="btn btn-primary" id="expenseSubmitBtn" onclick="submitExpense()">追加</button>
@@ -410,6 +424,10 @@ input[type="file"]{display:none;}
       <span class="card-chevron open">▶</span>
     </div>
     <div class="card-body" id="cardExpenseList">
+      <div class="list-mode-toggle" id="listModeToggle">
+        <button data-mode="date" onclick="setListMode('date')">📅 日付順</button>
+        <button data-mode="cat" onclick="setListMode('cat')">🏷 カテゴリ別</button>
+      </div>
       <div class="expense-list" id="expenseList"><div class="empty-state"><p>まだ記録がありません</p></div></div>
     </div>
   </div>
@@ -529,6 +547,8 @@ input[type="file"]{display:none;}
           <span id="rateText-KRW">💱 ₩100 = ¥11.00</span>
           <button class="btn-bluegray-sm" onclick="toggleRateEdit('KRW')">変更</button>
         </div>
+        <button class="rate-fetch-btn" id="rateFetchBtn" onclick="fetchLatestRates()">🌐 最新レートを取得</button>
+        <div class="rate-updated" id="rateUpdatedText"></div>
         <div class="rate-edit-row" id="rateEditRow">
           <span id="rateEditLabel" style="font-weight:900;">$1 = ¥</span>
           <input type="number" id="rateInput" min="0.01" max="1000" step="0.01" placeholder="例: 150">
@@ -709,6 +729,7 @@ async function showLoggedIn(){
 
   initAppViews();
   await loadTrips();
+  startRemotePolling();
 }
 function getDataObject(){
   return {members,expenses,deposits,exchangeRate,krwRate,settlementMode,categories:_cats,updatedAt:new Date().toISOString()};
@@ -909,7 +930,8 @@ async function createTrip(name,dataJson,selectAfter=true){
 }
 async function selectTrip(id){
   if(!id||!sb)return;
-  if(_saveTimer){clearTimeout(_saveTimer);await saveTripDataNow(false);}
+  if(_saveTimer){clearTimeout(_saveTimer);_saveTimer=null;await saveTripDataNow(false);}
+  _syncBase=null;_syncRev=null;
   currentTripId=id;localStorage.setItem('currentTripId',id);
   const sel=document.getElementById('tripSelect');if(sel)sel.value=id;
   const {data,error}=await sb.from('trips').select('id,name,data_json').eq('id',id).single();
@@ -922,15 +944,120 @@ async function selectTrip(id){
   _isApplyingRemote=true;
   applyDataObject(data.data_json||{});
   _isApplyingRemote=false;
+  setSyncBase(data.data_json||{});
   initAppViews();
   setSyncStatus(`「${data.name}」を読み込みました。変更は自動保存されます。`);
 }
+/* ===== 同期（複数人での同時編集） =====
+ * data_json.rev を版番号として使い、保存時に「自分が最後に読んだ版」のときだけ上書きする。
+ * 他の人が先に保存していた場合は、最新を取り直して支払い1件ごとにマージしてから保存し直す。
+ */
+const SYNC_KEYS=['members','expenses','deposits','exchangeRate','krwRate','settlementMode','categories'];
+let _syncBase=null,_syncRev=null,_saving=false,_saveAgain=false,_pollTimer=null;
+const sameJSON=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const revOf=raw=>Number.isFinite(raw?.rev)?raw.rev:null;
+// 比較用に、保存データを applyDataObject と同じ規則で整えたもの
+function toSyncView(raw){
+  raw=raw||{};
+  const nd=normalizeData(raw);
+  let cats=Array.isArray(raw.categories)?raw.categories.map(x=>sanitize(x)).filter(Boolean):[];
+  if(!cats.length)cats=[...DEFAULT_CATEGORIES];
+  const sm=(raw.settlementMode==='min'||raw.settlementMode==='direct')?raw.settlementMode:settlementMode;
+  return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,settlementMode:sm,categories:cats};
+}
+function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);}
+// base: 最後にサーバーと一致していた状態 / local: 自分の今の状態 / server: サーバーの最新
+function mergeSync(base,local,server){
+  const out={};
+  SYNC_KEYS.filter(k=>k!=='expenses').forEach(k=>{out[k]=sameJSON(local[k],base[k])?server[k]:local[k];});
+  const byId=a=>new Map(a.map(e=>[e.id,e]));
+  const B=byId(base.expenses),L=byId(local.expenses),S=byId(server.expenses);
+  const res=[];
+  server.expenses.forEach(sv=>{
+    const b=B.get(sv.id),l=L.get(sv.id);
+    if(l)res.push(b&&sameJSON(l,b)?sv:l);   // 自分が変更していれば自分の版
+    else if(b){if(!sameJSON(sv,b))res.push(sv);} // 自分が削除（相手が変更していたら相手の版を残す）
+    else res.push(sv);                         // 相手が追加
+  });
+  local.expenses.forEach(l=>{
+    const b=B.get(l.id);
+    if(!S.has(l.id)&&(!b||!sameJSON(l,b)))res.push(l); // 自分が追加 / 相手が削除したが自分が変更
+  });
+  out.expenses=res;
+  return out;
+}
+function applyRemoteView(view){
+  const prevMembers=JSON.stringify(members);
+  const editId=editingExpenseIdx>=0?expenses[editingExpenseIdx]?.id:null;
+  _isApplyingRemote=true;applyDataObject(view);_isApplyingRemote=false;
+  if(editId){
+    const ni=expenses.findIndex(e=>e.id===editId);
+    if(ni<0){clearExpenseForm();showToast('編集中の支払いは他の人が削除しました');}
+    else editingExpenseIdx=ni;
+  }
+  if(JSON.stringify(members)!==prevMembers){updateMemberSelects();updateMemberDisplay();updateFocusMemberSelect();}
+  showRateDisplay();renderCatPicker();updateDisplay();
+}
+// サーバーの最新を取り込み、自分の未保存の変更とマージする
+async function pullAndMerge(){
+  const tripId=currentTripId;
+  const {data,error}=await sb.from('trips').select('data_json').eq('id',tripId).single();
+  if(error){console.error(error);setSyncStatus('⚠ 最新データの取得に失敗しました: '+error.message);return false;}
+  if(tripId!==currentTripId)return false;
+  const raw=data?.data_json||{};
+  const server=toSyncView(raw),local=toSyncView(getDataObject());
+  const base=_syncBase||local;
+  if(!sameJSON(server,base))applyRemoteView(sameJSON(local,base)?server:mergeSync(base,local,server));
+  _syncBase=server;_syncRev=revOf(raw);
+  return true;
+}
 async function saveTripDataNow(showDone=false){
-  if(!sb||!currentTripId||!currentUser)return;
-  const {error}=await sb.from('trips').update({data_json:getDataObject(),updated_at:new Date().toISOString()}).eq('id',currentTripId);
-  if(error){setSyncStatus('⚠ 同期に失敗しました: '+error.message);console.error(error);return;}
-  setSyncStatus('☁️ 同期済み: '+new Date().toLocaleTimeString());
-  if(showDone)showToast('☁️ 同期しました');
+  clearTimeout(_saveTimer);_saveTimer=null;
+  if(!sb||!currentTripId||!currentUser||!_syncBase)return;
+  if(_saving){_saveAgain=true;return;}
+  _saving=true;
+  try{
+    for(let attempt=0;attempt<4;attempt++){
+      const tripId=currentTripId,nextRev=(_syncRev||0)+1;
+      const payload={...getDataObject(),rev:nextRev};
+      let q=sb.from('trips').update({data_json:payload,updated_at:new Date().toISOString()}).eq('id',tripId);
+      q=_syncRev===null?q.is('data_json->rev',null):q.eq('data_json->>rev',String(_syncRev));
+      const {data,error}=await q.select('id');
+      if(error){setSyncStatus('⚠ 同期に失敗しました: '+error.message);console.error(error);return;}
+      if(tripId!==currentTripId)return;
+      if(data&&data.length){
+        setSyncBase(payload);
+        setSyncStatus('☁️ 同期済み: '+new Date().toLocaleTimeString());
+        if(showDone)showToast('☁️ 同期しました');
+        return;
+      }
+      // 他の人が先に保存していた → 最新とマージして保存し直す
+      if(!await pullAndMerge())return;
+      showToast('🔄 他の人の変更と合わせて保存しました');
+    }
+    setSyncStatus('⚠ 同期が混み合っています。少し待ってから「同期」を押してください');
+  }finally{
+    _saving=false;
+    if(_saveAgain){_saveAgain=false;saveTripDataNow(false);}
+  }
+}
+// 他の人の変更を定期的に取り込む（入力中・保存待ちのときは見送る）
+async function pollRemote(){
+  if(!sb||!currentTripId||!currentUser||!_syncBase||_saving||_saveTimer||document.hidden)return;
+  const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;
+  const tripId=currentTripId;
+  const {data,error}=await sb.from('trips').select('rev:data_json->rev').eq('id',tripId).single();
+  if(error||tripId!==currentTripId||_saving||_saveTimer)return;
+  const rev=Number.isFinite(data?.rev)?data.rev:null;
+  if(rev===_syncRev)return;
+  if(!await pullAndMerge())return;
+  if(!sameJSON(toSyncView(getDataObject()),_syncBase))saveData();
+  else setSyncStatus('🔄 他の人の変更を反映しました: '+new Date().toLocaleTimeString());
+}
+function startRemotePolling(){
+  if(_pollTimer)return;
+  _pollTimer=setInterval(pollRemote,15000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollRemote();});
 }
 
 /* ===== ユーティリティ ===== */
@@ -1015,9 +1142,60 @@ function applyRate(){
   if(_rateEditCode==='KRW')krwRate=v;else exchangeRate=v;
   localStorage.setItem('rateUpdatedAt',new Date().toISOString());saveData();showRateDisplay();cancelRateEdit();updateDisplay();showToast('💱 為替レートを更新しました');
 }
+// 無料の為替API（APIキー不要）。1つ目が失敗したら2つ目を試す
+const RATE_SOURCES=[
+  {url:'https://api.frankfurter.dev/v1/latest?base=JPY&symbols=USD,KRW',pick:j=>({rates:j.rates,date:j.date})},
+  {url:'https://open.er-api.com/v6/latest/JPY',pick:j=>({rates:j.rates,date:(j.time_last_update_utc||'').slice(5,16)})},
+];
+async function fetchLatestRates(){
+  const btn=document.getElementById('rateFetchBtn');
+  if(btn){btn.disabled=true;btn.textContent='取得中...';}
+  try{
+    for(const src of RATE_SOURCES){
+      try{
+        const res=await fetch(src.url,{cache:'no-store'});
+        if(!res.ok)continue;
+        const {rates,date}=src.pick(await res.json());
+        const usd=Number(rates?.USD),krw=Number(rates?.KRW);
+        if(!(usd>0)||!(krw>0))continue;
+        // APIは「1円 = 何ドル/何ウォン」なので逆数にする
+        const newUsd=Math.round(100/usd)/100,newKrw=Math.round(10000/krw)/100;
+        if(!validateNum(newUsd,1,1000)||!validateNum(newKrw,0.01,1000))continue;
+        exchangeRate=newUsd;krwRate=newKrw;
+        const stamp=new Date().toISOString();
+        try{localStorage.setItem('rateUpdatedAt',stamp);}catch(e){}
+        saveData();showRateDisplay();cancelRateEdit();updateDisplay();
+        const t=document.getElementById('rateUpdatedText');if(t)t.textContent=`最新レートを取得しました${date?`（${date} 時点）`:''}`;
+        showToast('💱 最新レートに更新しました');
+        return;
+      }catch(e){console.warn('rate fetch failed',src.url,e);}
+    }
+    showToast('⚠ レートを取得できませんでした');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='🌐 最新レートを取得';}
+  }
+}
 function showRateDisplay(){
   const u=document.getElementById('rateText-USD');if(u)u.textContent=`💱 $1 = ¥${exchangeRate.toFixed(2)}`;
   const k=document.getElementById('rateText-KRW');if(k)k.textContent=`💱 ₩100 = ¥${krwRate.toFixed(2)}`;
+}
+
+/* ===== 日付・ID ===== */
+const isDateStr=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v);
+function localDateStr(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+const todayStr=()=>localDateStr(new Date());
+function dateFromTimestamp(ts){const d=ts?new Date(ts):null;return d&&!isNaN(d)?localDateStr(d):'';}
+function fmtDay(date){
+  if(!isDateStr(date))return'日付なし';
+  const [y,m,d]=date.split('-').map(Number),wd='日月火水木金土'[new Date(y,m-1,d).getDay()];
+  return`${m}/${d}（${wd}）`;
+}
+function newExpenseId(){return'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+// IDのない古い支払いには、内容から決まるIDを振る（どの端末でも同じIDになるように）
+function legacyExpenseId(e){
+  const src=JSON.stringify([e.timestamp||'',e.name||'',e.amount,e.paidBy,e.currency||'']);
+  let h=5381;for(let i=0;i<src.length;i++)h=((h*33)^src.charCodeAt(i))>>>0;
+  return'x'+h.toString(36);
 }
 
 /* ===== データ正規化 ===== */
@@ -1027,19 +1205,26 @@ function normalizeData(input){
   if(Array.isArray(input.members)){const m=input.members.slice(0,MAX_MEMBERS).map(x=>sanitize(x));out.members=m.length?m:[''];}
   const mLen=out.members.length;
   if(Array.isArray(input.expenses)){
+    const seenIds=new Set();
     out.expenses=input.expenses.slice(0,MAX_EXPENSES).filter(e=>e&&typeof e==='object').map(e=>{
       const name=sanitize(e.name).trim(),amount=validateNum(e.amount),currency=normCurrency(e.currency);
       const paidBy=clampInt(e.paidBy,0,mLen-1);
       const participants=Array.isArray(e.participants)?[...new Set(e.participants.map(p=>clampInt(p,0,mLen-1)).filter(p=>p!==null))]:[];
       if(!name||amount===null||paidBy===null||participants.length===0)return null;
-      const category=sanitize(e.category||'その他').trim()||'その他';return{name,amount,currency,category,paidBy,participants,timestamp:e.timestamp||new Date().toISOString()};
+      const category=sanitize(e.category||'その他').trim()||'その他';
+      const timestamp=typeof e.timestamp==='string'?e.timestamp:'';
+      const date=isDateStr(e.date)?e.date:dateFromTimestamp(timestamp);
+      let id=(typeof e.id==='string'&&/^[\w-]{1,40}$/.test(e.id))?e.id:legacyExpenseId(e);
+      if(seenIds.has(id)){let n=2;while(seenIds.has(`${id}_${n}`))n++;id=`${id}_${n}`;}
+      seenIds.add(id);
+      return{id,name,amount,currency,category,date,paidBy,participants,timestamp};
     }).filter(Boolean);
   }
   if(Array.isArray(input.deposits)){
     out.deposits=input.deposits.slice(0,MAX_DEPOSITS).filter(d=>d&&typeof d==='object').map(d=>{
       const holder=clampInt(d.holder,0,mLen-1),from=clampInt(d.from,0,mLen-1),amount=validateNum(d.amount),currency=normCurrency(d.currency);
       if(holder===null||from===null||holder===from||!amount)return null;
-      return{holder,from,amount,currency,timestamp:d.timestamp||new Date().toISOString()};
+      return{holder,from,amount,currency,timestamp:typeof d.timestamp==='string'?d.timestamp:''};
     }).filter(Boolean);
   }
   const r=validateNum(input.exchangeRate,1,1000);if(r)out.exchangeRate=r;
@@ -1055,6 +1240,7 @@ window.onload=async()=>{
 
 function initAppViews(){
   if(!members.length)members=[''];
+  const dateInput=document.getElementById('expenseDate');if(dateInput&&!dateInput.value)dateInput.value=todayStr();
   updateMemberSelects();updateMemberDisplay();updateFocusMemberSelect();showRateDisplay();
   updateSettCards();
   renderCatPicker();
@@ -1090,7 +1276,12 @@ function updateMemberDisplay(){
 function addMember(){if(members.length>=MAX_MEMBERS){showToast(`⚠ 最大${MAX_MEMBERS}人まで`);return;}members.push('');updateMemberList();updateMemberSelects();updateFocusMemberSelect();saveData();}
 async function removeMember(i){
   if(members.length<=1){showToast('⚠ 最低1人必要です');return;}
-  const ok=await openConfirm('メンバー削除','削除すると既存データ（支出/預かり金）にも影響します。本当に削除しますか？');if(!ok)return;
+  const used=expenses.filter(e=>e.paidBy===i||e.participants.includes(i)).length;
+  if(used){
+    openInfoPopup('このメンバーは削除できません',`「${members[i]||`メンバー${i+1}`}」は支払い記録${used}件に含まれています。\n先に一覧タブで、その支払いを編集するか削除してください。`);
+    return;
+  }
+  const ok=await openConfirm('メンバー削除',`「${members[i]||`メンバー${i+1}`}」を削除しますか？`);if(!ok)return;
   members.splice(i,1);
   expenses=(expenses||[]).map(e=>{
     if(!e||typeof e!=='object')return null;let paidBy=Number(e.paidBy);if(Number.isNaN(paidBy))paidBy=0;
@@ -1258,12 +1449,13 @@ function addExpense(){
   if(!name||amt===null||isNaN(paidBy)){showToast('⚠ 必須項目を入力してください');return;}
   const parts=[];members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb&&cb.checked)parts.push(i);});
   if(!parts.length){showToast('⚠ 参加者を選択してください');return;}
-  expenses.push({name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',paidBy,participants:[...new Set(parts)],timestamp:new Date().toISOString()});
+  expenses.push({id:newExpenseId(),name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',date:getFormDate(),paidBy,participants:[...new Set(parts)],timestamp:new Date().toISOString()});
   clearExpenseForm();saveData();updateDisplay();showToast('✅ 支払いを追加しました');
 }
 function startEditExpense(i){
   const e=expenses[i];editingExpenseIdx=i;
   document.getElementById('expenseName').value=e.name;document.getElementById('expenseAmount').value=e.amount;document.getElementById('paidBy').value=String(e.paidBy);
+  document.getElementById('expenseDate').value=e.date||'';
   setCurrency(e.currency);setCatPicker(e.category||DEFAULT_CATEGORIES[0]);members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
   document.getElementById('expenseSubmitBtn').textContent='更新';document.getElementById('expenseEditBanner').classList.add('visible');
   showTab('add');showToast('✏️ 支払いを編集中');
@@ -1273,11 +1465,14 @@ function updateExpense(){
   if(!name||amt===null||isNaN(paidBy)){showToast('⚠ 必須項目を入力してください');return;}
   const parts=[];members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb&&cb.checked)parts.push(i);});
   if(!parts.length){showToast('⚠ 参加者を選択してください');return;}
-  expenses[editingExpenseIdx]={...expenses[editingExpenseIdx],name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',paidBy,participants:[...new Set(parts)]};
+  expenses[editingExpenseIdx]={...expenses[editingExpenseIdx],name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',date:getFormDate(),paidBy,participants:[...new Set(parts)]};
   clearExpenseForm();saveData();updateDisplay();showToast('✅ 支払いを更新しました');
 }
+function getFormDate(){const v=document.getElementById('expenseDate').value;return isDateStr(v)?v:todayStr();}
 function cancelEditExpense(){clearExpenseForm();showToast('編集をキャンセルしました');}
 function clearExpenseForm(){
+  // 編集が終わったら日付は今日に戻す（続けて追加するときは前回の日付のまま）
+  if(editingExpenseIdx>=0)document.getElementById('expenseDate').value=todayStr();
   editingExpenseIdx=-1;document.getElementById('expenseName').value='';document.getElementById('expenseAmount').value='';document.getElementById('paidBy').value='';
   members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb)cb.checked=true;});
   document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');resetCatPicker();setCatPicker(DEFAULT_CATEGORIES[0]);
@@ -1287,55 +1482,49 @@ async function deleteExpense(i){
   if(editingExpenseIdx===i)clearExpenseForm();else if(editingExpenseIdx>i)editingExpenseIdx--;
   expenses.splice(i,1);saveData();updateDisplay();showToast('🗑 削除しました');
 }
-function expenseItemHTML(e, i){
-  const nm=safe(e.name),paid=safe(members[e.paidBy]||`メンバー${e.paidBy+1}`);
-  const parts=e.participants.map(idx=>safe(members[idx]||`メンバー${idx+1}`)).join(', ');
-  const amt=fmtMoney(e.currency,e.amount);
-  const isEd=editingExpenseIdx===i;
-  return `<div class="expense-item${isEd?' is-editing':''}">
-    <div class="expense-color-bar"></div>
-    <div class="expense-body">
-      <div class="expense-header">
-        <div class="expense-title">${nm}</div>
-        <div class="expense-amount">${amt}</div>
-      </div>
-      <div class="expense-meta">
-        <span class="expense-meta-chip">💳 <b>${paid}</b></span>
-        <span class="expense-meta-chip">👥 ${parts}</span>
-      </div>
-    </div>
-    <div class="expense-actions">
-      <button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button>
-      <button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button>
-    </div>
-  </div>`;
+let _listMode='date';
+try{const m=localStorage.getItem('warikanListMode');if(m==='date'||m==='cat')_listMode=m;}catch(e){}
+function setListMode(mode){
+  _listMode=mode==='cat'?'cat':'date';
+  try{localStorage.setItem('warikanListMode',_listMode);}catch(e){}
+  displayExpenses();
 }
 function displayExpenses(){
+  document.querySelectorAll('#listModeToggle button').forEach(b=>b.classList.toggle('active',b.dataset.mode===_listMode));
   const l=document.getElementById('expenseList');
   if(!expenses.length){l.innerHTML='<div class="empty-state"><p>まだ記録がありません</p></div>';return;}
-  const groupMap={};
+  const groupMap={},byDate=_listMode==='date';
   expenses.forEach((e,i)=>{
-    const cat=e.category||'その他';
-    if(!groupMap[cat])groupMap[cat]={cat,items:[]};
-    groupMap[cat].items.push({e,i});
+    const key=byDate?(e.date||''):(e.category||'その他');
+    if(!groupMap[key])groupMap[key]={key,items:[]};
+    groupMap[key].items.push({e,i});
   });
-  // _catsの順番通りに並べ、未登録カテゴリは末尾に
-  const allCats=[..._cats,...Object.keys(groupMap).filter(c=>!_cats.includes(c))];
-  const groups=allCats.filter(c=>groupMap[c]).map(c=>groupMap[c]);
+  let keys;
+  if(byDate){
+    // 新しい日付が上。日付なしは最後
+    keys=Object.keys(groupMap).sort((a,b)=>!a?1:!b?-1:b.localeCompare(a));
+  }else{
+    // _catsの順番通りに並べ、未登録カテゴリは末尾に
+    keys=[..._cats,...Object.keys(groupMap).filter(c=>!_cats.includes(c))].filter(c=>groupMap[c]);
+  }
   let html='';
-  groups.forEach(g=>{
+  keys.forEach((key,gi)=>{
+    const g=groupMap[key];
+    if(byDate)g.items.reverse(); // 同じ日の中では新しく追加したものが上
     const tot={};
     g.items.forEach(({e})=>{ const c=normCurrency(e.currency); tot[c]=(tot[c]||0)+e.amount; });
     const totParts=CURRENCIES.filter(c=>tot[c.code]>0).map(c=>fmtPlain(c.code,tot[c.code]));
     const totStr=totParts.join(' + ')||'¥0';
-    const gid=`catg_${groups.indexOf(g)}`;
-    html+=`<div class="cat-group"><div class="cat-group-header" onclick="toggleCatGroup('${gid}',this)"><span style="display:flex;align-items:center;gap:8px;"><span class="cat-group-toggle open">▶</span><span class="cat-group-label">${safe(g.cat)}</span></span><span class="cat-group-total">${totStr}</span></div><div class="cat-group-body" id="${gid}">`;
+    const label=byDate?fmtDay(key):key;
+    const gid=`catg_${gi}`;
+    html+=`<div class="cat-group"><div class="cat-group-header" onclick="toggleCatGroup('${gid}',this)"><span style="display:flex;align-items:center;gap:8px;"><span class="cat-group-toggle open">▶</span><span class="cat-group-label">${safe(label)}</span></span><span class="cat-group-total">${totStr}</span></div><div class="cat-group-body" id="${gid}">`;
     g.items.forEach(({e,i})=>{
       const nm=safe(e.name),paid=safe(members[e.paidBy]||`メンバー${e.paidBy+1}`);
       const parts=e.participants.map(idx=>safe(members[idx]||`メンバー${idx+1}`)).join(', ');
       const amt=fmtMoney(e.currency,e.amount);
+      const sub=byDate?safe(e.category||'その他'):fmtDay(e.date);
       const isEd=editingExpenseIdx===i;
-      html+=`<div class="expense-item${isEd?' is-editing':''}"><div class="expense-color-bar"></div><div class="expense-body"><div class="expense-header"><div class="expense-title">${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip">💳 <b>${paid}</b></span><span class="expense-meta-chip">👥 ${parts}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button></div></div>`;
+      html+=`<div class="expense-item${isEd?' is-editing':''}"><div class="expense-color-bar"></div><div class="expense-body"><div class="expense-header"><div class="expense-title">${nm} <span class="expense-date-chip">${sub}</span></div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip">💳 <b>${paid}</b></span><span class="expense-meta-chip">👥 ${parts}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button></div></div>`;
     });
     html+='</div></div>';
   });
@@ -1646,8 +1835,6 @@ function restoreTab(){
   showTab(name);
 }
 
-/* ===== スクロール ===== */
-function scrollToSection(id){const el=document.getElementById(id);if(!el)return;window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-10,behavior:'smooth'});}
 </script>
 
 </body></html>
