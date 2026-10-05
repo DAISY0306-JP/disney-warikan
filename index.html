@@ -1196,6 +1196,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .tab-panel[data-tab="settle"] .settlement-item.done .sett-stub::before{content:'';position:absolute;top:-1px;bottom:-1px;left:-3px;right:-1px;background:#fff;
   clip-path:polygon(100% 0,100% 100%,0px 100.00%,3px 95.00%,1px 90.00%,4px 85.00%,0px 80.00%,5px 75.00%,1px 70.00%,3px 65.00%,0px 60.00%,4px 55.00%,2px 50.00%,5px 45.00%,0px 40.00%,4px 35.00%,1px 30.00%,3px 25.00%,0px 20.00%,5px 15.00%,1px 10.00%,4px 5.00%,0px 0.00%);}
 .tab-panel[data-tab="settle"] .settlement-item.done .sett-stub>.sett-done-btn{position:relative;z-index:1;}
+
+/* 空港名まで見えるよう、出発と行き先は縦に並べる */
+.ti-route{grid-template-columns:1fr !important;gap:0 !important;}
+.ti-plane{display:none;}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1640,7 +1644,7 @@ let members=[],expenses=[],deposits=[];
 let currentCurrency='JPY',currentDepositCurrency='JPY';
 let settled={};
 let catIcons={};
-let tripMeta={from:'TYO',to:'',start:'',end:''}; // 出発地・行き先（空港コード）と日程
+let tripMeta={from:'HND',to:'',start:'',end:''}; // 出発地・行き先（空港コード）と日程
 let completedAt=''; // 全員の精算が終わった日 // カテゴリごとに選んだアイコン { カテゴリ名: アイコン名 } // 精算済みの送金: { 'from>to>通貨': 済にしたときの金額 }
 let exchangeRate=150,krwRate=11,settlementMode='direct'; // exchangeRate: $1あたりの円 / krwRate: ₩100あたりの円
 const CURRENCIES=[
@@ -1722,22 +1726,41 @@ const iconSvgByKey=k=>`<svg class="ci" viewBox="0 0 24 24" aria-hidden="true">${
 function catIconSvg(cat){return iconSvgByKey(catIconKey(cat));}
 const catLabelHTML=cat=>`${catIconSvg(cat)}${safe(catText(cat))}`;
 /* ===== 旅の情報（空港・日程） ===== */
-const AIRPORTS=[
-  ['TYO','東京','🇯🇵'],['OSA','大阪','🇯🇵'],['NGO','名古屋','🇯🇵'],['FUK','福岡','🇯🇵'],['SPK','札幌','🇯🇵'],['OKA','沖縄','🇯🇵'],
-  ['SEL','ソウル','🇰🇷'],['PUS','釜山','🇰🇷'],['TPE','台北','🇹🇼'],['HKG','香港','🇭🇰'],['SHA','上海','🇨🇳'],
-  ['BKK','バンコク','🇹🇭'],['SGN','ホーチミン','🇻🇳'],['DAD','ダナン','🇻🇳'],['MNL','マニラ','🇵🇭'],['CEB','セブ','🇵🇭'],
-  ['SIN','シンガポール','🇸🇬'],['KUL','クアラルンプール','🇲🇾'],['DPS','バリ','🇮🇩'],
-  ['HNL','ホノルル','🇺🇸'],['GUM','グアム','🇺🇸'],['LAX','ロサンゼルス','🇺🇸'],['MCO','オーランド','🇺🇸'],['NYC','ニューヨーク','🇺🇸'],['LAS','ラスベガス','🇺🇸'],
-  ['PAR','パリ','🇫🇷'],['LON','ロンドン','🇬🇧'],['ROM','ローマ','🇮🇹'],['BCN','バルセロナ','🇪🇸'],['SYD','シドニー','🇦🇺'],
+// [空港コード, 都市, 空港名, 国旗, タイムゾーン]（地域ごと）
+const AIRPORT_GROUPS=[
+  ['日本',[
+    ['HND','東京','羽田','🇯🇵','Asia/Tokyo'],['NRT','東京','成田','🇯🇵','Asia/Tokyo'],
+    ['KIX','大阪','関西','🇯🇵','Asia/Tokyo'],['ITM','大阪','伊丹','🇯🇵','Asia/Tokyo'],['NGO','名古屋','中部','🇯🇵','Asia/Tokyo'],
+    ['FUK','福岡','福岡','🇯🇵','Asia/Tokyo'],['CTS','札幌','新千歳','🇯🇵','Asia/Tokyo'],['OKA','沖縄','那覇','🇯🇵','Asia/Tokyo']]],
+  ['韓国・台湾・中国',[
+    ['ICN','ソウル','仁川','🇰🇷','Asia/Seoul'],['GMP','ソウル','金浦','🇰🇷','Asia/Seoul'],['PUS','釜山','金海','🇰🇷','Asia/Seoul'],['CJU','済州','済州','🇰🇷','Asia/Seoul'],
+    ['TPE','台北','桃園','🇹🇼','Asia/Taipei'],['TSA','台北','松山','🇹🇼','Asia/Taipei'],['KHH','高雄','高雄','🇹🇼','Asia/Taipei'],
+    ['HKG','香港','香港','🇭🇰','Asia/Hong_Kong'],['MFM','マカオ','マカオ','🇲🇴','Asia/Macau'],
+    ['PVG','上海','浦東','🇨🇳','Asia/Shanghai'],['SHA','上海','虹橋','🇨🇳','Asia/Shanghai']]],
+  ['東南アジア',[
+    ['BKK','バンコク','スワンナプーム','🇹🇭','Asia/Bangkok'],['DMK','バンコク','ドンムアン','🇹🇭','Asia/Bangkok'],
+    ['SGN','ホーチミン','タンソンニャット','🇻🇳','Asia/Ho_Chi_Minh'],['HAN','ハノイ','ノイバイ','🇻🇳','Asia/Ho_Chi_Minh'],['DAD','ダナン','ダナン','🇻🇳','Asia/Ho_Chi_Minh'],
+    ['MNL','マニラ','ニノイ・アキノ','🇵🇭','Asia/Manila'],['CEB','セブ','マクタン・セブ','🇵🇭','Asia/Manila'],
+    ['SIN','シンガポール','チャンギ','🇸🇬','Asia/Singapore'],['KUL','クアラルンプール','クアラルンプール','🇲🇾','Asia/Kuala_Lumpur'],
+    ['DPS','バリ','ングラ・ライ','🇮🇩','Asia/Makassar']]],
+  ['ハワイ・グアム',[
+    ['HNL','ホノルル','ダニエル・K・イノウエ','🇺🇸','Pacific/Honolulu'],['GUM','グアム','グアム','🇺🇸','Pacific/Guam']]],
+  ['アメリカ',[
+    ['LAX','ロサンゼルス','ロサンゼルス','🇺🇸','America/Los_Angeles'],['SFO','サンフランシスコ','サンフランシスコ','🇺🇸','America/Los_Angeles'],
+    ['LAS','ラスベガス','ハリー・リード','🇺🇸','America/Los_Angeles'],['SEA','シアトル','シアトル・タコマ','🇺🇸','America/Los_Angeles'],
+    ['MCO','オーランド','オーランド','🇺🇸','America/New_York'],['JFK','ニューヨーク','JFK','🇺🇸','America/New_York'],['EWR','ニューヨーク','ニューアーク','🇺🇸','America/New_York']]],
+  ['ヨーロッパ',[
+    ['CDG','パリ','シャルル・ド・ゴール','🇫🇷','Europe/Paris'],['LHR','ロンドン','ヒースロー','🇬🇧','Europe/London'],
+    ['FCO','ローマ','フィウミチーノ','🇮🇹','Europe/Rome'],['BCN','バルセロナ','エル・プラット','🇪🇸','Europe/Madrid'],
+    ['FRA','フランクフルト','フランクフルト','🇩🇪','Europe/Berlin'],['HEL','ヘルシンキ','ヘルシンキ','🇫🇮','Europe/Helsinki']]],
+  ['オセアニア',[
+    ['SYD','シドニー','シドニー','🇦🇺','Australia/Sydney'],['OOL','ゴールドコースト','ゴールドコースト','🇦🇺','Australia/Brisbane']]],
 ];
-const AIRPORT=Object.fromEntries(AIRPORTS.map(a=>[a[0],{code:a[0],city:a[1],flag:a[2]}]));
-// 行き先のタイムゾーン
-const AIRPORT_TZ={TYO:'Asia/Tokyo',OSA:'Asia/Tokyo',NGO:'Asia/Tokyo',FUK:'Asia/Tokyo',SPK:'Asia/Tokyo',OKA:'Asia/Tokyo',
-  SEL:'Asia/Seoul',PUS:'Asia/Seoul',TPE:'Asia/Taipei',HKG:'Asia/Hong_Kong',SHA:'Asia/Shanghai',
-  BKK:'Asia/Bangkok',SGN:'Asia/Ho_Chi_Minh',DAD:'Asia/Ho_Chi_Minh',MNL:'Asia/Manila',CEB:'Asia/Manila',
-  SIN:'Asia/Singapore',KUL:'Asia/Kuala_Lumpur',DPS:'Asia/Makassar',
-  HNL:'Pacific/Honolulu',GUM:'Pacific/Guam',LAX:'America/Los_Angeles',MCO:'America/New_York',NYC:'America/New_York',LAS:'America/Los_Angeles',
-  PAR:'Europe/Paris',LON:'Europe/London',ROM:'Europe/Rome',BCN:'Europe/Madrid',SYD:'Australia/Sydney'};
+const AIRPORTS=AIRPORT_GROUPS.flatMap(g=>g[1]);
+const AIRPORT=Object.fromEntries(AIRPORTS.map(a=>[a[0],{code:a[0],city:a[1],name:a[2],flag:a[3]}]));
+const AIRPORT_TZ=Object.fromEntries(AIRPORTS.map(a=>[a[0],a[4]]));
+// 以前の都市コードは、代表の空港に読み替える
+const LEGACY_AIRPORT={TYO:'HND',OSA:'KIX',SPK:'CTS',SEL:'ICN',NYC:'JFK',PAR:'CDG',LON:'LHR',ROM:'FCO'};
 // そのタイムゾーンの UTC からのずれ（分）
 function tzOffsetMin(tz,date=new Date()){
   try{
@@ -1775,8 +1798,8 @@ function seatNo(i){
 const seatTag=i=>`<span class="seat-tag">${seatNo(i)}</span>`;
 function normalizeTripMeta(m){
   m=(m&&typeof m==='object')?m:{};
-  const code=c=>AIRPORT[c]?c:'';
-  const out={from:code(m.from)||'TYO',to:code(m.to),start:isDateStr(m.start)?m.start:'',end:isDateStr(m.end)?m.end:''};
+  const code=c=>AIRPORT[c]?c:AIRPORT[LEGACY_AIRPORT[c]]?LEGACY_AIRPORT[c]:'';
+  const out={from:code(m.from)||'HND',to:code(m.to),start:isDateStr(m.start)?m.start:'',end:isDateStr(m.end)?m.end:''};
   if(out.start&&out.end&&out.end<out.start)out.end=out.start;
   return out;
 }
@@ -1807,7 +1830,7 @@ function renderPassRoute(){
   el.innerHTML=`<span class="pr-codes">${f?f.code:'---'}<i>✈\ufe0e</i>${t.code}</span><span class="pr-meta">${flightNo(tripMeta)}${tripDatesText(tripMeta)?' · '+tripDatesText(tripMeta):''}</span>`;
 }
 function openTripInfo(){
-  const opts=sel=>AIRPORTS.map(([c,city,flag])=>`<option value="${c}"${c===sel?' selected':''}>${flag} ${city}（${c}）</option>`).join('');
+  const opts=sel=>AIRPORT_GROUPS.map(([g,list])=>`<optgroup label="${g}">${list.map(([c,city,name,flag])=>`<option value="${c}"${c===sel?' selected':''}>${flag} ${c} ${name===city?city:city+'・'+name}</option>`).join('')}</optgroup>`).join('');
   document.getElementById('tiFrom').innerHTML=opts(tripMeta.from);
   document.getElementById('tiTo').innerHTML='<option value="">選んでください</option>'+opts(tripMeta.to);
   document.getElementById('tiStart').value=tripMeta.start||'';
@@ -2003,7 +2026,7 @@ function getBlankTripData(){
     settlementMode:'direct',
     categories:[...DEFAULT_CATEGORIES],
     catIcons:{},
-    tripMeta:{from:'TYO',to:'',start:'',end:''},
+    tripMeta:{from:'HND',to:'',start:'',end:''},
     completedAt:'',
     updatedAt:new Date().toISOString()
   };
