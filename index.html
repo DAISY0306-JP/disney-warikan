@@ -7,6 +7,9 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>割り勘アプリ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root{
@@ -443,7 +446,9 @@ input[type="file"]{display:none;}
   --pay:#c25e5e;--recv:#3d8b6c;
   --shadow:0 1px 2px rgba(30,25,50,.04),0 8px 20px rgba(30,25,50,.05);
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;color:var(--text);}
+body{font-family:'Noto Sans JP',-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;color:var(--text);}
+/* ボタンや入力欄は既定でフォントを引き継がないので揃える */
+button,input,select,textarea{font-family:inherit;}
 
 /* カード */
 .card{border:none;border-radius:20px;box-shadow:var(--shadow);margin-bottom:12px;}
