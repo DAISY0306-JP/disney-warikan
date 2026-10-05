@@ -901,6 +901,24 @@ body::before{background:var(--bg-plain);}
  */
 .container{padding-bottom:0 !important;}
 .container::after{content:'';display:block;height:calc(var(--footer-h) + env(safe-area-inset-bottom) + 20px);}
+
+/* ===== ログイン画面 ===== */
+.auth-shell{padding-top:12px;}
+.auth-hero{position:relative;text-align:center;padding:26px 16px 22px;margin-bottom:14px;border-radius:20px;overflow:hidden;color:var(--p);
+  background:radial-gradient(circle at 0 100%,#fff 9px,transparent 9.5px),radial-gradient(circle at 100% 100%,#fff 9px,transparent 9.5px),rgb(var(--p-rgb) / .07);}
+.auth-hero::after{content:'';position:absolute;right:-14px;bottom:-24px;width:120px;height:120px;transform:rotate(30deg);opacity:.08;pointer-events:none;
+  background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff5a5f' d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E");}
+.auth-logo{width:84px;height:84px;margin:0 auto 12px;border-radius:20px;background:#fff;box-shadow:0 6px 16px rgb(var(--p-rgb) / .18);overflow:hidden;}
+.auth-logo svg{width:100%;height:100%;display:block;}
+.auth-lbl{color:rgb(var(--p-rgb) / .7);}
+.auth-title{font-family:var(--round);font-size:26px;font-weight:800;color:var(--p);margin:4px 0 6px;letter-spacing:.02em;}
+.auth-sub{font-size:13px;color:#6b6676;font-weight:600;}
+.auth-card .card-body{padding:20px 18px 18px;}
+.auth-login{width:100%;margin-top:6px;font-family:var(--round);}
+.auth-signup{display:block;width:100%;margin-top:10px;padding:12px;border-radius:14px;border:1.5px solid rgb(var(--p-rgb) / .35);background:#fff;color:#6b6676;font-size:14px;font-weight:600;cursor:pointer;}
+.auth-signup b{color:var(--p);font-weight:800;}
+.auth-msg{margin-top:12px;line-height:1.7;text-align:center;}
+.auth-foot{font-size:12px;color:#8a8594;text-align:center;line-height:1.7;margin-top:8px;}
 </style>
 
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAPmElEQVR4nOydCXRU1RnH/4CSQAgJSzKBIIsiq1IVRarIQQW1WovgvrRHj/XYVg6iR1zADRQttC61tnqkolZPVVQWwV1EihEEDYsSUEHZsieAQCACot+dN5kkM+8mb2bud2eS+X4nJ+f5nCEz8/7zbfd+3zvi559/hiC4cQQEQYOIQ9Ai4hC0iDgELSIOQYuIQ9Ai4hC0iDgELSIOQYuIQ9Ai4hC0iDgELSIOQYuIQ9Ai4hC0iDgELSIOQYuIQ9Ai4hC0iDgELSIOQYuIQ9Ai4hC0iDgELSIOQYuIQ9Ai4hC0iDgELSIOQYuIQ9Ai4hC0iDgELSIOQYuIQ9Ai4hC0iDgELSIOQYuIQ9Ai4hC0iDgELSIOQYuIQ9Ai4hC0iDgSiZJSlJaq33v3qv/s1Am9eqJHd8QJEUecKCoO6KC0LHBQVq59cO9jcM5InP5r2KWF3DWBncJClPgVQDpwbENFJaL42Lt2wdiLMHQIWrSAFUQc/Nw4LuAmjHDCINwyHkfYMPktIXBTXQ2DrF6LGY/CChJzNAZd2uKSmsigDKediuOPi+Dphw6pH7OsK8C/nsZNfwIzIo467N+PohKUlKDMHxw40eKePfUes68qMnEUrAcHny7HwAEYMRycJKs4KAhwrn1JSW2cuLeq8SeuWoP91WiTCo8sfAdMzFuA4cPQkjEwSAJx7N5dL2N0jvftQ3T89BNefQ3X/t7Tg7dtVy6AifJyfJ6PISeDjeYljl27apLG0tqD/UbjQeKDReh9NIad3sjDKFj5z3NgZcVKEUcYlH7v3FVTRKqjgx8PwA4zn0OPHjiqm/YBu37AQzNUhYOV7zeDk6ZQ56ioCFx+qiEWFqnfFDAePIj4kpKC88/F+eehbdt658mVLFqMpXmGM1gds55BSmvwkEjioFdSXlGnkuiPFkkKxlNBg6SlqaoULX90y1Wvmez8hm9gk4cfQPejwEOcxHH4sNJBcJ2ptMYwULgnRMSEcTiFK+ywEnPs2KmMbVFRbSmJ/IJghFLGT5JTHMXFWPA28leH1pGaMR0yVShq0xg3PXEcOIBnn8cnnyKpGHwSenbH1u1Y+TmsQU6ZDQZxUOjwt0fVfoVko326+u3Lhk1Km5A4Kisx5UFlWpMQJ3elxJJK2hRx26Fyh8rqjzwSDBitzNOn8+D0JFUGsadm04ZjQqzRwBay2DAqjpdnJ3UaUlWzbkfFD5uwhR3m3MrmLfjwIyQzwe1elsVRmvjimDsfSU7QraSmwCZs2awht0K565ov0VQ4uhdGnY0uXWAWCrkoR6PFP8700oVEdytbtsZ/JcwjF4/B2NGB4y/y8dRMtQHMFMs+g33Y3Iohy1HaROLQAf1rlQF/2erKy2CWtLYR7BMzQkUlU+ZsSBx2lqdj59KxoWd6HwODdO6Mc0fhvHOYCg/uULWe58tpSByt2T6LISerjzs7C7EzoB/6HBt6cuMmGITMRosWqgiW1Rk24fEshmKOFAZD2i4Nd05UzaLEH65WizUffYxYGHORy8lFi2GQ4NbUdu1gk4S2HB07wDi33BxQhsP118bULHpsb2U5QshfpUJpg1TFSRw8CYshcfh8MEt6Ovr1CT35lxsxKJKekbpcMsbl5BzTtRmyHIf96/XtPNfBhg/Dk49jyj0xdTiWJrI4aDXBbIi+Z497kDthfD1z4hGKOo8bGHpyzVqWDbpOEd17kTR/NdLbqVcYSwdbSSK7FTAYDwoywqE1zztvi/hv1U1fg8zhKek6RXTv2Qo9/qMl6oBC76jzalrSYshmE1gcny7H7NddzpM7n3Q72reHR3p0x68GhZ78ap3hPCXIlm3Ytx+rVkfwlPlvBjbP/vZ8DD8DUUDZbEUFTGNOHDkMm1zmL1QdROF07qT0kerNkYXXNojX5oCJwkK8857aM+udXT8gb1ng+IbrXDygFxg8SwJbDofnX8QXq1zOH9UNt9+KVq0aeTqZjRNPCD1ZsIHLbDhQnaNDZkTPUI2vzs5Teu6t49WclkhhiEkTXhzEP57E127NIH374OZxjYy5GetW25g7D6ycfSbOGqGSZ+/QpV1Rs/M0JQV3TURmhjqmd0cFwIED1D9IkROZTO2/YN5ymFuyz2HbO0n+eMajuP9ul/bDwSfij9dh5iz3J+Z2VQ8I4duNynKw4hQ56KLS3wrnxutVDETvaPOWeufnL8CppwSOO3bE1PvUGyc11O2jH3oqbp/k/kcZSh3mxJGZqTJ1pu40SmsfmoEH7nP56owYrlaeXHeT0AJsuF15fS64oWoH1Tl0dbBVa1TUOfkOzHpBhU1ZWep71Tkr9NvVqaPLczP0YXhpIouD6JITWSAWEbt3Y9pf1fcpPexDpwLXjh1YsrTeSTIb4R3o9GWlPIUbKnUocaQpaYb3sKz8Ql1I8sLj/gzv0NsvKsFb+mkfDDtJjYojx8coDvjf/8MzcO9kl61W5FyobpZfJ4EcM9rFbMx+AxbYWwUnAKN1uPCBMCSXj5fi8ksa+UfIp7zyWqBLlOKJA40NECCbTRa0gaAkcoyKgy8mDUJLIY88rupgIXkKOWYKTqdNxzff+l9Jdq3/DkJmg6qiFgjuNCbP4jotqG0b9Xt/NdauVRdetY+XqWEsoy+sneS0NA9vv4uIICUZFYfR3ed2+nkK1uPJp13MNUU8lNySa4M/SQmfh/QGc5ISJLjTuJXmu5fjf5FvzMUT/8arr6vV5nUFykIEM1h6dwvfRqSYTliMiiOH33I4rFiJF15yOd+mDSbfqdYphp0W+r+oNpW/CnZQE0TK8f0WbaMGfVBkLd7/MPR8cJgCWbjiEkSK6YSlqbmVIFQ5pXj+wgtCz1P1iVY4w7ETbThQuEBOoQH++ZRyASHzJqiwEaz5vhXVmDnTCYtRy0FXy8pk3QAUr3ns1d5eqGarWYZWf3TLb2TGwnP+brmBg63boqzEJLRbgfU24qdnemqJmGO9p4Zc26izVFnTO7k14nhzIaIjCk/UIMbFYdGzwB+4PfYENn3X0GOKi/HZinpn0tPVxWO9VYVTAaNSR5s2Xp/iWI4dO7F8BaKDrNHOXTCHaS9g2XIQBw9i+iMqznDylHDylquxkFR/pByBIkF6hcERb4VFahqkk/2aJZjNUsnOY18MVe0ISl9jmf1CYUeka356TIsjx67lcKArQcWxaVOUSQjHdYOgA12PKy7F1IdgnHp9s95qlxTDvvu+mnsfC5Sw9OsLQzRNy9E+XZkB+lu+GntAP94NeF1oaZdcofGFib116mAeWbwEsWM0JjUuDk7LQVXRc0aqNlezEmwblaoaJmg52jXhjnvT4qB1atfVJiP87gJcMhZmoRo2RR7GoU+A1nrIzdnM7WG4DsYwc5/Ps/TvB4McPqxWaqb/vfE1rehYt0FdqvVfwyZliexW4PcsTEMBfvwR0eHMRq6diVtzwz3WmbhU6eKefR4OGUJa3Pe++7pBGMRBseEasEAr3SedGPGznn0eH//f3gS3urRurXYX7LY7hpV0n7ji4HMrtHJWuaN2ixR97ysqay2B8zNxQuhUlpQUF2VQYZvyWLp4Gzdx6SaltWq3p5gjb5nVcS6UsIT3i0cFj+VggrzDLRNVsYsCvZ07lV8Iv64lZaHioMdTMZReVXa2Ovb5815n+y78aQWtyZltp3ZISQ1Eo1lZdsVh7G/xxBx8kLXYrnfkZAnCb8F09pnqRwfVIa6+UlWsqzzcwysi4pXNliSyOFiz2SCkAzIDTimsiy9gDzIyEAVk/08fivcXwSxk1aqr1Sq87eGCxhIWBnE4o0vYJqeq/X9UBzOb1qbwDGqiOimJo8nWwXjuLcjnWWg1dfxNhpUBuDeYxI5TRKfCborF4ZNV+zzd5tIDTOJgS1gG9IdZKirw0svYwFOq+qFm0rflOqkh48HzovkSllgm09GlcvLe4pp7hBWXcJVHHbZtV9vBqSplPNptGMrwjzkaMcMjDj7LQTWDqy6PeFbfsuV4ZhavDlyhkm7UO3diwdBwRyZxsFkO+gouzau3/U7dSzZ4N2H/75FnheaubdPioIwg3XLVi9xr0XhEvc5QHx5x6DZlGWHWC1jwlmo1rvYvqIZPTg7fShmXLUgOpwxWDQel5fgkD9YIuZtptPCIg7JZKnJTqZsDqqA4jSE6whN9Sq0tlF5ccTb7ZJhZ7PBKA3dDjgSebAXWdxrXJTxWJ7EaGXMbBeXlSpRbt8EatLZgSBxsKRZZ8oL1iAuuRkXtBYzHgPavCtSPTYad5tIKGhV8lsP6NvQgFIWEe7Q0M2440aGCygW/gSGao1shVoftKKnah2SAlJG4rQlBcuIqjvc+qJfNfvc9vvwKcaFnD5w8GH2PVZONCwuxeasau8B0j0Sy1qMvhDnY7mVPtv3aGxBHcnMx8ky1NLpxk5pHaL/O0aunGhkSfvuEQ4dUF/i8BbVr+kag3P7+yehkcj4HmziIcRPMduc1JShfuHdSQ/UGquXfM8VYtk9/7rYJ6m4vRmGLOVAzoiQJ6doFd9/VSCUqIwOT7jCz1WPEcEy917gywBhzwO8C1zMPdUxMrrnK0x4OCssuuxjP/RfRkZmBQYNULw9bPZpZHEmIGrV+vNcHnzEMr8xW/QSNkp3t7wX374Tt2hW9epjaYt4AIg7TkDHwTkprNZOUcqsgrVqpYq7PV9MGnK2OKaptyRkAaGAVR1yz2XjRP8LtSOeOUhfe6QWnT6xzp0YGdluEUxw5SSmOlhFeWrIQ11yJhITTWKWmBgaSJBXxsP9MMO9t7NuHpYc9QWiT6g8OfIFQ0Tlu9C4fTQdmcQwdEuv9PhMEWrcLBIm+2mixfTqaNcziGDgA3btjq9Hbc3JDJQqnRapWBz7btwJNDDjL5w5ff4up05CY0Fff56sjBX8zbXTjo5oj/OIgXvyfGoUWX6ieGIwPgmpI5Wl0ay5Yaba54lL/VF5bG8M6ZAYuv8+vA6opOdMWhAixYjngX8F/7AlP04a9Q8Wijh1c4oNIu1oEDbbEAf+u8cVL1DCMPZFPuiEdUOmwbnDgSMFym2GSYVEcDrTINGeeWk3QzeNymvSDwYEjCHINzah+0FSwLo4gVByr8N+hyDEklCtSppCdnaRF94QkfuIQEh7x2YIWEYegRcQhaBFxCFpEHIIWEYegRcQhaBFxCFpEHIIWEYegRcQhaBFxCFpEHIIWEYegRcQhaBFxCFpEHIIWEYegRcQhaBFxCFpEHIIWEYegRcQhaBFxCFpEHIIWEYegRcQhaBFxCFpEHIIWEYegRcQhaBFxCFpEHIIWEYegRcQhaBFxCFpEHIIWEYegRcQhaBFxCFpEHIIWEYegRcQhaPkFAAD//8Mli9YAAAAGSURBVAMA8Cv3eAE/WrwAAAAASUVORK5CYII=">
@@ -909,29 +927,30 @@ body::before{background:var(--bg-plain);}
 </head>
 <body>
 <div class="container">
-<div class="card" id="authShell">
-  <div class="card-header">
-    <h2><span class="hd-ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>ログイン</h2>
+<div id="authShell" class="auth-shell">
+  <div class="auth-hero">
+    <div class="auth-logo"><svg viewBox="0 0 512 512" aria-hidden="true"><g transform="rotate(-8 256 256)"><rect x="76" y="146" width="360" height="220" rx="35" fill="#ff5a5f"/><circle cx="328" cy="146" r="24" fill="#fff"/><circle cx="328" cy="366" r="24" fill="#fff"/><line x1="328" y1="183" x2="328" y2="329" stroke="#fff" stroke-opacity=".5" stroke-width="8" stroke-dasharray="15 13" stroke-linecap="round"/><g stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M161 199 L202 259 L243 199"/><path d="M202 259 V319"/><path d="M169 267 H235"/><path d="M169 293 H235"/></g><g transform="translate(359,221) scale(2.93) rotate(90 12 12)"><path fill="#fff" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></g></g></svg></div>
+    <div class="pass-lbl auth-lbl">✈︎ TRIP WARIKAN</div>
+    <h1 class="auth-title">割り勘アプリ</h1>
+    <p class="auth-sub">旅行の立て替えを、みんなでかんたんに記録・精算</p>
   </div>
-  <div class="card-body">
-    <div class="invite-note" id="inviteNote" style="display:none;">🎫 旅行に招待されています。ログイン（または新規登録）すると自動で参加します。</div>
-    <div class="info-text">
-      Supabaseでログインすると、旅行ごとの割り勘データを保存できます。JSON保存/読込もバックアップとして残しています。
+  <div class="card auth-card">
+    <div class="card-body">
+      <div class="invite-note" id="inviteNote" style="display:none;">🎫 旅行に招待されています。ログイン（または新規登録）すると自動で参加します。</div>
+      <div class="input-group">
+        <label>メールアドレス</label>
+        <input type="email" id="authEmail" placeholder="example@email.com" autocomplete="email">
+      </div>
+      <div class="input-group">
+        <label>パスワード</label>
+        <input type="password" id="authPassword" placeholder="6文字以上" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary auth-login" onclick="signIn()">ログイン</button>
+      <button class="auth-signup" onclick="signUp()">はじめての方は <b>新規登録</b></button>
+      <p id="authMsg" class="small auth-msg"></p>
     </div>
-    <div class="input-group">
-      <label>メールアドレス</label>
-      <input type="email" id="authEmail" placeholder="example@email.com" autocomplete="email">
-    </div>
-    <div class="input-group">
-      <label>パスワード</label>
-      <input type="password" id="authPassword" placeholder="6文字以上" autocomplete="current-password">
-    </div>
-    <div class="action-buttons" style="flex-direction:row;">
-      <button class="btn-export" onclick="signIn()" style="flex:1;">ログイン</button>
-      <button class="btn-export" onclick="signUp()" style="flex:1;">新規登録</button>
-    </div>
-    <p id="authMsg" class="small" style="margin-top:12px;line-height:1.7;"></p>
   </div>
+  <p class="auth-foot">ログインすると、旅行ごとのデータがアカウントに保存され、<br>友達と共有できます。</p>
 </div>
 
 <div id="appShell" style="display:none;">
