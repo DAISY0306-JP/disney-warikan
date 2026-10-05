@@ -902,7 +902,7 @@ body::before{background:var(--bg-plain);}
  * 余白を「中身（透明なブロック）」として最後に置き、確実にスクロール範囲に含める。
  */
 .container{padding-bottom:0 !important;}
-.container::after{content:'';display:block;height:calc(var(--footer-h) + env(safe-area-inset-bottom) + 20px);}
+.container::after{content:'';display:block;height:calc(var(--tabbar-h,calc(var(--footer-h) + env(safe-area-inset-bottom))) + 48px);}
 
 /* ===== ログイン画面 ===== */
 .auth-shell{padding-top:12px;}
@@ -2897,7 +2897,14 @@ function showTab(name){
   if(name==='add')renderCatPicker(); // 選択中のカテゴリが見える位置にスクロール
   try{localStorage.setItem('warikanTab',name);}catch(e){}
 }
+// 下のタブの実際の高さ（ホームバー分を含む）を測り、中身の最後の余白に使う
+function syncTabbarHeight(){
+  const f=document.getElementById('footerBar');
+  if(f&&f.offsetHeight)document.documentElement.style.setProperty('--tabbar-h',f.offsetHeight+'px');
+}
+window.addEventListener('resize',syncTabbarHeight);
 function restoreTab(){
+  requestAnimationFrame(syncTabbarHeight);
   let name='add';
   try{name=localStorage.getItem('warikanTab')||'add';}catch(e){}
   showTab(name);
