@@ -1226,6 +1226,64 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .toast .ti{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
 .toast .ti.ok{stroke:#5ee0a8;}.toast .ti.warn{stroke:#ff9a9d;}
 .sett-note .ti{width:13px;height:13px;vertical-align:-2px;margin-right:3px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ===== 1. 旅の進み具合（搭乗券の点線） ===== */
+.pass-perf.pf{position:relative;--pf:0;--pill:118px;}
+.pf-done,.pf-plane,.pf-status{display:none;}
+.pass-perf.pf.on .pf-done,.pass-perf.pf.on .pf-plane,.pass-perf.pf.on .pf-status{display:block;}
+.pf-done{position:absolute;left:0;top:-2px;height:2px;width:calc((100% - var(--pill)) * var(--pf) + 4px);background:var(--p);border-radius:2px;}
+.pf-plane{position:absolute;top:-10px;left:calc((100% - var(--pill)) * var(--pf) - 2px);width:18px;height:18px;transition:left .6s ease;}
+.pf-plane svg{width:18px;height:18px;fill:var(--p);transform:rotate(90deg);}
+.pf-status{position:absolute;right:4px;top:-9px;height:16px;padding:0 8px;border-radius:999px;background:#fff;border:1px solid rgb(var(--p-rgb) / .35);
+  color:var(--p);font-size:9.5px;font-weight:800;letter-spacing:.08em;line-height:14px;white-space:nowrap;}
+.pass-perf.pf[data-phase="flight"] .pf-status{background:var(--p);color:#fff;border-color:var(--p);}
+.pass-perf.pf[data-phase="flight"] .pf-plane svg{animation:pfbob 2.4s ease-in-out infinite;}
+@keyframes pfbob{0%,100%{transform:rotate(90deg) translateX(0);}50%{transform:rotate(90deg) translateX(-1.5px);}}
+/* ===== 3. バーコード・搭乗券の画面 ===== */
+.pass-bottom{position:relative;}
+.pass-barcode{position:absolute;right:16px;top:10px;width:26px;height:44px;padding:0;border:none;background:none;cursor:pointer;}
+.pass-barcode svg{width:100%;height:100%;fill:rgb(var(--p-rgb) / .75);}
+.bp-overlay{display:flex;align-items:center;justify-content:center;padding:16px;}
+.bp-overlay:not(.active){display:none;}
+.bp-card{width:100%;max-width:400px;max-height:calc(100vh - 32px);overflow-y:auto;background:#fff;border-radius:22px;padding:18px 20px 16px;box-shadow:0 20px 50px rgba(20,24,35,.3);animation:bpin .35s cubic-bezier(.2,1.2,.4,1);}
+@keyframes bpin{from{transform:translateY(30px) scale(.96);opacity:0;}to{transform:none;opacity:1;}}
+.bp-head{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--p);}
+.bp-route{display:flex;align-items:center;justify-content:space-between;margin:12px 0 4px;}
+.bp-ap{display:flex;flex-direction:column;min-width:0;}
+.bp-ap:last-child{align-items:flex-end;text-align:right;}
+.bp-ap b{font-family:var(--round);font-size:38px;font-weight:800;color:var(--p);letter-spacing:.04em;line-height:1.1;}
+.bp-ap span{font-size:11px;font-weight:700;color:#8a8594;white-space:nowrap;}
+.bp-plane svg{width:26px;height:26px;fill:var(--p);transform:rotate(90deg);}
+.bp-trip{font-family:var(--round);font-size:17px;font-weight:800;color:var(--text);margin:6px 0 10px;}
+.bp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;}
+.bp-cell{display:flex;flex-direction:column;}
+.bp-cell>span{font-size:9.5px;font-weight:800;letter-spacing:.14em;color:#8a8594;}
+.bp-cell b{font-family:var(--round);font-size:16px;font-weight:800;color:var(--text);letter-spacing:.04em;}
+.bp-pax{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px;font-size:13px;font-weight:700;color:var(--text);}
+.bp-pax span{display:inline-flex;align-items:center;gap:5px;}
+.bp-pax .av{width:20px;height:20px;}
+.bp-pax em{font-style:normal;font-size:10.5px;font-weight:800;color:var(--p);}
+.bp-perf{border-top:2px dashed rgb(var(--p-rgb) / .3);margin:14px -4px 14px;}
+.bp-qr{display:flex;justify-content:center;}
+.bp-qr svg{width:168px;height:168px;border-radius:10px;}
+.bp-qr-box{width:168px;height:168px;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;border-radius:12px;background:#f6f6f8;color:#8a8594;font-size:12px;font-weight:700;}
+.bp-note{text-align:center;font-size:12px;color:#6b6676;margin:8px 0 12px;}
+.bp-actions{display:flex;flex-direction:column;gap:8px;}
+.bp-close{min-height:44px;border-radius:14px;border:1.5px solid #e6e6ea;background:#fff;color:#6b6676;font-weight:700;font-size:14px;cursor:pointer;}
+.bp-barcode{margin-top:14px;height:34px;}
+.bp-barcode svg{width:100%;height:34px;fill:#2e2a3d;}
+/* ===== 6. 機内モード ===== */
+.offline-bar{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 6px);z-index:2250;transform:translate(-50%,-160%);display:flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:999px;background:#2e2a3d;color:#fff;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 6px 16px rgba(20,24,35,.25);transition:transform .35s ease;pointer-events:none;}
+.offline-bar.show{transform:translate(-50%,0);}
+.ob-ic svg{width:14px;height:14px;fill:#ffc94a;transform:rotate(45deg);display:block;}
+/* ===== 8. 手荷物タグ風のカテゴリ ===== */
+.cat-row .cat-btn{position:relative;padding-left:20px !important;border-radius:0 10px 10px 0 !important;border-color:transparent !important;box-shadow:none !important;
+  clip-path:polygon(10px 0,100% 0,100% 100%,10px 100%,0 calc(50% + 5px),0 calc(50% - 5px));}
+.cat-row .cat-btn::before{content:'';position:absolute;left:8px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 1.2px rgb(0 0 0 / .12);}
+.cat-row .cat-btn.active{background:var(--cf,var(--p)) !important;color:#fff !important;}
+.cat-row .cat-btn.active .ci{color:#fff;stroke:#fff;}
+@media (prefers-reduced-motion:reduce){.pass-perf.pf[data-phase="flight"] .pf-plane svg,.bp-card{animation:none;}.pf-plane{transition:none;}}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1272,8 +1330,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
       <button type="button" class="pass-trip" id="tripNameBtn" onclick="openTripSheet()">旅行を選択</button>
       <select id="tripSelect" hidden onchange="selectTrip(this.value)" aria-label="旅行を選択"></select>
     </div>
-    <div class="pass-perf"></div>
+    <div class="pass-perf pf" id="passPerf"><div class="pf-done"></div><span class="pf-plane"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.6v-1.2l-8-4.6V3.6a1.4 1.4 0 0 0-2.8 0v3.2l-8 4.6v1.2l8-2.3v4.9l-2.2 1.6v1.1l3.6-.9 3.6.9v-1.1L13 15.2v-4.9z"/></svg></span><span class="pf-status" id="pfStatus"></span></div>
     <div class="pass-bottom">
+      <button type="button" class="pass-barcode" id="passBarcode" onclick="openBoardingPass()" aria-label="搭乗券を開く"></button>
       <div class="pass-cell"><div class="pass-lbl">合計（円換算）</div><div class="pass-v" id="footerTotal">¥0</div></div>
       <div class="pass-cell"><div class="pass-lbl">1人あたり</div><div class="pass-v2" id="perPersonTotal">-</div></div>
       <div class="pass-cell"><div class="pass-lbl">メンバー</div><div class="pass-v2" id="memberCount">-</div></div>
@@ -1515,6 +1574,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 </div>
 
 <div id="toast" class="toast"></div>
+<div class="offline-bar" id="offlineBar" role="status"><span class="ob-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.6v-1.2l-8-4.6V3.6a1.4 1.4 0 0 0-2.8 0v3.2l-8 4.6v1.2l8-2.3v4.9l-2.2 1.6v1.1l3.6-.9 3.6.9v-1.1L13 15.2v-4.9z"/></svg></span>機内モード中 · 電波が戻ったら同期します</div>
+<div class="sheet-overlay bp-overlay" id="bpOverlay" onclick="if(event.target===this)closeBoardingPass()">
+  <div class="bp-card" id="bpCard"></div>
+</div>
 <div class="announce" id="announce" onclick="hideAnnounce()" role="status" aria-live="polite">
   <span class="an-ic"><svg viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 19a2 2 0 0 0 4 0"/></svg></span>
   <span class="an-body"><span class="an-lbl">ANNOUNCEMENT</span><span class="an-msg" id="announceMsg"></span></span>
@@ -1814,7 +1877,7 @@ function renderPassClock(){
   el.innerHTML=`<span class="pc-time">${t.code} ${info.time}</span><span class="pc-diff">${info.diff}</span>`;
   if(pass)pass.classList.add('has-clock');
 }
-setInterval(renderPassClock,30000);
+setInterval(()=>{renderPassClock();renderPassProgress();},30000);
 // 7. 座席番号（旅行ごとに列が決まり、メンバーの順に A, B, C…）
 const SEAT_LETTERS='ABCDEFGHJK';
 function seatNo(i){
@@ -1830,9 +1893,35 @@ function normalizeTripMeta(m){
   return out;
 }
 const shortDay=d=>{if(!isDateStr(d))return'';const[,m,dd]=d.split('-').map(Number);return`${m}/${dd}`;};
-function flightNo(meta){
-  if(isDateStr(meta.start)){const[,m,d]=meta.start.split('-');return`WT ${m}${d}`;}
-  let h=0;for(const ch of String(currentTripId||'trip'))h=(h*31+ch.charCodeAt(0))>>>0;return`WT ${String(100+h%900)}`;
+function flightNoOf(start,id){
+  if(isDateStr(start)){const[,m,d]=start.split('-');return`WT ${m}${d}`;}
+  let h=0;for(const ch of String(id||'trip'))h=(h*31+ch.charCodeAt(0))>>>0;return`WT ${String(100+h%900)}`;
+}
+const flightNo=meta=>flightNoOf(meta.start,currentTripId);
+// 旅の状態（出発前・旅行中・帰国後・精算完了）
+function tripPhase(meta,done,today=todayStr()){
+  if(done)return{key:'done',en:'ARRIVED',ja:'精算完了'};
+  if(!meta||!meta.start)return{key:'none',en:'',ja:'日程未定'};
+  const end=meta.end||meta.start;
+  if(today<meta.start)return{key:'checkin',en:'BOARDING',ja:'搭乗手続き中'};
+  if(today<=end)return{key:'flight',en:'IN FLIGHT',ja:'飛行中'};
+  return{key:'arrived',en:'ARRIVED',ja:'到着'};
+}
+// 1. 搭乗券の点線を、旅の進み具合にする
+function renderPassProgress(now=new Date()){
+  const el=document.getElementById('passPerf'),st=document.getElementById('pfStatus');if(!el||!st)return;
+  if(!tripMeta.start){el.classList.remove('on');return;}
+  const day=d=>new Date(d+'T00:00:00');
+  const start=day(tripMeta.start),endD=day(tripMeta.end||tripMeta.start);
+  const total=(endD-start)/86400000+1,today=todayStr();
+  const ph=tripPhase(tripMeta,completedAt,today);
+  let pf=0,label=ph.en;
+  if(ph.key==='checkin'){const n=Math.round((start-day(today))/86400000);label=`BOARDING · あと${n}日`;}
+  else if(ph.key==='flight'){pf=Math.min(1,Math.max(0,(now-start)/(total*86400000)));label=`IN FLIGHT · Day ${Math.floor((day(today)-start)/86400000)+1}/${total}`;}
+  else pf=1;
+  el.style.setProperty('--pf',pf.toFixed(3));
+  el.classList.add('on');el.dataset.phase=ph.key;
+  st.textContent=label;
 }
 function tripDatesText(meta){
   if(!meta.start)return'';
@@ -1849,12 +1938,70 @@ function dayLabel(date){
   return`Day ${diff+1} · ${fmtDay(date)}`;
 }
 function renderPassRoute(){
-  renderPassClock();
+  renderPassClock();renderPassProgress();renderBarcode();
   const el=document.getElementById('passRoute');if(!el)return;
   const f=AIRPORT[tripMeta.from],t=AIRPORT[tripMeta.to];
   if(!t){el.innerHTML='<span class="pr-set">✈\ufe0e 行き先と日程を設定</span>';return;}
   el.innerHTML=`<span class="pr-codes">${f?f.code:'---'}<i>✈\ufe0e</i>${t.code}</span><span class="pr-meta">${flightNo(tripMeta)}${tripDatesText(tripMeta)?' · '+tripDatesText(tripMeta):''}</span>`;
 }
+// 旅行ごとに決まった模様のバーコード（飾り）
+function barcodeSVG(seed,w,h,vertical){
+  let x=0,hash=0,out='';for(const ch of String(seed||'trip'))hash=(hash*131+ch.charCodeAt(0))>>>0;
+  const len=vertical?h:w;
+  while(x<len){
+    hash=(hash*1103515245+12345)>>>0;
+    const bw=1+(hash>>>8)%3,gap=1+(hash>>>12)%2;
+    if(x+bw>len)break;
+    out+=vertical?`<rect x="0" y="${x}" width="${w}" height="${bw}"/>`:`<rect x="${x}" y="0" width="${bw}" height="${h}"/>`;
+    x+=bw+gap;
+  }
+  return`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">${out}</svg>`;
+}
+function renderBarcode(){const b=document.getElementById('passBarcode');if(b)b.innerHTML=barcodeSVG(currentTripId,26,44,true);}
+// QR コードのライブラリは、搭乗券を開いたときに読み込む
+let _qrLoading=null;
+function loadQrLib(){
+  if(window.qrcode)return Promise.resolve(true);
+  if(_qrLoading)return _qrLoading;
+  _qrLoading=new Promise(res=>{const sc=document.createElement('script');sc.src='vendor/qrcode.js';sc.onload=()=>res(!!window.qrcode);sc.onerror=()=>{_qrLoading=null;res(false);};document.head.appendChild(sc);});
+  return _qrLoading;
+}
+function qrSVG(text){
+  const q=qrcode(0,'M');q.addData(text);q.make();
+  const n=q.getModuleCount(),m=2;let d='';
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;
+  return`<svg viewBox="0 0 ${n+m*2} ${n+m*2}" shape-rendering="crispEdges" aria-label="招待用のQRコード"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#2e2a3d"/></svg>`;
+}
+async function openBoardingPass(){
+  const card=document.getElementById('bpCard');
+  const f=AIRPORT[tripMeta.from],t=AIRPORT[tripMeta.to];
+  const trip=trips.find(x=>x.id===currentTripId),me=getMeIdx();
+  const cell=(l,v)=>`<div class="bp-cell"><span>${l}</span><b>${v}</b></div>`;
+  const ap=a=>a?`<div class="bp-ap"><b>${a.code}</b><span>${esc(a.city)}${a.name&&a.name!==a.city?'・'+esc(a.name):''}</span></div>`:`<div class="bp-ap"><b>---</b><span>未設定</span></div>`;
+  card.innerHTML=`
+    <div class="bp-head"><span>BOARDING PASS</span><span>搭乗券</span></div>
+    <div class="bp-route">${ap(f)}<span class="bp-plane"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.6v-1.2l-8-4.6V3.6a1.4 1.4 0 0 0-2.8 0v3.2l-8 4.6v1.2l8-2.3v4.9l-2.2 1.6v1.1l3.6-.9 3.6.9v-1.1L13 15.2v-4.9z"/></svg></span>${ap(t)}</div>
+    <div class="bp-trip">${esc(trip?.name||'旅行')}</div>
+    <div class="bp-grid">
+      ${cell('FLIGHT',flightNo(tripMeta))}${cell('DATE',tripDatesText(tripMeta)||'未定')}
+      ${cell('GATE',`<span id="bpGate">${_shareCode?esc(_shareCode):'—'}</span>`)}${cell('SEAT',me>=0?seatNo(me):'—')}
+    </div>
+    <div class="bp-pax">${members.map((m,i)=>`<span>${avatar(i)}${memberName(i)}<em>${seatNo(i)}</em></span>`).join('')}</div>
+    <div class="bp-perf"></div>
+    <div class="bp-qr" id="bpQr"><div class="bp-qr-box">読み込み中…</div></div>
+    <p class="bp-note">このQRコードを友達に読み取ってもらうと、この旅行に参加できます</p>
+    <div class="bp-actions"><button class="btn btn-primary" onclick="shareInviteLink()">招待リンクを送る</button><button class="bp-close" onclick="closeBoardingPass()">閉じる</button></div>
+    <div class="bp-barcode">${barcodeSVG(currentTripId,300,34,false)}</div>`;
+  document.getElementById('bpOverlay').classList.add('active');
+  const box=document.getElementById('bpQr');
+  if(!sb||!currentUser||!currentTripId){box.innerHTML='<div class="bp-qr-box">ログインすると、招待用のQRコードが出ます</div>';return;}
+  const [code,ok]=await Promise.all([getShareCode(),loadQrLib()]);
+  if(!document.getElementById('bpOverlay').classList.contains('active'))return;
+  if(!code){box.innerHTML='<div class="bp-qr-box">共有コードを作れませんでした</div>';return;}
+  const gate=document.getElementById('bpGate');if(gate)gate.textContent=code;
+  box.innerHTML=ok?qrSVG(inviteUrl(code)):'<div class="bp-qr-box">QRコードを表示できませんでした</div>';
+}
+function closeBoardingPass(){document.getElementById('bpOverlay').classList.remove('active');}
 function openTripInfo(){
   const opts=sel=>AIRPORT_GROUPS.map(([g,list])=>`<optgroup label="${g}">${list.map(([c,city,name,flag])=>`<option value="${c}"${c===sel?' selected':''}>${flag} ${c} ${name===city?city:city+'・'+name}</option>`).join('')}</optgroup>`).join('');
   document.getElementById('tiFrom').innerHTML=opts(tripMeta.from);
@@ -2537,6 +2684,20 @@ async function pollRemote(){
   if(!sameJSON(toSyncView(getDataObject()),_syncBase))saveData();
   else setSyncStatus('🔄 他の人の変更を反映しました: '+new Date().toLocaleTimeString());
 }
+/* ===== 機内モード（電波がないとき） ===== */
+function renderOffline(){
+  const off=navigator.onLine===false;
+  document.getElementById('offlineBar')?.classList.toggle('show',off);
+  document.body.classList.toggle('is-offline',off);
+}
+window.addEventListener('offline',()=>{renderOffline();setSyncStatus('機内モード中：電波が戻ったら同期します');});
+window.addEventListener('online',()=>{
+  renderOffline();
+  if(!sb||!currentTripId||!currentUser||!_syncBase)return;
+  showToast('☁️ 電波が戻りました。同期します');
+  if(!sameJSON(toSyncView(getDataObject()),_syncBase))saveTripDataNow(false);else pollRemote();
+});
+document.addEventListener('DOMContentLoaded',renderOffline);
 function startRemotePolling(){
   if(_pollTimer)return;
   _pollTimer=setInterval(pollRemote,15000);
@@ -3484,6 +3645,7 @@ function calculateSettlement(){
     if(complete&&!completedAt){completedAt=todayStr();saveData();}
     else if(!complete&&completedAt){completedAt='';saveData();}
   }
+  renderPassProgress();
   document.getElementById('settlementList').innerHTML=txs.length
     ?`<div class="sett-progress"><span>全員の精算</span><span>${doneCount} / ${txs.length} 件 済</span></div>${rows}`
     :`<div class="small" style="text-align:center;color:var(--muted);padding:8px;">精算はありません</div>`;
