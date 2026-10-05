@@ -1190,6 +1190,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .settlement-item.tearing .sett-stub>*{opacity:0;animation:stubin .3s ease-out .6s forwards;}
 @keyframes stubin{from{opacity:0;transform:scale(.8);}to{opacity:1;transform:none;}}
 .settlement-item.tearing.done::after{animation:stamp .35s cubic-bezier(.2,1.6,.4,1) .28s both;}
+
+/* 済にした精算は、半券が破り取られたまま */
+.tab-panel[data-tab="settle"] .settlement-item.done .sett-stub{position:relative;border-left:none !important;margin-right:-14px;padding-right:14px;}
+.tab-panel[data-tab="settle"] .settlement-item.done .sett-stub::before{content:'';position:absolute;top:-1px;bottom:-1px;left:-3px;right:-1px;background:#fff;
+  clip-path:polygon(100% 0,100% 100%,0px 100.00%,3px 95.00%,1px 90.00%,4px 85.00%,0px 80.00%,5px 75.00%,1px 70.00%,3px 65.00%,0px 60.00%,4px 55.00%,2px 50.00%,5px 45.00%,0px 40.00%,4px 35.00%,1px 30.00%,3px 25.00%,0px 20.00%,5px 15.00%,1px 10.00%,4px 5.00%,0px 0.00%);}
+.tab-panel[data-tab="settle"] .settlement-item.done .sett-stub>.sett-done-btn{position:relative;z-index:1;}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
