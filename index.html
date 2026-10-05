@@ -1174,6 +1174,22 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 /* 項目名のアイコン */
 .item-ic{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-right:7px;border-radius:8px;background:rgb(var(--p-rgb) / .09);vertical-align:-6px;}
 .item-ic .ci{width:15px;height:15px;margin:0;stroke:var(--p);}
+
+/* 半券が切り離される */
+.tear-piece{position:fixed;z-index:1500;display:flex;align-items:center;justify-content:center;padding-left:6px;pointer-events:none;
+  background:radial-gradient(circle at 100% 50%,#fff 7px,transparent 7.5px),#f7f7f9;border-radius:0 16px 16px 0;
+  border-left:2px dashed rgb(var(--p-rgb) / .3);transform-origin:0 0;box-shadow:0 6px 14px rgba(30,25,50,.12);}
+.tear-piece.go{animation:tearoff .9s cubic-bezier(.3,.1,.5,1) forwards;}
+@keyframes tearoff{
+  0%{transform:none;}
+  12%{transform:translate(5px,-3px) rotate(-4deg);}
+  30%{transform:translate(12px,4px) rotate(8deg);opacity:1;}
+  100%{transform:translate(40px,120px) rotate(28deg);opacity:0;}}
+.settlement-item.tearing{animation:tearjolt .25s ease-out;}
+@keyframes tearjolt{0%{transform:none;}30%{transform:translateX(-4px);}60%{transform:translateX(2px);}100%{transform:none;}}
+.settlement-item.tearing .sett-stub>*{opacity:0;animation:stubin .3s ease-out .6s forwards;}
+@keyframes stubin{from{opacity:0;transform:scale(.8);}to{opacity:1;transform:none;}}
+.settlement-item.tearing.done::after{animation:stamp .35s cubic-bezier(.2,1.6,.4,1) .28s both;}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -3294,14 +3310,42 @@ function settleState(t){
   if(v==null)return'open';
   return roundCur(t.code,v)===roundCur(t.code,t.amount)?'done':'changed';
 }
+/* ===== 済にしたとき、チケットの半券がパキッと切り離される ===== */
+function prepareTear(btn){
+  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stub=btn.closest('.sett-stub'),item=btn.closest('.settlement-item');
+  if(reduce||!stub||!item)return null;
+  const ir=item.getBoundingClientRect(),sr=stub.getBoundingClientRect();
+  // 半券の部分（点線から右端まで）を写し取る
+  const piece=document.createElement('div');piece.className='tear-piece';
+  const w=ir.right-sr.left;
+  Object.assign(piece.style,{left:sr.left+'px',top:ir.top+'px',width:w+'px',height:ir.height+'px'});
+  const b=btn.cloneNode(true);b.removeAttribute('onclick');b.className='sett-done-btn';
+  piece.appendChild(b);
+  // 左の辺をギザギザにする
+  const n=Math.max(6,Math.round(ir.height/9)),pts=['100% 0','100% 100%'];
+  for(let i=n;i>=0;i--)pts.push(`${i%2?3:0}px ${(i/n*100).toFixed(1)}%`);
+  piece.style.clipPath=`polygon(${pts.join(',')})`;
+  return piece;
+}
+function playTear(key,piece){
+  const item=document.querySelector(`.settlement-item[data-key="${CSS.escape(key)}"]`);
+  if(item){item.classList.add('tearing');setTimeout(()=>item.classList.remove('tearing'),950);}
+  document.body.appendChild(piece);
+  requestAnimationFrame(()=>piece.classList.add('go'));
+  try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}
+  setTimeout(()=>piece.remove(),1000);
+}
 function toggleSettled(key,amount,btn){
+  let tear=null;
   if(settled[key]!=null&&roundCur(key.split('>')[2],settled[key])===roundCur(key.split('>')[2],amount)){
     delete settled[key];showToast('「済」を取り消しました');
   }else{
     settled[key]=amount;showToast('✅ 済にしました');
-    if(btn)sparkBurst(btn,8,40);
+    tear=btn?prepareTear(btn):null;
   }
   saveData();updateDisplay();renderMeBar();
+  if(tear)playTear(key,tear);
   // 全員の精算が終わったらお祝い
   const txs=getSettlementTx();
   if(btn&&txs.length&&txs.every(t=>settleState(t)==='done'))playLanding();
@@ -3351,7 +3395,7 @@ function calculateSettlement(){
   const rows=txs.map(t=>{
     const st=settleState(t),key=settleKey(t);
     const note=st==='changed'?`<div class="sett-note">⚠ 金額が変わりました（${fmtPlain(t.code,settled[key])} で済にしていました）</div>`:'';
-    return`<div class="settlement-item${st==='done'?' done':''}">
+    return`<div class="settlement-item${st==='done'?' done':''}" data-key="${key}">
       <div class="settlement-text">${avatar(t.from)}${memberName(t.from)} → ${avatar(t.to)}${memberName(t.to)}${note}</div>
       <div class="settlement-amount">${fmtMoney(t.code,t.amount)}</div>
       <span class="sett-stub"><button class="sett-done-btn" onclick="toggleSettled('${key}',${t.amount},this)">${st==='done'?'✓ 済':'済にする'}</button></span>
