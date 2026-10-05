@@ -1130,6 +1130,46 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
 .rate-row .flap{color:#fff !important;font-size:14px !important;font-weight:700 !important;}
 .rate-row .rate-eq{color:var(--text);}
+
+/* よく使う項目 */
+.quick-row{display:flex;gap:6px;overflow-x:auto;margin-top:8px;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.quick-row::-webkit-scrollbar{display:none;}
+.quick-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 12px 0 9px;border-radius:999px;border:1.5px solid #e6e6ea;background:#fff;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.quick-chip .ci{width:15px;height:15px;stroke:var(--p);}
+.quick-chip.preset{border-style:dashed;color:#6b6676;}
+.quick-chip.active{border-color:var(--p);border-style:solid;background:rgb(var(--p-rgb) / .07);color:var(--p);}
+/* 新着 */
+.tab-btn{position:relative;}
+.tab-badge{display:none;position:absolute;top:4px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--p);color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;font-style:normal;box-shadow:0 0 0 2px #fff;}
+.tab-badge.show{display:block;animation:badgepop .35s cubic-bezier(.2,1.6,.4,1);}
+@keyframes badgepop{from{transform:scale(.3);}to{transform:scale(1);}}
+.fresh-tag{display:inline-block;margin-right:6px;padding:1px 6px;border-radius:6px;background:var(--p);color:#fff;font-size:10px;font-weight:800;letter-spacing:.06em;vertical-align:2px;}
+.tab-panel[data-tab="list"] .expense-item.is-fresh{animation:freshglow 2.4s ease-out 2;border-radius:10px !important;}
+@keyframes freshglow{0%{background:rgb(var(--p-rgb) / .16);}100%{background:transparent;}}
+/* 現地時刻 */
+.pass-clock{position:absolute;right:16px;top:12px;display:none;flex-direction:column;align-items:flex-end;line-height:1.25;cursor:pointer;}
+.pass.has-clock .pass-clock{display:flex;}
+.pass.has-clock::after{display:none;}
+.pass.has-clock .pass-top{padding-right:96px;}
+.pass.complete .pass-clock{display:none;}
+.pass.complete.has-clock .pass-top{padding-right:118px;}
+.pc-time{font-family:var(--round);font-size:13px;font-weight:800;color:var(--p);letter-spacing:.04em;font-variant-numeric:tabular-nums;}
+.pc-time::before{content:'';display:inline-block;width:6px;height:6px;margin-right:5px;border-radius:50%;background:var(--recv);vertical-align:2px;animation:twinkle 2s ease-in-out infinite;}
+.pc-diff{font-size:10px;font-weight:700;color:rgb(var(--p-rgb) / .7);letter-spacing:.04em;}
+/* 座席 */
+.seat-tag{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:30px;height:18px;margin-left:6px;padding:0 5px;border-radius:5px;border:1.2px solid rgb(var(--p-rgb) / .45);color:var(--p);font-family:var(--round);font-size:10.5px;font-weight:800;letter-spacing:.04em;vertical-align:1px;line-height:1;}
+.member-item .seat-tag{margin-left:0;height:24px;min-width:38px;font-size:12px;}
+/* アナウンス */
+.announce{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 10px);z-index:2300;display:flex;align-items:center;gap:12px;max-width:520px;margin:0 auto;padding:12px 16px;border-radius:16px;background:#2e2a3d;color:#fff;box-shadow:0 12px 28px rgba(20,24,35,.28);transform:translateY(-140%);opacity:0;transition:transform .4s cubic-bezier(.2,1.2,.4,1),opacity .3s;pointer-events:none;cursor:pointer;}
+.announce.show{transform:none;opacity:1;pointer-events:auto;}
+.an-ic{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;}
+.an-ic svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.announce.show .an-ic svg{animation:ring .9s ease-in-out 1;transform-origin:50% 10%;}
+@keyframes ring{0%,100%{transform:rotate(0);}20%{transform:rotate(16deg);}40%{transform:rotate(-14deg);}60%{transform:rotate(8deg);}80%{transform:rotate(-4deg);}}
+.an-body{display:flex;flex-direction:column;min-width:0;}
+.an-lbl{font-size:10px;font-weight:800;letter-spacing:.16em;color:#ff9a9d;}
+.an-msg{font-size:13.5px;font-weight:700;line-height:1.5;}
+@media (prefers-reduced-motion:reduce){.announce{transition:opacity .2s;}.announce.show .an-ic svg,.tab-badge.show,.pc-time::before{animation:none;}.tab-panel[data-tab="list"] .expense-item.is-fresh{animation:none;background:rgb(var(--p-rgb) / .08) !important;}}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1171,6 +1211,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   <!-- 上部バー -->
   <div class="pass" id="tripPass">
     <div class="pass-top">
+      <div class="pass-clock" id="passClock" onclick="openTripInfo()"></div>
       <button type="button" class="pass-route" id="passRoute" onclick="openTripInfo()"></button>
       <button type="button" class="pass-trip" id="tripNameBtn" onclick="openTripSheet()">旅行を選択</button>
       <select id="tripSelect" hidden onchange="selectTrip(this.value)" aria-label="旅行を選択"></select>
@@ -1213,7 +1254,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
       <button class="currency-btn" data-cur="USD" onclick="setCurrency('USD')">ドル</button>
       <button class="currency-btn" data-cur="KRW" onclick="setCurrency('KRW')">ウォン</button>
     </div>
-    <div class="input-group"><label>項目名</label><input type="text" id="expenseName" placeholder="例: ランチ代" maxlength="100"></div>
+    <div class="input-group"><label>項目名</label><input type="text" id="expenseName" placeholder="例: ランチ代" maxlength="100">
+      <div class="quick-row" id="quickRow"></div></div>
     <div class="input-group cat-row"><label>カテゴリ</label>
   <div class="cat-picker" id="catPicker"></div>
   <button type="button" class="cat-edit-btn" onclick="openCatManager()">＋ 編集</button>
@@ -1417,6 +1459,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 </div>
 
 <div id="toast" class="toast"></div>
+<div class="announce" id="announce" onclick="hideAnnounce()" role="status" aria-live="polite">
+  <span class="an-ic"><svg viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 19a2 2 0 0 0 4 0"/></svg></span>
+  <span class="an-body"><span class="an-lbl">ANNOUNCEMENT</span><span class="an-msg" id="announceMsg"></span></span>
+</div>
 <div class="info-overlay" id="infoOverlay">
   <div class="info-box">
     <div class="info-title" id="infoTitle">お知らせ</div>
@@ -1554,7 +1600,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
 <nav class="footer-bar tabbar" id="footerBar" style="display:none;">
   <button class="tab-btn" data-tab="add" onclick="showTab('add')"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><span>記録</span></button>
-  <button class="tab-btn" data-tab="list" onclick="showTab('list')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="2.6"/></svg></span><span>一覧</span></button>
+  <button class="tab-btn" data-tab="list" onclick="showTab('list')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="2.6"/></svg></span><span>一覧</span><b class="tab-badge" id="listBadge"></b></button>
   <button class="tab-btn" data-tab="settle" onclick="showTab('settle')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg></span><span>精算</span></button>
   <button class="tab-btn" data-tab="settings" onclick="showTab('settings')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></span><span>設定</span></button>
 </nav>
@@ -1659,6 +1705,48 @@ const AIRPORTS=[
   ['PAR','パリ','🇫🇷'],['LON','ロンドン','🇬🇧'],['ROM','ローマ','🇮🇹'],['BCN','バルセロナ','🇪🇸'],['SYD','シドニー','🇦🇺'],
 ];
 const AIRPORT=Object.fromEntries(AIRPORTS.map(a=>[a[0],{code:a[0],city:a[1],flag:a[2]}]));
+// 行き先のタイムゾーン
+const AIRPORT_TZ={TYO:'Asia/Tokyo',OSA:'Asia/Tokyo',NGO:'Asia/Tokyo',FUK:'Asia/Tokyo',SPK:'Asia/Tokyo',OKA:'Asia/Tokyo',
+  SEL:'Asia/Seoul',PUS:'Asia/Seoul',TPE:'Asia/Taipei',HKG:'Asia/Hong_Kong',SHA:'Asia/Shanghai',
+  BKK:'Asia/Bangkok',SGN:'Asia/Ho_Chi_Minh',DAD:'Asia/Ho_Chi_Minh',MNL:'Asia/Manila',CEB:'Asia/Manila',
+  SIN:'Asia/Singapore',KUL:'Asia/Kuala_Lumpur',DPS:'Asia/Makassar',
+  HNL:'Pacific/Honolulu',GUM:'Pacific/Guam',LAX:'America/Los_Angeles',MCO:'America/New_York',NYC:'America/New_York',LAS:'America/Los_Angeles',
+  PAR:'Europe/Paris',LON:'Europe/London',ROM:'Europe/Rome',BCN:'Europe/Madrid',SYD:'Australia/Sydney'};
+// そのタイムゾーンの UTC からのずれ（分）
+function tzOffsetMin(tz,date=new Date()){
+  try{
+    const p=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})
+      .formatToParts(date).map(x=>[x.type,x.value]));
+    const asUtc=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour%24,+p.minute);
+    return Math.round((asUtc-Math.floor(date.getTime()/60000)*60000)/60000);
+  }catch(e){return null;}
+}
+// 現地時刻と、日本との時差
+function localTimeInfo(code,date=new Date()){
+  const tz=AIRPORT_TZ[code];if(!tz)return null;
+  const off=tzOffsetMin(tz,date),jst=tzOffsetMin('Asia/Tokyo',date);if(off==null||jst==null)return null;
+  const time=new Intl.DateTimeFormat('ja-JP',{timeZone:tz,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(date);
+  const d=(off-jst)/60;
+  const diff=d===0?'時差なし':`日本${d>0?'+':'−'}${Math.abs(d)%1?Math.abs(d).toFixed(1):Math.abs(d)}h`;
+  return{time,diff,hours:d};
+}
+function renderPassClock(){
+  const el=document.getElementById('passClock');if(!el)return;
+  const t=AIRPORT[tripMeta.to];
+  const info=t&&t.flag!=='🇯🇵'?localTimeInfo(t.code):null;
+  const pass=document.getElementById('tripPass');
+  if(!info){el.innerHTML='';if(pass)pass.classList.remove('has-clock');return;}
+  el.innerHTML=`<span class="pc-time">${t.code} ${info.time}</span><span class="pc-diff">${info.diff}</span>`;
+  if(pass)pass.classList.add('has-clock');
+}
+setInterval(renderPassClock,30000);
+// 7. 座席番号（旅行ごとに列が決まり、メンバーの順に A, B, C…）
+const SEAT_LETTERS='ABCDEFGHJK';
+function seatNo(i){
+  let h=0;for(const ch of String(currentTripId||'trip'))h=(h*31+ch.charCodeAt(0))>>>0;
+  return`${10+h%30+Math.floor(i/SEAT_LETTERS.length)}${SEAT_LETTERS[i%SEAT_LETTERS.length]}`;
+}
+const seatTag=i=>`<span class="seat-tag">${seatNo(i)}</span>`;
 function normalizeTripMeta(m){
   m=(m&&typeof m==='object')?m:{};
   const code=c=>AIRPORT[c]?c:'';
@@ -1685,6 +1773,7 @@ function dayLabel(date){
   return`Day ${diff+1} · ${fmtDay(date)}`;
 }
 function renderPassRoute(){
+  renderPassClock();
   const el=document.getElementById('passRoute');if(!el)return;
   const f=AIRPORT[tripMeta.from],t=AIRPORT[tripMeta.to];
   if(!t){el.innerHTML='<span class="pr-set">✈\ufe0e 行き先と日程を設定</span>';return;}
@@ -2259,6 +2348,9 @@ async function selectTrip(id){
   setSyncBase(data.data_json||{});
   if(id===currentTripId){_shareCode=data.share_code||null;renderShareArea();}
   initAppViews();
+  _fresh=new Map();
+  const found=refreshFresh();displayExpenses();
+  announceOnOpen(found);
   setSyncStatus(`「${data.name}」を読み込みました。変更は自動保存されます。`);
 }
 /* ===== 同期（複数人での同時編集） =====
@@ -2299,7 +2391,7 @@ function mergeSync(base,local,server){
   return out;
 }
 function applyRemoteView(view){
-  const prevMembers=JSON.stringify(members);
+  const prevMembers=JSON.stringify(members),prevDone=completedAt;
   const editId=editingExpenseIdx>=0?expenses[editingExpenseIdx]?.id:null;
   _isApplyingRemote=true;applyDataObject(view);_isApplyingRemote=false;
   if(editId){
@@ -2308,7 +2400,10 @@ function applyRemoteView(view){
     else editingExpenseIdx=ni;
   }
   if(JSON.stringify(members)!==prevMembers){updateMemberSelects();updateMemberDisplay();updateFocusMemberSelect();}
-  showRateDisplay();renderCatPicker();updateDisplay();
+  const found=refreshFresh();
+  showRateDisplay();renderCatPicker();renderPassRoute();updateDisplay();
+  if(found.length)announce(freshAnnounceText(found));
+  if(!prevDone&&completedAt)announce('ただいま、全員の精算が完了しました。ご搭乗ありがとうございました');
 }
 // サーバーの最新を取り込み、自分の未保存の変更とマージする
 async function pullAndMerge(){
@@ -2677,6 +2772,7 @@ function updateMemberList(){
   const d=document.getElementById('memberList');d.innerHTML='';
   members.forEach((m,i)=>{
     const div=document.createElement('div');div.className='member-item';
+    const seat=document.createElement('span');seat.className='seat-tag';seat.textContent=seatNo(i);div.appendChild(seat);
     const inp=document.createElement('input');inp.type='text';inp.value=m;inp.placeholder=`メンバー${i+1}`;inp.maxLength=50;inp.onchange=e=>updateMemberName(i,e.target.value);div.appendChild(inp);
     if(members.length>1){const btn=document.createElement('button');btn.textContent='削除';btn.onclick=()=>removeMember(i);div.appendChild(btn);}
     d.appendChild(div);
@@ -2981,6 +3077,48 @@ function addCatFromModal(){
 
 /* ===== 支出 CRUD ===== */
 /* ===== 支出 CRUD ===== */
+/* ===== よく使う項目 ===== */
+// この旅行で何度も使った項目（回数→新しさの順）。少ないときは定番で埋める
+const QUICK_PRESETS=[['タクシー','train'],['コンビニ','bag'],['カフェ','cafe'],['ランチ','meal'],['夕食','meal'],['地下鉄','train']];
+function quickItems(){
+  const map=new Map();
+  expenses.forEach((e,i)=>{
+    const key=String(e.name||'').trim();if(!key)return;
+    const cur=map.get(key)||{name:key,count:0,last:-1,e:null};
+    cur.count++;cur.last=i;cur.e=e;map.set(key,cur);
+  });
+  const list=[...map.values()].sort((a,b)=>b.count-a.count||b.last-a.last).slice(0,8);
+  for(const[name,icon]of QUICK_PRESETS){
+    if(list.length>=6)break;
+    if(map.has(name))continue;
+    const cat=_cats.find(c=>catIconKey(c)===icon)||FALLBACK_CAT;
+    list.push({name,count:0,e:null,cat});
+  }
+  return list;
+}
+function renderQuickRow(){
+  const row=document.getElementById('quickRow');if(!row)return;
+  if(editingExpenseIdx>=0||!members.some(m=>String(m||'').trim())){row.innerHTML='';row.style.display='none';return;}
+  const items=quickItems();
+  row.style.display=items.length?'flex':'none';
+  row.innerHTML=items.map((q,k)=>`<button type="button" class="quick-chip${q.count?'':' preset'}" onclick="applyQuick(${k})">${catIconSvg(q.e?(q.e.category||FALLBACK_CAT):q.cat)}${safe(q.name)}</button>`).join('');
+  row._items=items;
+}
+// 金額以外（項目名・カテゴリ・通貨・割り勘する人）を前回と同じにする
+function applyQuick(k){
+  const q=(document.getElementById('quickRow')._items||[])[k];if(!q)return;
+  document.getElementById('expenseName').value=q.name;
+  document.getElementById('expenseName').classList.remove('invalid');
+  if(q.e){
+    const cat=q.e.category||FALLBACK_CAT;setCatPicker(_cats.includes(cat)?cat:FALLBACK_CAT);
+    setCurrency(q.e.currency);
+    const parts=new Set((q.e.participants||[]).filter(i=>i<members.length));
+    members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb)cb.checked=parts.size?parts.has(i):true;});
+  }else setCatPicker(q.cat);
+  refreshFormHelpers();
+  const amt=document.getElementById('expenseAmount');amt.focus();
+  document.querySelectorAll('#quickRow .quick-chip').forEach((b,i)=>b.classList.toggle('active',i===k));
+}
 function submitExpense(){editingExpenseIdx>=0?updateExpense():addExpense();}
 function addExpense(){
   if(expenses.length>=MAX_EXPENSES){showToast(`⚠ 最大${MAX_EXPENSES}件まで`);return;}
@@ -2990,6 +3128,7 @@ function addExpense(){
   if(!parts.length){showToast('⚠ 参加者を選択してください');return;}
   _lastPayer=paidBy;
   expenses.push({id:newExpenseId(),name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',date:getFormDate(),paidBy,participants:[...new Set(parts)],timestamp:new Date().toISOString()});
+  markSeen(expenses[expenses.length-1]);
   printReceipt(name,fmtMoney(currentCurrency,amt));
   clearExpenseForm();saveData();updateDisplay();showToast('✅ 支払いを追加しました');
 }
@@ -2999,7 +3138,7 @@ function startEditExpense(i){
   document.getElementById('expenseDate').value=e.date||'';
   setCurrency(e.currency);setCatPicker(e.category||FALLBACK_CAT);members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
   document.getElementById('expenseSubmitBtn').textContent='更新';document.getElementById('expenseEditBanner').classList.add('visible');
-  refreshFormHelpers();
+  refreshFormHelpers();renderQuickRow();
   showTab('add');showToast('✏️ 支払いを編集中');
 }
 function updateExpense(){
@@ -3008,6 +3147,7 @@ function updateExpense(){
   const parts=[];members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb&&cb.checked)parts.push(i);});
   if(!parts.length){showToast('⚠ 参加者を選択してください');return;}
   expenses[editingExpenseIdx]={...expenses[editingExpenseIdx],name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',date:getFormDate(),paidBy,participants:[...new Set(parts)]};
+  markSeen(expenses[editingExpenseIdx]);
   clearExpenseForm();saveData();updateDisplay();showToast('✅ 支払いを更新しました');
 }
 function getFormDate(){const v=document.getElementById('expenseDate').value;return isDateStr(v)?v:todayStr();}
@@ -3020,7 +3160,7 @@ function clearExpenseForm(){
   document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');resetCatPicker();setCatPicker(FALLBACK_CAT);
   document.querySelectorAll('#cardExpense .invalid').forEach(el=>el.classList.remove('invalid'));
   document.getElementById('paidBy').value=String(defaultPayer());
-  refreshFormHelpers();
+  refreshFormHelpers();renderQuickRow();
 }
 async function deleteExpense(i){
   const ok=await openConfirm('支払いを削除',`「${expenses[i].name}」を削除しますか？`);if(!ok)return;
@@ -3071,8 +3211,9 @@ function displayExpenses(){
       const amt=fmtMoney(e.currency,e.amount);
       const sub=byDate?catLabelHTML(e.category||'その他'):fmtDay(e.date);
       const who=e.participants.length===members.length?`全員（${e.participants.length}人）`:parts;
-      const isEd=editingExpenseIdx===i;
-      html+=`<div class="expense-item${isEd?' is-editing':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip"><b>${paid}</b> が支払い</span><span class="expense-meta-chip">${who}</span><span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button></div></div>`;
+      const isEd=editingExpenseIdx===i,fresh=_fresh.get(e.id);
+      const freshTag=fresh?`<span class="fresh-tag">${fresh==='new'?'NEW':'更新'}</span>`:'';
+      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip"><b>${paid}</b> が支払い</span><span class="expense-meta-chip">${who}</span><span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">✏️ 編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">🗑 削除</button></div></div>`;
     });
     html+='</div></div>';
   });
@@ -3235,7 +3376,7 @@ function renderPersonalViews(){
     const card=document.createElement('div');card.className='personal-card';
     card.innerHTML=`
       <div class="personal-card-header">
-        <div class="personal-card-name">${avatar(i)}${safe(m||`メンバー${i+1}`)}</div>
+        <div class="personal-card-name">${avatar(i)}${safe(m||`メンバー${i+1}`)}${seatTag(i)}</div>
         <div class="personal-card-nets">${badges.join('')}</div>
       </div>
       <div class="personal-card-body">${rows.join('')}</div>
@@ -3347,7 +3488,7 @@ function renderMeBar(){
   if(Object.keys(pay).length)parts.push(`<span class="me-pay">${fmtSum(pay)} 払う</span>`);
   if(Object.keys(recv).length)parts.push(`<span class="me-recv">${fmtSum(recv)} 受け取る</span>`);
   const status=parts.length?parts.join('・'):mine.length?'<span class="me-recv">✓ 精算完了</span>':'精算なし';
-  text.innerHTML=`<b>${safe(members[me])}</b>　${status}`;
+  text.innerHTML=`<b>${safe(members[me])}</b>${seatTag(me)}　${status}`;
   const bar=document.getElementById('meBar');
   bar.classList.toggle('pay',Object.keys(pay).length>0);
   bar.classList.toggle('recv',!Object.keys(pay).length&&Object.keys(recv).length>0);
@@ -3406,6 +3547,7 @@ function renderCatSummary(){
   el.innerHTML=html;
 }
 function updateDisplay(){
+  renderQuickRow();
   updateSettCards();
   updateMemberList();displayExpenses();renderCatSummary();calculateSettlement();renderPersonalViews();updateFooterTotal();renderMeBar();refreshFormHelpers();
 }
@@ -3497,13 +3639,107 @@ function toggleCard(bodyId, headerEl){
 }
 
 /* ===== タブ ===== */
+/* ===== 新着（前に一覧を見たときから増えた・変わった支払い） ===== */
+let _fresh=new Map(); // id → 'new' | 'upd'
+const expSig=e=>{const s=JSON.stringify([e.name,e.amount,e.currency,e.category,e.date,e.paidBy,e.participants]);let h=5381;for(let i=0;i<s.length;i++)h=((h*33)^s.charCodeAt(i))>>>0;return h.toString(36);};
+const seenKey=()=>`warikanSeen_${currentTripId||'local'}`;
+function loadSeen(){try{const v=JSON.parse(localStorage.getItem(seenKey())||'null');return v&&typeof v==='object'?v:null;}catch(e){return null;}}
+function saveSeen(map){try{localStorage.setItem(seenKey(),JSON.stringify(map));}catch(e){}}
+const activeTab=()=>document.querySelector('.tab-panel.active')?.dataset.tab;
+function seenAllNow(){const m={};expenses.forEach(e=>m[e.id]=expSig(e));saveSeen(m);}
+// 自分で追加・変更したものは新着にしない
+function markSeen(e){
+  if(!e)return;
+  const m=loadSeen();if(!m){seenAllNow();return;}
+  m[e.id]=expSig(e);saveSeen(m);_fresh.delete(e.id);renderListBadge();
+}
+// 新着を数え直す。新しく見つかった支払いを返す
+function refreshFresh(){
+  const seen=loadSeen();
+  if(!seen){seenAllNow();_fresh.clear();renderListBadge();return[];}
+  const found=[];
+  expenses.forEach(e=>{
+    const kind=!(e.id in seen)?'new':seen[e.id]!==expSig(e)?'upd':null;
+    if(kind&&_fresh.get(e.id)!==kind)found.push({e,kind});
+  });
+  const ids=new Set(expenses.map(e=>e.id));
+  if(activeTab()==='list'){
+    // 一覧を見ている → 光らせたまま、見たことにする
+    found.forEach(({e,kind})=>_fresh.set(e.id,kind));
+    seenAllNow();
+  }else{
+    _fresh=new Map();
+    expenses.forEach(e=>{const kind=!(e.id in seen)?'new':seen[e.id]!==expSig(e)?'upd':null;if(kind)_fresh.set(e.id,kind);});
+  }
+  [..._fresh.keys()].forEach(id=>{if(!ids.has(id))_fresh.delete(id);});
+  renderListBadge();
+  return found;
+}
+function renderListBadge(){
+  const b=document.getElementById('listBadge');if(!b)return;
+  const n=activeTab()==='list'?0:_fresh.size;
+  b.textContent=n>9?'9+':String(n);b.classList.toggle('show',n>0);
+}
+function freshAnnounceText(found){
+  const names=found.slice(0,2).map(f=>`「${sanitize(f.e.name)}」`).join('');
+  const more=found.length>2?`ほか${found.length-2}件`:'';
+  const nNew=found.filter(f=>f.kind==='new').length;
+  const head=nNew===found.length?'新しい支払いが届きました':nNew===0?'支払いが更新されました':`支払いの追加・変更が${found.length}件あります`;
+  return`${head}　${names}${more}`;
+}
+
+/* ===== 機内アナウンス ===== */
+let _annQueue=[],_annTimer=null;
+function announce(msg){
+  if(!msg)return;
+  _annQueue.push(msg);
+  if(!_annTimer)nextAnnounce();
+}
+function nextAnnounce(){
+  const el=document.getElementById('announce');
+  const msg=_annQueue.shift();
+  if(!el||!msg){_annTimer=null;if(el)el.classList.remove('show');return;}
+  document.getElementById('announceMsg').textContent=msg;
+  el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
+  _annTimer=setTimeout(()=>{el.classList.remove('show');_annTimer=setTimeout(nextAnnounce,350);},4200);
+}
+function hideAnnounce(){clearTimeout(_annTimer);const el=document.getElementById('announce');if(el)el.classList.remove('show');_annTimer=setTimeout(nextAnnounce,350);}
+// 旅の日程に合わせたひとこと
+function tripCountdownText(today=todayStr()){
+  if(!tripMeta.start||completedAt)return'';
+  const days=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);
+  const until=days(today,tripMeta.start),end=tripMeta.end||tripMeta.start,dest=AIRPORT[tripMeta.to]?.city;
+  if(until>30)return'';
+  if(until>1)return`まもなく出発です。${dest?dest+'への':''}出発まで、あと${until}日です`;
+  if(until===1)return`明日は出発日です。${dest?dest+'への':''}ご準備はよろしいですか`;
+  if(until===0)return`本日出発です。いってらっしゃいませ`;
+  if(today<=end)return`旅の Day ${-until+1} です。本日も良い旅を`;
+  if(days(end,today)<=30)return`おかえりなさい。精算のお手続きをお忘れなく`;
+  return'';
+}
+// 旅行を開いたとき（1日1回）
+function announceOnOpen(found){
+  const key=`warikanAnn_${currentTripId}`,today=todayStr();
+  let shown='';try{shown=localStorage.getItem(key)||'';}catch(e){}
+  if(shown!==today){
+    const msg=tripCountdownText(today);
+    if(msg){announce(msg);try{localStorage.setItem(key,today);}catch(e){}}
+  }
+  if(found&&found.length)announce(freshAnnounceText(found));
+}
+
 function showTab(name){
   if(!document.querySelector(`.tab-panel[data-tab="${name}"]`))name='add';
+  const prev=activeTab();
   document.querySelectorAll('.tab-panel').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));
   document.querySelectorAll('.tab-btn').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));
   const sc=document.querySelector('.container');if(sc)sc.scrollTop=0;
   if(name==='add')renderCatPicker(); // 選択中のカテゴリが見える位置にスクロール
   try{localStorage.setItem('warikanTab',name);}catch(e){}
+  // 一覧を開いたら新着を見たことにし、離れたら光を消す
+  if(name==='list'&&_fresh.size)seenAllNow();
+  if(prev==='list'&&name!=='list'&&_fresh.size){_fresh.clear();displayExpenses();}
+  renderListBadge();
 }
 // 下のタブの実際の高さ（ホームバー分を含む）を測り、中身の最後の余白に使う
 function syncTabbarHeight(){
