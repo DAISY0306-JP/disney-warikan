@@ -2325,7 +2325,7 @@ async function deleteMyAccount(){
     return;
   }
   clearTimeout(_saveTimer);_saveTimer=null;
-  try{['currentTripId','warikanTab','pendingJoin','warikanMembers','warikanExpenses','warikanDeposits'].forEach(k=>localStorage.removeItem(k));Object.keys(localStorage).filter(k=>k.startsWith('warikanMe_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  try{['currentTripId','warikanTab','pendingJoin','warikanMembers','warikanExpenses','warikanDeposits','warikanTripCache'].forEach(k=>localStorage.removeItem(k));Object.keys(localStorage).filter(k=>k.startsWith('warikanMe_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
   try{await sb.auth.signOut();}catch(e){}
   currentUser=null;currentTripId=null;trips=[];
   showLoggedOut('アカウントを削除しました。ご利用ありがとうございました。');
@@ -2333,6 +2333,7 @@ async function deleteMyAccount(){
 async function signOut(){
   if(_saveTimer){clearTimeout(_saveTimer);await saveTripDataNow(false);}
   if(sb)await sb.auth.signOut();
+  try{localStorage.removeItem(CACHE_KEY);}catch(e){}
   currentUser=null;currentTripId=null;trips=[];
   showLoggedOut('ログアウトしました。');
 }
@@ -2730,6 +2731,7 @@ async function selectTrip(id){
   if(!id||!sb)return;
   if(_saveTimer){clearTimeout(_saveTimer);_saveTimer=null;await saveTripDataNow(false);}
   const prev={id:currentTripId,base:_syncBase,rev:_syncRev,share:_shareCode};
+  hideUndo();
   _syncBase=null;_syncRev=null;
   currentTripId=id;localStorage.setItem('currentTripId',id);
   const sel=document.getElementById('tripSelect');if(sel)sel.value=id;
@@ -2776,7 +2778,7 @@ function toSyncView(raw){
   const sm=(raw.settlementMode==='min'||raw.settlementMode==='direct')?raw.settlementMode:settlementMode;
   return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,settlementMode:sm,settled:nd.settled,wallet:nd.wallet,catIcons:normalizeCatIcons(raw.catIcons),tripMeta:normalizeTripMeta(raw.tripMeta),completedAt:isDateStr(raw.completedAt)?raw.completedAt:'',categories:cats};
 }
-function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);writeTripCache({server:raw});}
+function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);writeTripCache({server:raw,local:null,localRev:null});}
 // 電波がないときに開けるよう、最後に開いた旅行をこの端末に残す
 const CACHE_KEY='warikanTripCache';
 function readTripCache(){try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');return c&&typeof c==='object'?c:null;}catch(e){return null;}}
@@ -2796,7 +2798,10 @@ function openFromCache(){
   if(!currentUser)currentUser={id:c.uid,email:c.email};
   trips=Array.isArray(c.trips)&&c.trips.length?c.trips:[{id:c.id,name:'旅行'}];
   currentTripId=c.id;
-  _isApplyingRemote=true;applyDataObject(c.local||c.server);_isApplyingRemote=false;
+  hideUndo();
+  // 自分の変更は、同じ版のサーバーの内容に対するものだけ使う（古い変更で新しい内容を上書きしないように）
+  const useLocal=c.local&&c.localRev===revOf(c.server);
+  _isApplyingRemote=true;applyDataObject(useLocal?c.local:c.server);_isApplyingRemote=false;
   _syncBase=toSyncView(c.server);_syncRev=revOf(c.server);
   renderTripSelect();initAppViews();
   setSyncStatus('機内モード中：前回の内容を表示しています。電波が戻ったら同期します');
@@ -2864,7 +2869,7 @@ async function pullAndMerge(){
   const server=toSyncView(raw),local=toSyncView(getDataObject());
   const base=_syncBase||local;
   if(!sameJSON(server,base))applyRemoteView(sameJSON(local,base)?server:mergeSync(base,local,server));
-  _syncBase=server;_syncRev=revOf(raw);writeTripCache({server:raw});
+  _syncBase=server;_syncRev=revOf(raw);writeTripCache({server:raw,local:null,localRev:null});
   return true;
 }
 async function saveTripDataNow(showDone=false){
@@ -2928,6 +2933,7 @@ window.addEventListener('online',()=>{
   showToast('☁️ 電波が戻りました。同期します');
   sb.auth.getSession().then(({data})=>{
     if(data?.session)currentUser=data.session.user;
+    else{showLoggedOut('ログインの期限が切れました。もう一度ログインしてください（入力した内容はこの端末に残っています）');return;}
     if(!sameJSON(toSyncView(getDataObject()),_syncBase))saveTripDataNow(false);else pollRemote();
   }).catch(()=>{});
 });
@@ -3189,6 +3195,7 @@ function normalizeData(input){
     if(Array.isArray(w.carry))out.wallet.carry=w.carry.slice(0,50).filter(x=>x&&typeof x==='object'&&validateNum(x.amount)>0).map(x=>({name:sanitize(x.name||'').trim(),currency:normCurrency(x.currency),amount:validateNum(x.amount)}));
     if(out.wallet.ins.length||expensesUseWallet(out.expenses))out.wallet.on=true;
   }
+  if(expensesUseWallet(out.expenses))out.wallet.on=true;
   if(Array.isArray(input.deposits)){
     out.deposits=input.deposits.slice(0,MAX_DEPOSITS).filter(d=>d&&typeof d==='object').map(d=>{
       const holder=clampInt(d.holder,0,mLen-1),from=clampInt(d.from,0,mLen-1),amount=validateNum(d.amount),currency=normCurrency(d.currency);
@@ -3360,7 +3367,7 @@ function updateMemberSelects(){
     div.appendChild(cb);div.appendChild(lbl);pc.appendChild(div);
   });
   const sel=document.getElementById('paidBy');
-  sel.value=(prevPayer!==''&&Number(prevPayer)<members.length)?prevPayer:String(defaultPayer());
+  sel.value=prevPayer==='W'&&wallet.on?'W':(prevPayer!==''&&Number(prevPayer)<members.length)?prevPayer:String(defaultPayer());
   refreshFormHelpers();
 }
 
@@ -3550,12 +3557,14 @@ async function importCarry(){
   }
   const k=await appChoose('どの旅行の残りを引き継ぎますか？',rows.map(r=>r.name));
   const r=k==null?null:rows[k];if(!r)return;
+  const tag=`${r.name}の残り`.slice(0,40);
+  if((wallet.ins||[]).some(x=>x.note===tag)){showToast(`⚠ 「${r.name}」の残りはもう引き継いでいます`);return;}
   const ins=[],miss=[];
   r.carry.forEach(c=>{
     const i=members.findIndex(m=>String(m||'').trim()===String(c.name||'').trim());
     const amount=validateNum(c.amount);if(!amount)return;
     if(i<0){miss.push(c.name);return;}
-    ins.push({id:'w'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),by:i,amount,currency:normCurrency(c.currency),note:`${r.name}の残り`.slice(0,40),date:todayStr()});
+    ins.push({id:'w'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),by:i,amount,currency:normCurrency(c.currency),note:tag,date:todayStr()});
   });
   if(!ins.length){showToast('⚠ 同じ名前のメンバーがいません');return;}
   wallet={...wallet,on:true,ins:[...(wallet.ins||[]),...ins]};
@@ -3893,7 +3902,7 @@ function addSettled(map,sign){
 async function togglePresettle(){
   const i=editingExpenseIdx,e=expenses[i];if(!e)return;
   if(e.pre){
-    const ok=await openConfirm('先に精算を取り消す',`「${e.name}」の先に精算した分を、まだ払っていない状態に戻しますか？`,{okText:'取り消す'});if(!ok)return;
+    const ok=await openConfirm('先に精算を取り消す',`「${e.name}」の先に精算した分を、まだ払っていない状態に戻しますか？`,{okText:'取り消す'});if(!ok||expenses[i]!==e)return;
     addSettled(e.pre.s,-1);
     const ne={...expenses[i]};delete ne.pre;expenses[i]=ne;
     saveData();updateDisplay();renderMeBar();renderPresettleBtn();showToast('先に精算を取り消しました');
@@ -3948,6 +3957,11 @@ function updateExpense(){
   const sp=formSplit();if(sp){ue.split=sp;const err=splitError(ue);if(err){showToast('⚠ '+err);return;}}else delete ue.split;
   if(_estOn)ue.est=true;else delete ue.est;
   if(fromWallet)ue.wallet=true;else delete ue.wallet;
+  if(ue.pre){
+    addSettled(ue.pre.s,-1);
+    if(ue.wallet){delete ue.pre;showToast('財布から払った支払いにしたので、先に精算を取り消しました');}
+    else{const s2=preShares(ue);if(Object.keys(s2).length){addSettled(s2,1);ue.pre={...ue.pre,s:s2};}else delete ue.pre;}
+  }
   expenses[editingExpenseIdx]=ue;
   markSeen(expenses[editingExpenseIdx]);
   clearExpenseForm();saveData();updateDisplay();showToast('✅ 支払いを更新しました');
@@ -3973,9 +3987,12 @@ async function deleteExpense(i){
   const removed=expenses[i];
   if(removed.pre)addSettled(removed.pre.s,-1);
   expenses.splice(i,1);saveData();updateDisplay();
+  const undoTrip=currentTripId;
   showUndo(`「${removed.name}」を削除しました`,()=>{
-    if(expenses.some(x=>x.id===removed.id))return;
-    expenses.splice(Math.min(i,expenses.length),0,removed);
+    if(currentTripId!==undoTrip||expenses.some(x=>x.id===removed.id))return;
+    const pos=Math.min(i,expenses.length);
+    expenses.splice(pos,0,removed);
+    if(editingExpenseIdx>=pos)editingExpenseIdx++;
     if(removed.pre)addSettled(removed.pre.s,1);
     markSeen(removed);saveData();updateDisplay();renderMeBar();showToast('✅ 元に戻しました');
   });
@@ -4197,6 +4214,12 @@ function toggleSettled(key,amount,btn,isPaid){
   let tear=null;
   if(isPaid){
     delete settled[key];showToast('「済」を取り消しました');
+    expenses=expenses.map(e=>{
+      if(!e.pre||!e.pre.s||!(key in e.pre.s))return e;
+      const s2={...e.pre.s};delete s2[key];const ne={...e};
+      if(Object.keys(s2).length)ne.pre={...e.pre,s:s2};else delete ne.pre;
+      return ne;
+    });
   }else{
     settled[key]=(Number(settled[key])||0)+amount;showToast('✅ 済にしました');
     tear=btn?prepareTear(btn):null;
@@ -4463,7 +4486,7 @@ function saveData(){
     localStorage.setItem('warikanCats',JSON.stringify(_cats));
   }catch(e){console.warn(e);}
   if(_isApplyingRemote)return;
-  writeTripCache({local:getDataObject()});
+  if(_syncBase)writeTripCache({local:getDataObject(),localRev:_syncRev}); // 旅行の読み込み中は残さない
   if(sb&&currentTripId&&currentUser){
     clearTimeout(_saveTimer);
     _saveTimer=setTimeout(()=>saveTripDataNow(false),700);
