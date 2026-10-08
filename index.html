@@ -1381,6 +1381,13 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 #paidByChips .chip .av,#participantsCheckbox .checkbox-item .av{width:22px !important;height:22px !important;}
 #participantsCheckbox{gap:5px !important;}
 #expenseCurrencyToggle[hidden],#splitMode[hidden]{display:none !important;}
+
+/* 選択肢を1列に並べる（説明つき） */
+.dlg-choices.list{grid-template-columns:1fr;}
+.dlg-choices.list button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:13px 16px;text-align:left;}
+.dlg-choices.list button b{font-size:15px;font-weight:800;}
+.dlg-choices.list button small{font-size:12px;font-weight:600;color:#8a8594;}
+.dlg-choices.list button.active small{color:rgb(var(--p-rgb) / .75);}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -2953,7 +2960,7 @@ function showToast(msg='OK'){
 
 /* ===== アプリ風ダイアログ（prompt の代わり） ===== */
 let _dlgResolve=null;
-function _openDlg({title,message='',input=false,value='',placeholder='',choices=null,current=null,okText='OK',inputType='text'}){
+function _openDlg({title,message='',input=false,value='',placeholder='',choices=null,current=null,okText='OK',inputType='text',list=false}){
   return new Promise(resolve=>{
     if(_dlgResolve)_dlgResolve(null);
     _dlgResolve=resolve;
@@ -2961,10 +2968,13 @@ function _openDlg({title,message='',input=false,value='',placeholder='',choices=
     $('dlgTitle').textContent=title||'';
     $('dlgMsg').textContent=message;$('dlgMsg').style.display=message?'block':'none';
     const inp=$('dlgInput');inp.style.display=input?'block':'none';inp.type=inputType;inp.value=value;inp.placeholder=placeholder;
-    const ch=$('dlgChoices');ch.innerHTML='';ch.style.display=choices?'grid':'none';
+    const ch=$('dlgChoices');ch.innerHTML='';ch.style.display=choices?'grid':'none';ch.classList.toggle('list',!!list);
     let picked=current;
     (choices||[]).forEach((label,i)=>{
-      const b=document.createElement('button');b.type='button';b.textContent=label;
+      const b=document.createElement('button');b.type='button';
+      // 「見出し\n説明」の形なら、説明を小さく出す
+      const [head,...rest]=String(label).split('\n');
+      if(rest.length){b.innerHTML=`<b>${esc(head)}</b><small>${esc(rest.join(' '))}</small>`;}else b.textContent=label;
       if(i===current)b.classList.add('active');
       b.onclick=()=>{picked=i;finish(i);};
       ch.appendChild(b);
@@ -3483,7 +3493,7 @@ function setSplitMode(m){_splitMode=m;_splitSig='';renderSplitInputs();updateSpl
 const SPLIT_LABEL={equal:'均等',ratio:'比率',amount:'金額を指定'};
 async function chooseSplitMode(){
   const keys=['equal','ratio','amount'];
-  const k=await appChoose('割り方',['均等に割る','比率で割る（例: 2：1：1）','金額を指定する（空欄の人は残りを均等）'],{current:keys.indexOf(_splitMode)});
+  const k=await appChoose('割り方',['均等に割る\nみんな同じ金額','比率で割る\n例: 2：1：1 のように倍率で','金額を指定する\n入れた人はその額、空欄の人は残りを均等に'],{current:keys.indexOf(_splitMode),list:true});
   if(k!=null)setSplitMode(keys[k]);
 }
 function renderSplitInputs(){
