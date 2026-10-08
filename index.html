@@ -1415,6 +1415,27 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 #setSheetBody .rate-display{margin-top:0;}
 #setSheetBody .share-actions{margin-top:4px;}
 .tab-panel[data-tab="settings"] .settings-note{margin-top:16px;}
+
+/* くわしい内訳（表） */
+.pt{margin-bottom:12px;border-radius:14px;background:#f7f7f9;padding:6px 10px 8px;}
+.pt-head,.pt-row{display:grid;grid-template-columns:minmax(0,1.25fr) 1fr 1fr 1fr;gap:4px;align-items:center;}
+.pt-head{padding:6px 2px 6px;border-bottom:1px solid #e6e6ea;font-size:10.5px;font-weight:800;color:#8a8594;text-align:right;}
+.pt-head .pt-cur{text-align:left;color:var(--p);font-size:11.5px;}
+.pt-row{padding:8px 2px;border-bottom:1px solid #ececf0;font-family:var(--round);font-size:12.5px;font-weight:700;text-align:right;color:var(--text);}
+.pt-row:last-of-type{border-bottom:none;}
+.pt-name{display:flex;align-items:center;gap:5px;min-width:0;text-align:left;font-family:inherit;}
+.pt-name .av{flex:0 0 auto;width:22px;height:22px;}
+.pt-name b{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pt-net{font-weight:800;}
+.pt-net.plus{color:var(--recv);}.pt-net.minus{color:var(--pay);}.pt-net.zero{color:#8a8594;}
+.pt-note{display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:8px;border-top:1px dashed #dcdce2;font-size:11px;color:#6b6676;}
+.pt-note .av{flex:0 0 auto;width:20px;height:20px;}
+.pt-send{display:flex;align-items:center;gap:8px;margin-top:4px;}
+.pt-send>span{flex:0 0 auto;font-size:12px;font-weight:800;color:#8a8594;}
+.pt-send>div{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+.pt-send>div::-webkit-scrollbar{display:none;}
+.pt-send button{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 10px 0 4px;border-radius:999px;border:1.5px solid #e6e6ea;background:#fff;font-size:12.5px;font-weight:700;color:var(--text);cursor:pointer;}
+.pt-send button .av{width:22px;height:22px;}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1600,16 +1621,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
       <span class="card-chevron">▶</span>
     </div>
     <div class="card-body collapsed" id="cardPersonal">
-      <div class="info-text personal-legend">
-        <b>受取</b> ＝ 立て替えた分を他の人から回収するお金<br>
-        <b>支払</b> ＝ 他の人に立て替えてもらった分を返すお金<br>
-        <b>差引</b> ＝ 受取 − 支払（＋ = 受け取り超過、− = 支払い超過）
-      </div>
       <div id="personalSummary"></div>
-      <div class="hr" style="margin:16px 0;"></div>
-      <div class="detail-pick-title">メンバーを選んで明細をシェア</div>
-      <div class="member-btn-grid" id="focusMemberBtns"></div>
-      <div id="personalDetails" style="margin-top:4px;"><p style="text-align:center;color:var(--muted);padding:10px;">メンバーを選ぶと明細が表示されます</p></div>
     </div>
   </div>
   </div>
@@ -4265,93 +4277,67 @@ function calculateSettlement(){
 }
 
 /* ===== 個人別まとめ（★リデザイン） ===== */
-function renderPersonalViews(){
-  const wrap=document.getElementById('personalSummary'),details=document.getElementById('personalDetails');
-  const mat=buildDirectMatrix(false),curs=usedCurrencies();
-  const finalTx={},finPR={};
-  curs.forEach(c=>{finalTx[c.code]=netMatrix(mat[c.code]);finPR[c.code]=txToPayRecv(finalTx[c.code]);});
-  const signed=(code,n)=>n>0?`+${fmtPlain(code,n)}`:n<0?fmtPlain(code,n):`±${fmtPlain(code,0)}`;
-
-  wrap.innerHTML='';
-  members.forEach((m,i)=>{
-    const badges=[],rows=[];
-    curs.forEach(c=>{
-      const pay=finPR[c.code].pay[i],recv=finPR[c.code].recv[i],net=roundCur(c.code,recv-pay);
-      const nb=net>0?'net-plus':net<0?'net-minus':'net-zero';
-      badges.push(`<span class="net-badge ${nb}">${signed(c.code,net)} ${c.label}</span>`);
-      rows.push(`<div class="stat-row">
-          <div class="stat-ccy">${c.code==='JPY'?'円':c.code}</div>
-          <div class="stat-cell"><div class="stat-lbl">受取</div><div class="stat-val c-recv">${fmtMoney(c.code,recv)}</div></div>
-          <div class="stat-cell"><div class="stat-lbl">支払</div><div class="stat-val c-pay">${fmtMoney(c.code,pay)}</div></div>
-          <div class="stat-cell"><div class="stat-lbl">差引</div><div class="stat-val ${net>=0?'c-net-p':'c-net-m'}">${c.code==='JPY'?signed(c.code,net):fmtMoney(c.code,net)}</div></div>
-        </div>`);
-    });
-
-    const card=document.createElement('div');card.className='personal-card';
-    card.innerHTML=`
-      <div class="personal-card-header">
-        <div class="personal-card-name">${avatar(i)}${safe(m||`メンバー${i+1}`)}${seatTag(i)}</div>
-        <div class="personal-card-nets">${badges.join('')}</div>
-      </div>
-      <div class="personal-card-body">${rows.join('')}</div>
-    `;
-    wrap.appendChild(card);
+// 通貨ごとの「立て替えた」「自分の分」（割り方・共有財布も反映）
+function memberTotals(code){
+  const n=members.length,paid=Array(n).fill(0),share=Array(n).fill(0);
+  expenses.forEach(e=>{
+    if(normCurrency(e.currency)!==code)return;
+    if(!e.wallet)paid[e.paidBy]+=e.amount;
+    sharesOf(e).forEach(([i,v])=>{if(i<n)share[i]+=v;});
   });
-
-  const focus=_focusMemberIdx;
-  if(focus===null||focus===undefined){details.innerHTML='<p style="text-align:center;color:var(--muted);padding:10px;">メンバーを選ぶと明細が表示されます</p>';return;}
-  const k=parseInt(focus),filterTx=tx=>tx.filter(x=>x.from===k||x.to===k);
-
-  // 送金アイテム1件のHTML
-  const txItem=(x,code)=>`
-    <div class="detail-tx-item">
-      <div class="detail-tx-route">
-        <span class="detail-tx-from">${safe(pname(x.from))}</span>
-        <span class="detail-tx-arrow">→</span>
-        <span class="detail-tx-to">${safe(pname(x.to))}</span>
-      </div>
-      <div class="detail-tx-amount">${fmtMoney(code,x.amount)}</div>
-    </div>`;
-
-  // セクション（使われている通貨ごと）
-  const renderGroup=(title,badge)=>`<div class="detail-group">${curs.map(c=>{
-    const tx=filterTx(finalTx[c.code]);
-    const items=tx.length?tx.map(x=>txItem(x,c.code)).join(''):`<div class="detail-none">なし</div>`;
-    return `<div class="detail-section">
-        <div class="detail-section-header">
-          
-          <span class="detail-section-title">${title}</span>
-          <span class="detail-section-ccy">${c.code==='JPY'?'円':c.code}</span>
-        </div>
-        ${items}
-      </div>`;
-  }).join('')}</div>`;
-
-  // テキスト形式（コピー・シェア用）
-  const buildShareText=()=>{
-    const name=members[k]||`メンバー${k+1}`;
-    const sections=curs.map(c=>{
-      const tx=filterTx(finalTx[c.code]);
-      if(!tx.length)return '';
-      const rows=tx.map(x=>{
-        const from=pname(x.from),to=pname(x.to);
-        return `  ${from} → ${to}：${fmtPlain(c.code,Math.abs(x.amount))}`;
-      }).join('\n');
-      return `【最終精算（${c.label}）】\n${rows}`;
-    }).filter(Boolean).join('\n\n');
-    return `【割り勘明細】${name}\n${'─'.repeat(20)}\n${sections}\n${'─'.repeat(20)}\n※ WARITABI より`;
-  };
-
-  details.innerHTML=
-    `<div class="detail-title">${avatar(k)}${safe(members[k])} の明細</div>`+
-    `<div class="share-bar">
-      <button class="share-btn share-btn-copy" onclick="copyDetailText()">テキストをコピー</button>
-      <button class="share-btn share-btn-share" onclick="shareDetail()">シェアする</button>
-    </div>`+
-    renderGroup('最終精算（相殺済み）','');
-
-  // シェア用テキストをグローバルに保持
-  window._currentShareText = buildShareText();
+  (wallet.ins||[]).forEach(x=>{if(x.currency===code&&x.by<n)paid[x.by]+=x.amount;}); // 財布に入れたお金も立て替えた分
+  return{paid,share};
+}
+function personalCurrencies(){
+  const set=new Set([...(expenses||[]).map(e=>normCurrency(e.currency)),...(wallet.ins||[]).map(x=>x.currency)]);
+  return CURRENCIES.filter(c=>set.has(c.code));
+}
+/* ===== くわしい内訳：誰がいくら立て替えて、いくら使ったか ===== */
+function renderPersonalViews(){
+  const wrap=document.getElementById('personalSummary');if(!wrap)return;
+  const curs=personalCurrencies(),named=members.map((m,i)=>i).filter(i=>String(members[i]||'').trim());
+  if(!curs.length||!named.length){wrap.innerHTML='<p class="small" style="text-align:center;padding:8px;">まだ支払いがありません</p>';return;}
+  const signed=(code,n)=>{const r=roundCur(code,n);return r>0?`+${fmtPlain(code,r)}`:r<0?`−${fmtPlain(code,-r)}`:fmtPlain(code,0);};
+  let html='';
+  curs.forEach(c=>{
+    const {paid,share}=memberTotals(c.code);
+    const rows=named.filter(i=>roundCur(c.code,paid[i])||roundCur(c.code,share[i])).map(i=>{
+      const net=paid[i]-share[i],cls=roundCur(c.code,net)>0?'plus':roundCur(c.code,net)<0?'minus':'zero';
+      return`<div class="pt-row"><span class="pt-name">${avatar(i)}<b>${memberName(i)}</b></span><span>${fmtPlain(c.code,paid[i])}</span><span>${fmtPlain(c.code,share[i])}</span><span class="pt-net ${cls}">${signed(c.code,net)}</span></div>`;
+    }).join('');
+    if(!rows)return;
+    const wb=wallet.on?walletBalance()[c.code]:undefined;
+    const note=wb!=null?`<div class="pt-note">${avatar(walletIdx())}財布に入れたお金は「立て替えた」に含みます。財布の残り ${fmtPlain(c.code,wb)}</div>`:'';
+    html+=`<div class="pt"><div class="pt-head"><span class="pt-cur">${c.label}</span><span>立て替えた</span><span>自分の分</span><span>差引</span></div>${rows}${note}</div>`;
+  });
+  html+=`<div class="pt-send"><span>明細を送る</span><div>${named.map(i=>`<button type="button" onclick="sendMemberDetail(${i})">${avatar(i)}${memberName(i)}</button>`).join('')}</div></div>`;
+  wrap.innerHTML=html;
+}
+// その人の明細（今の精算のしかたに合わせる）
+function memberDetailText(k){
+  const trip=trips.find(t=>t.id===currentTripId);
+  const lines=[`【割り勘明細】${pname(k)}${trip?`（${trip.name}）`:''}`,'─'.repeat(18)];
+  personalCurrencies().forEach(c=>{
+    const {paid,share}=memberTotals(c.code);
+    if(!roundCur(c.code,paid[k])&&!roundCur(c.code,share[k]))return;
+    const net=roundCur(c.code,paid[k]-share[k]);
+    lines.push(`[${c.label}] 立て替えた ${fmtPlain(c.code,paid[k])} / 自分の分 ${fmtPlain(c.code,share[k])} / 差引 ${net>0?'+':net<0?'−':''}${fmtPlain(c.code,Math.abs(net))}`);
+  });
+  const txs=getSettlementTx().filter(t=>t.from===k||t.to===k);
+  lines.push('','【精算】');
+  if(!txs.length)lines.push('  精算はありません');
+  txs.forEach(t=>lines.push(`  ${pname(t.from)} → ${pname(t.to)}：${fmtPlain(t.code,t.amount)}${t.paid?'（済）':''}`));
+  lines.push('─'.repeat(18),'※ WARITABI より');
+  return lines.join('\n');
+}
+async function sendMemberDetail(k){
+  const text=memberDetailText(k);
+  window._currentShareText=text;
+  if(navigator.share){
+    try{await navigator.share({title:'割り勘明細',text});return;}
+    catch(e){if(e&&e.name==='AbortError')return;}
+  }
+  await copyText(text,'📋 コピーしました！LINEに貼り付けてね');
 }
 
 /* ===== 自分の精算額 =====
