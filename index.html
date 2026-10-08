@@ -1889,7 +1889,8 @@ function seatNo(i){
 const seatTag=i=>`<span class="seat-tag">${seatNo(i)}</span>`;
 function normalizeTripMeta(m){
   m=(m&&typeof m==='object')?m:{};
-  const code=c=>AIRPORT[c]?c:AIRPORT[LEGACY_AIRPORT[c]]?LEGACY_AIRPORT[c]:'';
+  const has=(o,c)=>typeof c==='string'&&Object.prototype.hasOwnProperty.call(o,c);
+  const code=c=>has(AIRPORT,c)?c:has(LEGACY_AIRPORT,c)?LEGACY_AIRPORT[c]:'';
   const out={from:code(m.from)||'HND',to:code(m.to),start:isDateStr(m.start)?m.start:'',end:isDateStr(m.end)?m.end:''};
   if(out.start&&out.end&&out.end<out.start)out.end=out.start;
   return out;
@@ -1915,11 +1916,11 @@ function renderPassProgress(now=new Date()){
   if(!tripMeta.start){el.classList.remove('on');return;}
   const day=d=>new Date(d+'T00:00:00');
   const start=day(tripMeta.start),endD=day(tripMeta.end||tripMeta.start);
-  const total=(endD-start)/86400000+1,today=todayStr();
+  const total=Math.round((endD-start)/86400000)+1,today=todayStr();
   const ph=tripPhase(tripMeta,completedAt,today);
   let pf=0,label=ph.en;
   if(ph.key==='checkin'){const n=Math.round((start-day(today))/86400000);label=`BOARDING · あと${n}日`;}
-  else if(ph.key==='flight'){pf=Math.min(1,Math.max(0,(now-start)/(total*86400000)));label=`IN FLIGHT · Day ${Math.floor((day(today)-start)/86400000)+1}/${total}`;}
+  else if(ph.key==='flight'){pf=Math.min(1,Math.max(0,(now-start)/(total*86400000)));label=`IN FLIGHT · Day ${Math.round((day(today)-start)/86400000)+1}/${total}`;}
   else pf=1;
   el.style.setProperty('--pf',pf.toFixed(3));
   el.classList.add('on');el.dataset.phase=ph.key;
@@ -2331,7 +2332,8 @@ function buildShareCanvas(){
     const done=settleState(tx)==='done';
     x.fillStyle=done?'#f1f1f4':'#f7f7f9';roundRect(x,60,y,W-120,96,28);x.fill();
     x.fillStyle=done?'#a19db3':'#2e2a3d';x.font=`700 38px ${SF}`;
-    x.fillText(`${members[tx.from]||''} → ${members[tx.to]||''}`,100,y+62);
+    const nm=i=>String(members[i]||'').trim()||`メンバー${i+1}`;
+    x.fillText(`${nm(tx.from)} → ${nm(tx.to)}`,100,y+62);
     x.textAlign='right';x.font=`800 42px ${RF}`;x.fillText((done?'✓ ':'')+fmtPlain(tx.code,tx.amount),W-100,y+64);x.textAlign='left';
     y+=112;
   });
@@ -2557,6 +2559,7 @@ async function createTrip(name,dataJson,selectAfter=true){
 async function selectTrip(id){
   if(!id||!sb)return;
   if(_saveTimer){clearTimeout(_saveTimer);_saveTimer=null;await saveTripDataNow(false);}
+  const prev={id:currentTripId,base:_syncBase,rev:_syncRev,share:_shareCode};
   _syncBase=null;_syncRev=null;
   currentTripId=id;localStorage.setItem('currentTripId',id);
   const sel=document.getElementById('tripSelect');if(sel)sel.value=id;
@@ -2565,8 +2568,15 @@ async function selectTrip(id){
   const {data,error}=await sb.from('trips').select('id,name,data_json,share_code').eq('id',id).single();
   if(error){
     console.error(error);
+    // 取得できなかったら、前の旅行に戻す（前の旅行のデータが別の旅行名で表示され、保存もされない状態を防ぐ）
+    if(currentTripId===id&&prev.id){
+      currentTripId=prev.id;_syncBase=prev.base;_syncRev=prev.rev;_shareCode=prev.share;
+      try{localStorage.setItem('currentTripId',prev.id);}catch(e){}
+      if(sel)sel.value=prev.id;
+      renderTripName();renderShareArea();
+    }
     setSyncStatus('⚠ 旅行データ取得に失敗しました: '+error.message);
-    showToast('⚠ 旅行データ取得に失敗しました');
+    showToast('⚠ 旅行を開けませんでした。電波の良いところでもう一度お試しください');
     return;
   }
   _isApplyingRemote=true;
@@ -2600,7 +2610,14 @@ function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);}
 // base: 最後にサーバーと一致していた状態 / local: 自分の今の状態 / server: サーバーの最新
 function mergeSync(base,local,server){
   const out={};
-  SYNC_KEYS.filter(k=>k!=='expenses').forEach(k=>{out[k]=sameJSON(local[k],base[k])?server[k]:local[k];});
+  SYNC_KEYS.filter(k=>k!=='expenses'&&k!=='settled').forEach(k=>{out[k]=sameJSON(local[k],base[k])?server[k]:local[k];});
+  // 済の印は送金ごとにマージ（同時に別々の送金を済にしても、両方残す）
+  const sb_=base.settled||{},sl=local.settled||{},ss=server.settled||{},st={...ss};
+  new Set([...Object.keys(sb_),...Object.keys(sl)]).forEach(k=>{
+    if(sl[k]===sb_[k])return;           // 自分は変えていない → サーバーのまま
+    if(sl[k]==null)delete st[k];else st[k]=sl[k]; // 自分が済にした・取り消した
+  });
+  out.settled=st;
   const byId=a=>new Map(a.map(e=>[e.id,e]));
   const B=byId(base.expenses),L=byId(local.expenses),S=byId(server.expenses);
   const res=[];
@@ -2657,7 +2674,12 @@ async function saveTripDataNow(showDone=false){
       let q=sb.from('trips').update({data_json:payload,updated_at:new Date().toISOString()}).eq('id',tripId);
       q=_syncRev===null?q.is('data_json->rev',null):q.eq('data_json->>rev',String(_syncRev));
       const {data,error}=await q.select('id');
-      if(error){setSyncStatus('⚠ 同期に失敗しました: '+error.message);console.error(error);return;}
+      if(error){
+        setSyncStatus('⚠ 同期に失敗しました: '+error.message);console.error(error);
+        // 一時的な失敗なら、20秒後にもう一度保存する（電波がないときは、戻ったときに保存する）
+        if(navigator.onLine!==false&&!_saveTimer)_saveTimer=setTimeout(()=>{_saveTimer=null;saveTripDataNow(false);},20000);
+        return;
+      }
       if(tripId!==currentTripId)return;
       if(data&&data.length){
         setSyncBase(payload);
@@ -3986,7 +4008,7 @@ function toggleCard(bodyId, headerEl){
 /* ===== タブ ===== */
 /* ===== 新着（前に一覧を見たときから増えた・変わった支払い） ===== */
 let _fresh=new Map(); // id → 'new' | 'upd'
-const expSig=e=>{const s=JSON.stringify([e.name,e.amount,e.currency,e.category,e.date,e.paidBy,e.participants]);let h=5381;for(let i=0;i<s.length;i++)h=((h*33)^s.charCodeAt(i))>>>0;return h.toString(36);};
+const expSig=e=>{const nm=i=>String(members[i]??i);const s=JSON.stringify([e.name,e.amount,e.currency,e.category,e.date,nm(e.paidBy),(e.participants||[]).map(nm).sort()]);let h=5381;for(let i=0;i<s.length;i++)h=((h*33)^s.charCodeAt(i))>>>0;return h.toString(36);};
 const seenKey=()=>`warikanSeen_${currentTripId||'local'}`;
 function loadSeen(){try{const v=JSON.parse(localStorage.getItem(seenKey())||'null');return v&&typeof v==='object'?v:null;}catch(e){return null;}}
 function saveSeen(map){try{localStorage.setItem(seenKey(),JSON.stringify(map));}catch(e){}}
