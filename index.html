@@ -1286,6 +1286,16 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 @media (prefers-reduced-motion:reduce){.pass-perf.pf[data-phase="flight"] .pf-plane svg,.bp-card{animation:none;}.pf-plane{transition:none;}}
 
 .bp-code{display:block;margin-top:4px;font-family:var(--round);font-size:12px;font-weight:800;letter-spacing:.12em;color:#8a8594;}
+
+/* 先に精算 */
+.presettle-btn{display:none;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:8px;min-height:42px;border-radius:14px;border:1.5px dashed rgb(var(--p-rgb) / .45);background:#fff;color:var(--p);font-size:13.5px;font-weight:800;cursor:pointer;}
+.presettle-btn .ti{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.presettle-btn.on{border-style:solid;border-color:rgba(18,162,106,.35);background:rgba(18,162,106,.07);color:var(--recv);}
+.expense-meta-chip.pre{background:rgba(18,162,106,.1) !important;color:var(--recv) !important;font-weight:800;}
+.mid-done{font-style:normal;margin-left:8px;padding:1px 8px;border-radius:999px;background:rgba(18,162,106,.1);color:var(--recv);font-size:11px;font-weight:800;}
+
+.confirm-ok.safe{background:var(--p) !important;}
+#confirmMsg{white-space:pre-line;}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1385,6 +1395,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <div class="input-group"><label class="label-row"><span>割り勘する人</span><button type="button" class="mini-link" id="toggleAllBtn" onclick="toggleAllParticipants()">全員を外す</button></label><div class="checkbox-group" id="participantsCheckbox"></div></div>
     <div class="split-preview" id="splitPreview"></div>
     <button class="btn btn-primary" id="expenseSubmitBtn" onclick="submitExpense()">追加</button>
+    <button type="button" class="presettle-btn" id="presettleBtn" onclick="togglePresettle()"></button>
     </div>
   </div>
 
@@ -1889,7 +1900,8 @@ function seatNo(i){
 const seatTag=i=>`<span class="seat-tag">${seatNo(i)}</span>`;
 function normalizeTripMeta(m){
   m=(m&&typeof m==='object')?m:{};
-  const code=c=>AIRPORT[c]?c:AIRPORT[LEGACY_AIRPORT[c]]?LEGACY_AIRPORT[c]:'';
+  const has=(o,c)=>typeof c==='string'&&Object.prototype.hasOwnProperty.call(o,c);
+  const code=c=>has(AIRPORT,c)?c:has(LEGACY_AIRPORT,c)?LEGACY_AIRPORT[c]:'';
   const out={from:code(m.from)||'HND',to:code(m.to),start:isDateStr(m.start)?m.start:'',end:isDateStr(m.end)?m.end:''};
   if(out.start&&out.end&&out.end<out.start)out.end=out.start;
   return out;
@@ -1915,11 +1927,11 @@ function renderPassProgress(now=new Date()){
   if(!tripMeta.start){el.classList.remove('on');return;}
   const day=d=>new Date(d+'T00:00:00');
   const start=day(tripMeta.start),endD=day(tripMeta.end||tripMeta.start);
-  const total=(endD-start)/86400000+1,today=todayStr();
+  const total=Math.round((endD-start)/86400000)+1,today=todayStr();
   const ph=tripPhase(tripMeta,completedAt,today);
   let pf=0,label=ph.en;
   if(ph.key==='checkin'){const n=Math.round((start-day(today))/86400000);label=`BOARDING · あと${n}日`;}
-  else if(ph.key==='flight'){pf=Math.min(1,Math.max(0,(now-start)/(total*86400000)));label=`IN FLIGHT · Day ${Math.floor((day(today)-start)/86400000)+1}/${total}`;}
+  else if(ph.key==='flight'){pf=Math.min(1,Math.max(0,(now-start)/(total*86400000)));label=`IN FLIGHT · Day ${Math.round((day(today)-start)/86400000)+1}/${total}`;}
   else pf=1;
   el.style.setProperty('--pf',pf.toFixed(3));
   el.classList.add('on');el.dataset.phase=ph.key;
@@ -2331,7 +2343,8 @@ function buildShareCanvas(){
     const done=settleState(tx)==='done';
     x.fillStyle=done?'#f1f1f4':'#f7f7f9';roundRect(x,60,y,W-120,96,28);x.fill();
     x.fillStyle=done?'#a19db3':'#2e2a3d';x.font=`700 38px ${SF}`;
-    x.fillText(`${members[tx.from]||''} → ${members[tx.to]||''}`,100,y+62);
+    const nm=i=>String(members[i]||'').trim()||`メンバー${i+1}`;
+    x.fillText(`${nm(tx.from)} → ${nm(tx.to)}`,100,y+62);
     x.textAlign='right';x.font=`800 42px ${RF}`;x.fillText((done?'✓ ':'')+fmtPlain(tx.code,tx.amount),W-100,y+64);x.textAlign='left';
     y+=112;
   });
@@ -2557,6 +2570,7 @@ async function createTrip(name,dataJson,selectAfter=true){
 async function selectTrip(id){
   if(!id||!sb)return;
   if(_saveTimer){clearTimeout(_saveTimer);_saveTimer=null;await saveTripDataNow(false);}
+  const prev={id:currentTripId,base:_syncBase,rev:_syncRev,share:_shareCode};
   _syncBase=null;_syncRev=null;
   currentTripId=id;localStorage.setItem('currentTripId',id);
   const sel=document.getElementById('tripSelect');if(sel)sel.value=id;
@@ -2565,8 +2579,15 @@ async function selectTrip(id){
   const {data,error}=await sb.from('trips').select('id,name,data_json,share_code').eq('id',id).single();
   if(error){
     console.error(error);
+    // 取得できなかったら、前の旅行に戻す（前の旅行のデータが別の旅行名で表示され、保存もされない状態を防ぐ）
+    if(currentTripId===id&&prev.id){
+      currentTripId=prev.id;_syncBase=prev.base;_syncRev=prev.rev;_shareCode=prev.share;
+      try{localStorage.setItem('currentTripId',prev.id);}catch(e){}
+      if(sel)sel.value=prev.id;
+      renderTripName();renderShareArea();
+    }
     setSyncStatus('⚠ 旅行データ取得に失敗しました: '+error.message);
-    showToast('⚠ 旅行データ取得に失敗しました');
+    showToast('⚠ 旅行を開けませんでした。電波の良いところでもう一度お試しください');
     return;
   }
   _isApplyingRemote=true;
@@ -2600,7 +2621,14 @@ function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);}
 // base: 最後にサーバーと一致していた状態 / local: 自分の今の状態 / server: サーバーの最新
 function mergeSync(base,local,server){
   const out={};
-  SYNC_KEYS.filter(k=>k!=='expenses').forEach(k=>{out[k]=sameJSON(local[k],base[k])?server[k]:local[k];});
+  SYNC_KEYS.filter(k=>k!=='expenses'&&k!=='settled').forEach(k=>{out[k]=sameJSON(local[k],base[k])?server[k]:local[k];});
+  // 済の印は送金ごとにマージ（同時に別々の送金を済にしても、両方残す）
+  const sb_=base.settled||{},sl=local.settled||{},ss=server.settled||{},st={...ss};
+  new Set([...Object.keys(sb_),...Object.keys(sl)]).forEach(k=>{
+    if(sl[k]===sb_[k])return;           // 自分は変えていない → サーバーのまま
+    if(sl[k]==null)delete st[k];else st[k]=sl[k]; // 自分が済にした・取り消した
+  });
+  out.settled=st;
   const byId=a=>new Map(a.map(e=>[e.id,e]));
   const B=byId(base.expenses),L=byId(local.expenses),S=byId(server.expenses);
   const res=[];
@@ -2657,7 +2685,12 @@ async function saveTripDataNow(showDone=false){
       let q=sb.from('trips').update({data_json:payload,updated_at:new Date().toISOString()}).eq('id',tripId);
       q=_syncRev===null?q.is('data_json->rev',null):q.eq('data_json->>rev',String(_syncRev));
       const {data,error}=await q.select('id');
-      if(error){setSyncStatus('⚠ 同期に失敗しました: '+error.message);console.error(error);return;}
+      if(error){
+        setSyncStatus('⚠ 同期に失敗しました: '+error.message);console.error(error);
+        // 一時的な失敗なら、20秒後にもう一度保存する（電波がないときは、戻ったときに保存する）
+        if(navigator.onLine!==false&&!_saveTimer)_saveTimer=setTimeout(()=>{_saveTimer=null;saveTripDataNow(false);},20000);
+        return;
+      }
       if(tripId!==currentTripId)return;
       if(data&&data.length){
         setSyncBase(payload);
@@ -2804,11 +2837,12 @@ const appChoose=(title,choices,opts={})=>_openDlg({...opts,title,choices});
 
 /* ===== 確認ダイアログ ===== */
 let _confirmResolve=null;
-function openConfirm(title,msg){
+function openConfirm(title,msg,opts={}){
   return new Promise(resolve=>{
     _confirmResolve=resolve;
     document.getElementById('confirmTitle').textContent=title;
     document.getElementById('confirmMsg').textContent=msg;
+    const okb=document.getElementById('confirmOkBtn');okb.textContent=opts.okText||'削除';okb.classList.toggle('safe',!!opts.safe);
     document.getElementById('confirmOkBtn').onclick=()=>{
       document.getElementById('confirmOverlay').classList.remove('active');
       _confirmResolve=null;
@@ -2926,7 +2960,14 @@ function normalizeData(input){
       let id=(typeof e.id==='string'&&/^[\w-]{1,40}$/.test(e.id))?e.id:legacyExpenseId(e);
       if(seenIds.has(id)){let n=2;while(seenIds.has(`${id}_${n}`))n++;id=`${id}_${n}`;}
       seenIds.add(id);
-      return{id,name,amount,currency,category,date,paidBy,participants,timestamp};
+      const out_={id,name,amount,currency,category,date,paidBy,participants,timestamp};
+      // 先に精算した記録（その支払いだけ先に済にした送金）
+      if(e.pre&&typeof e.pre==='object'&&e.pre.s&&typeof e.pre.s==='object'){
+        const ps={};
+        Object.keys(e.pre.s).forEach(k=>{const m=/^(\d+)>(\d+)>(JPY|USD|KRW)$/.exec(k),v=Number(e.pre.s[k]);if(m&&+m[1]<mLen&&+m[2]<mLen&&m[1]!==m[2]&&isFinite(v)&&v>0)ps[k]=v;});
+        if(Object.keys(ps).length)out_.pre={d:isDateStr(e.pre.d)?e.pre.d:'',s:ps};
+      }
+      return out_;
     }).filter(Boolean);
   }
   if(Array.isArray(input.deposits)){
@@ -3009,7 +3050,10 @@ async function removeMember(i){
     pts=pts.map(p=>Number(p)).filter(p=>!Number.isNaN(p)&&p!==i).map(p=>p>i?p-1:p);
     pts=[...new Set(pts)].filter(p=>p>=0&&p<members.length);
     if(pts.length===0){if(paidBy>=0&&paidBy<members.length)pts=[paidBy];else return null;}
-    paidBy=clampInt(paidBy,0,members.length-1)??0;return{...e,paidBy,participants:pts};
+    paidBy=clampInt(paidBy,0,members.length-1)??0;
+    let pre=e.pre;
+    if(pre&&pre.s){const ps={};Object.keys(pre.s).forEach(k=>{const[f,t,c]=k.split('>');let a=+f,b=+t;if(a===i||b===i)return;if(a>i)a--;if(b>i)b--;ps[`${a}>${b}>${c}`]=pre.s[k];});pre=Object.keys(ps).length?{...pre,s:ps}:undefined;}
+    const ne={...e,paidBy,participants:pts};if(pre)ne.pre=pre;else delete ne.pre;return ne;
   }).filter(Boolean);
   deposits=(deposits||[]).map(d=>{
     if(!d||typeof d!=='object')return null;let holder=Number(d.holder),from=Number(d.from);
@@ -3396,6 +3440,48 @@ function applyQuick(k){
   const amt=document.getElementById('expenseAmount');amt.focus();
   document.querySelectorAll('#quickRow .quick-chip').forEach((b,i)=>b.classList.toggle('active',i===k));
 }
+/* ===== この支払いだけ先に精算 ===== */
+// 支払った人以外の各メンバーが、支払った人に自分の分を払う送金
+function preShares(e){
+  const per=e.amount/e.participants.length,c=normCurrency(e.currency),s={};
+  e.participants.forEach(p=>{if(p!==e.paidBy)s[`${p}>${e.paidBy}>${c}`]=(s[`${p}>${e.paidBy}>${c}`]||0)+per;});
+  return s;
+}
+function renderPresettleBtn(){
+  const b=document.getElementById('presettleBtn');if(!b)return;
+  const e=editingExpenseIdx>=0?expenses[editingExpenseIdx]:null;
+  const can=e&&e.participants.some(p=>p!==e.paidBy);
+  b.style.display=can?'flex':'none';
+  if(!can)return;
+  b.classList.toggle('on',!!e.pre);
+  b.innerHTML=e.pre?`${iconSvg('ok')}先に精算済み${e.pre.d?`（${shortDay(e.pre.d)}）`:''}・取り消す`:`${iconSvg('ok','ti')}この支払いだけ先に精算する`;
+}
+function addSettled(map,sign){
+  Object.keys(map).forEach(k=>{
+    const v=(Number(settled[k])||0)+sign*map[k];
+    if(v>0.005)settled[k]=v;else delete settled[k];
+  });
+}
+async function togglePresettle(){
+  const i=editingExpenseIdx,e=expenses[i];if(!e)return;
+  if(e.pre){
+    const ok=await openConfirm('先に精算を取り消す',`「${e.name}」の先に精算した分を、まだ払っていない状態に戻しますか？`,{okText:'取り消す'});if(!ok)return;
+    addSettled(e.pre.s,-1);
+    const ne={...expenses[i]};delete ne.pre;expenses[i]=ne;
+    saveData();updateDisplay();renderMeBar();renderPresettleBtn();showToast('先に精算を取り消しました');
+    return;
+  }
+  const s=preShares(e);
+  const lines=Object.keys(s).map(k=>{const[f,t,c]=k.split('>');return`${members[+f]||`メンバー${+f+1}`} → ${members[+t]||`メンバー${+t+1}`}  ${fmtPlain(c,s[k])}`;}).join('\n');
+  const ok=await openConfirm('この支払いだけ先に精算',`「${e.name}」の分を、次の送金で先に精算します。\n\n${lines}\n\nこの送金は精算タブで「済」になり、残りの精算から差し引かれます。`,{okText:'先に精算する',safe:true});
+  if(!ok||expenses[i]!==e)return;
+  addSettled(s,1);
+  expenses[i]={...e,pre:{d:todayStr(),s}};
+  markSeen(expenses[i]);
+  saveData();updateDisplay();renderMeBar();renderPresettleBtn();
+  showToast(`✅ 「${e.name}」を先に精算しました`);
+  afterSettleChange(true);
+}
 function submitExpense(){editingExpenseIdx>=0?updateExpense():addExpense();}
 function addExpense(){
   if(expenses.length>=MAX_EXPENSES){showToast(`⚠ 最大${MAX_EXPENSES}件まで`);return;}
@@ -3415,6 +3501,7 @@ function startEditExpense(i){
   document.getElementById('expenseDate').value=e.date||'';
   setCurrency(e.currency);setCatPicker(e.category||FALLBACK_CAT);members.forEach((_,j)=>{const cb=document.getElementById(`participant${j}`);if(cb)cb.checked=e.participants.includes(j);});
   document.getElementById('expenseSubmitBtn').textContent='更新';document.getElementById('expenseEditBanner').classList.add('visible');
+  renderPresettleBtn();
   refreshFormHelpers();renderQuickRow();
   showTab('add');showToast('✏️ 支払いを編集中');
 }
@@ -3434,7 +3521,8 @@ function clearExpenseForm(){
   if(editingExpenseIdx>=0)document.getElementById('expenseDate').value=todayStr();
   editingExpenseIdx=-1;document.getElementById('expenseName').value='';document.getElementById('expenseAmount').value='';document.getElementById('paidBy').value='';
   members.forEach((_,i)=>{const cb=document.getElementById(`participant${i}`);if(cb)cb.checked=true;});
-  document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');resetCatPicker();setCatPicker(FALLBACK_CAT);
+  document.getElementById('expenseSubmitBtn').textContent='追加';document.getElementById('expenseEditBanner').classList.remove('visible');
+  renderPresettleBtn();resetCatPicker();setCatPicker(FALLBACK_CAT);
   document.querySelectorAll('#cardExpense .invalid').forEach(el=>el.classList.remove('invalid'));
   document.getElementById('paidBy').value=String(defaultPayer());
   refreshFormHelpers();renderQuickRow();
@@ -3443,6 +3531,7 @@ async function deleteExpense(i){
   const ok=await openConfirm('支払いを削除',`「${expenses[i].name}」を削除しますか？`);if(!ok)return;
   if(editingExpenseIdx===i)clearExpenseForm();else if(editingExpenseIdx>i)editingExpenseIdx--;
   const wasEditing=document.querySelector('.tab-panel.active')?.dataset.tab==='add';
+  if(expenses[i].pre)addSettled(expenses[i].pre.s,-1);
   expenses.splice(i,1);saveData();updateDisplay();showToast('🗑 削除しました');
   if(wasEditing)showTab('list');
 }
@@ -3490,7 +3579,7 @@ function displayExpenses(){
       const who=e.participants.length===members.length?`全員（${e.participants.length}人）`:parts;
       const isEd=editingExpenseIdx===i,fresh=_fresh.get(e.id);
       const freshTag=fresh?`<span class="fresh-tag">${fresh==='new'?'NEW':'更新'}</span>`:'';
-      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}<span class="item-ic">${itemIconSvg(e.name,e.category)}</span>${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip"><b>${paid}</b> が支払い</span><span class="expense-meta-chip">${who}</span><span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">削除</button></div></div>`;
+      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}<span class="item-ic">${itemIconSvg(e.name,e.category)}</span>${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip"><b>${paid}</b> が支払い</span><span class="expense-meta-chip">${who}</span>${e.pre?'<span class="expense-meta-chip pre">先に精算済み</span>':''}<span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">削除</button></div></div>`;
     });
     html+='</div></div>';
   });
@@ -3590,6 +3679,15 @@ function getSettlementTx(){
 const settleKey=t=>`${t.from}>${t.to}>${t.code}`;
 // done: 済 / open: まだ
 const settleState=t=>t.paid?'done':'open';
+// 旅行がまだ終わっていない（出発前・旅行中）
+function tripNotOver(today=todayStr()){return!!tripMeta.start&&today<=(tripMeta.end||tripMeta.start);}
+// 済が変わったあと：全部済になったら、旅行が終わっていれば着陸、途中なら控えめに知らせる
+function afterSettleChange(byUser){
+  const txs=getSettlementTx();
+  if(!byUser||!txs.length||!txs.every(t=>settleState(t)==='done'))return;
+  if(tripNotOver())announce('ここまでの精算が完了しました。旅の続きを楽しんでください');
+  else playLanding();
+}
 /* ===== 済にしたとき、チケットの半券がパキッと切り離される ===== */
 function prepareTear(btn){
   const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -3626,9 +3724,7 @@ function toggleSettled(key,amount,btn,isPaid){
   }
   saveData();updateDisplay();renderMeBar();
   if(tear)playTear(key,tear);
-  // 全員の精算が終わったらお祝い
-  const txs=getSettlementTx();
-  if(btn&&txs.length&&txs.every(t=>settleState(t)==='done'))playLanding();
+  afterSettleChange(!!btn);
 }
 const memberName=i=>safe(members[i]||`メンバー${i+1}`);
 const AV_COLORS=['#8b5cf6','#ff4f9a','#2f7bff','#ff8a1f','#1fb57d','#c03fd1','#00b0b0','#f2b705','#4f5bd5','#7cbf3a'];
@@ -3681,7 +3777,9 @@ function calculateSettlement(){
     </div>`;
   }).join('');
   const pass=document.getElementById('tripPass');
-  const complete=txs.length>0&&doneCount===txs.length;
+  const allDone=txs.length>0&&doneCount===txs.length;
+  // 旅行中に全部済にしても「精算完了」にはしない（途中精算）。帰国日を過ぎたら完了になる
+  const complete=allDone&&!tripNotOver();
   if(pass)pass.classList.toggle('complete',complete);
   // 精算が全部終わった日を記録（パスポートのスタンプに使う）
   if(!_isApplyingRemote){
@@ -3690,7 +3788,7 @@ function calculateSettlement(){
   }
   renderPassProgress();
   document.getElementById('settlementList').innerHTML=txs.length
-    ?`<div class="sett-progress"><span>全員の精算</span><span>${doneCount} / ${txs.length} 件 済</span></div>${rows}`
+    ?`<div class="sett-progress"><span>全員の精算${allDone&&!complete?'<em class="mid-done">途中精算済み</em>':''}</span><span>${doneCount} / ${txs.length} 件 済</span></div>${rows}`
     :`<div class="small" style="text-align:center;color:var(--muted);padding:8px;">精算はありません</div>`;
   _lastDepositRefunds=null;
 }
@@ -3832,7 +3930,7 @@ function renderMeBar(){
   const parts=[];
   if(Object.keys(pay).length)parts.push(`<span class="me-pay">${fmtSum(pay)} 払う</span>`);
   if(Object.keys(recv).length)parts.push(`<span class="me-recv">${fmtSum(recv)} 受け取る</span>`);
-  const status=parts.length?parts.join('・'):mine.length?'<span class="me-recv">✓ 精算完了</span>':'精算なし';
+  const status=parts.length?parts.join('・'):mine.length?`<span class="me-recv">✓ ${tripNotOver()?'ここまで精算済み':'精算完了'}</span>`:'精算なし';
   text.innerHTML=`<b>${safe(members[me])}</b>${seatTag(me)}　${status}`;
   const bar=document.getElementById('meBar');
   bar.classList.toggle('pay',Object.keys(pay).length>0);
@@ -3986,7 +4084,7 @@ function toggleCard(bodyId, headerEl){
 /* ===== タブ ===== */
 /* ===== 新着（前に一覧を見たときから増えた・変わった支払い） ===== */
 let _fresh=new Map(); // id → 'new' | 'upd'
-const expSig=e=>{const s=JSON.stringify([e.name,e.amount,e.currency,e.category,e.date,e.paidBy,e.participants]);let h=5381;for(let i=0;i<s.length;i++)h=((h*33)^s.charCodeAt(i))>>>0;return h.toString(36);};
+const expSig=e=>{const nm=i=>String(members[i]??i);const s=JSON.stringify([e.name,e.amount,e.currency,e.category,e.date,nm(e.paidBy),(e.participants||[]).map(nm).sort()]);let h=5381;for(let i=0;i<s.length;i++)h=((h*33)^s.charCodeAt(i))>>>0;return h.toString(36);};
 const seenKey=()=>`warikanSeen_${currentTripId||'local'}`;
 function loadSeen(){try{const v=JSON.parse(localStorage.getItem(seenKey())||'null');return v&&typeof v==='object'?v:null;}catch(e){return null;}}
 function saveSeen(map){try{localStorage.setItem(seenKey(),JSON.stringify(map));}catch(e){}}
