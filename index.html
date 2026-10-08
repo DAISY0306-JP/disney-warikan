@@ -1388,6 +1388,33 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .dlg-choices.list button b{font-size:15px;font-weight:800;}
 .dlg-choices.list button small{font-size:12px;font-weight:600;color:#8a8594;}
 .dlg-choices.list button.active small{color:rgb(var(--p-rgb) / .75);}
+
+/* ===== 設定タブ（一覧＋シート） ===== */
+.set-title{margin:16px 6px 6px;font-size:12px;font-weight:800;color:#8a8594;letter-spacing:.06em;}
+.tab-panel[data-tab="settings"]>.set-title:first-child{margin-top:4px;}
+.set-list{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #ececf0;}
+.set-row{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 12px 8px 12px;border:none;border-top:1px solid #f0f0f3;background:#fff;text-align:left;color:var(--text);cursor:pointer;font:inherit;}
+.set-list>.set-row:first-child,.set-list>.set-share+.set-row{border-top:none;}
+.set-share+.set-row{border-top:1px solid #f0f0f3 !important;}
+.set-row:active{background:#f7f7f9;}
+.set-ic{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:rgb(var(--p-rgb) / .1);display:flex;align-items:center;justify-content:center;}
+.set-ic svg{width:17px;height:17px;fill:none;stroke:var(--p);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.set-lbl{flex:0 0 auto;font-size:14.5px;font-weight:700;}
+.set-val{flex:1;min-width:0;text-align:right;font-size:12.5px;font-weight:600;color:#8a8594;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.set-chev{flex:0 0 auto;width:16px;height:16px;fill:none;stroke:#c4c2cc;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+.set-row-static{cursor:default;}
+.set-row-static:active{background:#fff;}
+.set-email{flex:1 !important;min-width:0;font-size:13.5px !important;font-weight:600 !important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.set-logout{flex:0 0 auto;height:32px;padding:0 12px;border-radius:999px;border:1.5px solid #e6e6ea;background:#fff;color:#6b6676;font-size:12.5px;font-weight:800;cursor:pointer;}
+.set-share{padding:12px;}
+.set-share-btn{width:100%;min-height:46px;border:none;border-radius:14px;background:var(--p);color:#fff;font-size:15px;font-weight:800;cursor:pointer;}
+.set-share p{margin:8px 2px 0;font-size:11.5px;line-height:1.6;color:#8a8594;}
+.set-sheet{background:#fff;}
+.set-sheet .card-body{padding:0 !important;}
+.set-block-head{display:flex;justify-content:flex-end;margin:-4px 0 6px;}
+#setSheetBody .rate-display{margin-top:0;}
+#setSheetBody .share-actions{margin-top:4px;}
+.tab-panel[data-tab="settings"] .settings-note{margin-top:16px;}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1589,65 +1616,51 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
   <!-- ===== 設定タブ ===== -->
   <div class="tab-panel" data-tab="settings">
-  <div class="card" id="tripCard">
-    <div class="card-header">
-      <h2><span class="hd-ic"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M4 12h16"/></svg></span>旅行データ</h2>
-      <button class="btn-bluegray-sm" onclick="signOut()">ログアウト</button>
-    </div>
-    <div class="card-body">
-      <p class="small" style="margin-bottom:4px;">ログイン中: <span id="loginUserText">-</span></p>
-      <div class="action-buttons settings-grid">
-        <button class="btn-export" onclick="createTripPrompt()">＋ 新しい旅行</button>
-        <button class="btn-export" onclick="renameCurrentTripPrompt()">名前変更</button>
-        <button class="btn-export" onclick="openTripInfo()">行き先と日程</button>
-        <button class="btn-export" onclick="openPassport()">旅のパスポート</button>
-        <button class="btn-export" onclick="saveTripDataNow(true)">今すぐ同期</button>
-        <button class="btn-export" onclick="location.reload()">再読み込み</button>
-      </div>
-      <p class="small" id="syncStatus" style="margin-top:10px;line-height:1.7;">変更は自動保存されます。</p>
-    </div>
+  <div class="set-title">この旅行</div>
+  <div class="set-list">
+    <button type="button" class="set-row" onclick="openTripInfo()"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.6v-1.2l-8-4.6V3.6a1.4 1.4 0 0 0-2.8 0v3.2l-8 4.6v1.2l8-2.3v4.9l-2.2 1.6v1.1l3.6-.9 3.6.9v-1.1L13 15.2v-4.9z"/></svg></span><span class="set-lbl">行き先と日程</span><span class="set-val" id="sv-route"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button type="button" class="set-row" onclick="openSetSheet('member')"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg></span><span class="set-lbl">メンバー</span><span class="set-val" id="sv-members"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button type="button" class="set-row" onclick="openSetSheet('wallet')"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="8" width="16" height="11" rx="2.5"/><path d="M16 13.5h.01" stroke-width="2.6"/></svg></span><span class="set-lbl">共有財布</span><span class="set-val" id="sv-wallet"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button type="button" class="set-row" onclick="openSetSheet('rate')"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v.01M18 15v.01" stroke-width="2.6"/></svg></span><span class="set-lbl">為替レート</span><span class="set-val" id="sv-rate"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
 
-  <div class="card" id="shareCard">
-    <div class="card-header"><h2><span class="hd-ic"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/></svg></span>この旅行を共有</h2></div>
-    <div class="card-body">
-      <p class="small" style="line-height:1.7;margin-bottom:10px;">招待リンクを送ると、受け取った人はタップしてログインするだけでこの旅行に参加できます。</p>
-      <div id="shareCodeArea"></div>
-      <div class="share-actions">
-        <button class="primary" onclick="shareInviteLink()">招待リンクを送る</button>
-        <button onclick="copyInviteLink()">リンクをコピー</button>
-        <button onclick="copyShareCode()">コードをコピー</button>
-        <button onclick="joinTripByCodePrompt()" style="grid-column:1/-1;">もらったコードで参加</button>
-      </div>
-    </div>
+  <div class="set-title">共有</div>
+  <div class="set-list">
+    <div class="set-share"><button class="set-share-btn" onclick="shareInviteLink()">招待リンクを送る</button><p>受け取った人はタップしてログインするだけで、この旅行に参加できます</p></div>
+    <button type="button" class="set-row" onclick="openSetSheet('share')"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/></svg></span><span class="set-lbl">そのほかの共有方法</span><span class="set-val" id="sv-share">コピー・コードで参加</span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
 
-  <!-- メンバー -->
+  <div class="set-title">旅行</div>
+  <div class="set-list">
+    <button type="button" class="set-row" onclick="createTripPrompt()"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><span class="set-lbl">新しい旅行</span><span class="set-val" id="sv-new"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button type="button" class="set-row" onclick="renameCurrentTripPrompt()"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></span><span class="set-lbl">旅行名を変更</span><span class="set-val" id="sv-name"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button type="button" class="set-row" onclick="openPassport()"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M9 16h6"/></svg></span><span class="set-lbl">旅のパスポート</span><span class="set-val" id="sv-pass"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button type="button" class="set-row" onclick="openSetSheet('sync')"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.3L4 9M4 4v5h5M4 13a8 8 0 0 0 14.3 4.3L20 15M20 20v-5h-5"/></svg></span><span class="set-lbl">同期・バックアップ</span><span class="set-val" id="sv-sync"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
 
-  <div class="card">
-    <div class="card-header" onclick="toggleCard('cardMember',this)">
-      <h2><span class="hd-ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg></span>メンバー</h2>
-      <button id="toggleMemberBtn" onclick="event.stopPropagation();toggleMemberEdit()" class="btn-bluegray-sm">編集</button>
-      <span class="card-chevron open">▶</span>
-    </div>
-    <div class="card-body" id="cardMember">
-      <div id="memberDisplay" style="padding:6px 0;"><p style="color:var(--muted);">メンバーを設定してください</p></div>
-      <div id="memberEdit" style="display:none;">
-        <div class="member-list" id="memberList"></div>
-        <button class="btn btn-add" onclick="addMember()">+ 追加</button>
-        <button class="btn btn-primary" onclick="saveMemberEdit()" style="margin-top:10px;">確定</button>
+  <div class="set-title">アカウント</div>
+  <div class="set-list">
+    <div class="set-row set-row-static"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span class="set-lbl set-email" id="loginUserText">-</span><button class="set-logout" onclick="signOut()">ログアウト</button></div>
+    <button type="button" class="set-row" onclick="openSetSheet('account')"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><span class="set-lbl">パスワード・プライバシー</span><span class="set-val" id="sv-acc">削除もここ</span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+
+  <div class="settings-note">データはログインアカウントに保存されます。念のため、「同期・バックアップ」からバックアップ（JSON ファイル）を保存しておくこともできます。</div>
+
+  <!-- シートで開く中身（ふだんは隠しておく） -->
+  <div id="setStore" hidden>
+    <div class="set-block" id="setBlock-member" data-title="メンバー">
+      <div class="set-block-head"><button id="toggleMemberBtn" onclick="toggleMemberEdit()" class="btn-bluegray-sm">編集</button></div>
+      <div class="card-body" id="cardMember">
+        <div id="memberDisplay" style="padding:6px 0;"><p style="color:var(--muted);">メンバーを設定してください</p></div>
+        <div id="memberEdit" style="display:none;">
+          <div class="member-list" id="memberList"></div>
+          <button class="btn btn-add" onclick="addMember()">+ 追加</button>
+          <button class="btn btn-primary" onclick="saveMemberEdit()" style="margin-top:10px;">確定</button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="card" id="walletCard">
-    <div class="card-header"><h2><span class="hd-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="8" width="16" height="11" rx="2.5"/><path d="M16 13.5h.01" stroke-width="2.6"/></svg></span>共有財布</h2></div>
-    <div class="card-body" id="walletBody"></div>
-  </div>
-
-  <div class="card">
-    <div class="card-header"><h2><span class="hd-ic"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v.01M18 15v.01" stroke-width="2.6"/></svg></span>為替・バックアップ</h2></div>
-    <div class="card-body">
+    <div class="set-block" id="setBlock-wallet" data-title="共有財布"><div id="walletBody"></div></div>
+    <div class="set-block" id="setBlock-rate" data-title="為替レート">
       <div id="rateDisplay" class="rate-display">
         <div class="rate-row">
           <span id="rateText-USD">$1 = ¥150.00</span>
@@ -1666,17 +1679,29 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
           <button class="rate-cancel-btn" onclick="cancelRateEdit()">キャンセル</button>
         </div>
       </div>
+    </div>
+    <div class="set-block" id="setBlock-share" data-title="そのほかの共有方法">
+      <div id="shareCodeArea"></div>
+      <div class="share-actions">
+        <button class="primary" onclick="shareInviteLink()">招待リンクを送る</button>
+        <button onclick="copyInviteLink()">リンクをコピー</button>
+        <button onclick="copyShareCode()">コードをコピー</button>
+        <button onclick="joinTripByCodePrompt()" style="grid-column:1/-1;">もらったコードで参加</button>
+      </div>
+    </div>
+    <div class="set-block" id="setBlock-sync" data-title="同期・バックアップ">
+      <p class="small" id="syncStatus" style="margin-bottom:10px;line-height:1.7;">変更は自動保存されます。</p>
+      <div class="action-buttons settings-grid" style="margin-top:0;">
+        <button class="btn-export" onclick="saveTripDataNow(true)">今すぐ同期</button>
+        <button class="btn-export" onclick="location.reload()">再読み込み</button>
+      </div>
       <div class="action-buttons" style="flex-direction:row;">
         <button class="btn-export" onclick="exportData()" style="flex:1;">バックアップを保存</button>
         <label for="importFile" class="btn-import" style="flex:1;">バックアップを読込</label>
         <input type="file" id="importFile" accept=".json" onchange="importData(event)">
       </div>
     </div>
-  </div>
-
-  <div class="card" id="accountCard">
-    <div class="card-header"><h2><span class="hd-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>アカウント</h2></div>
-    <div class="card-body">
+    <div class="set-block" id="setBlock-account" data-title="アカウント">
       <p class="small" style="margin-bottom:10px;">ログイン中: <span id="accountEmail">-</span></p>
       <div class="action-buttons settings-grid">
         <button class="btn-export" onclick="changePassword()">パスワードを変更</button>
@@ -1686,7 +1711,6 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     </div>
   </div>
 
-  <div class="settings-note">データはログインアカウントに保存されます。念のため、バックアップ（JSON ファイル）を保存しておくこともできます。</div>
   <div class="settings-disclaimer">このアプリは個人が趣味で開発したものです。計算結果の正確性は保証されません。<br>実際の精算はご自身でご確認のうえ、自己責任でご利用ください。</div>
   </div>
 </div>
@@ -1722,6 +1746,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
       <button class="cat-add-btn" onclick="addCatFromModal()">追加</button>
     </div>
     <button class="btn btn-primary cat-done-btn" onclick="closeCatManager()">完了</button>
+  </div>
+</div>
+<div class="sheet-overlay set-sheet-overlay" id="setSheet" onclick="if(event.target===this)closeSetSheet()">
+  <div class="sheet set-sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title" id="setSheetTitle"></div>
+    <div id="setSheetBody"></div>
+    <button class="icon-pick-cancel" onclick="closeSetSheet()">閉じる</button>
   </div>
 </div>
 <div class="sheet-overlay" id="tripSheet" onclick="if(event.target===this)closeTripSheet()">
@@ -3189,12 +3221,45 @@ function initAppViews(){
 }
 
 /* ===== メンバー ===== */
+/* ===== 設定タブ：一覧の行から開くシート ===== */
+let _setOpen=null;
+function openSetSheet(name){
+  closeSetSheet(true);
+  const blk=document.getElementById('setBlock-'+name);if(!blk)return;
+  document.getElementById('setSheetTitle').textContent=blk.dataset.title||'';
+  document.getElementById('setSheetBody').appendChild(blk);
+  _setOpen=name;
+  if(name==='wallet')renderWalletCard();
+  if(name==='rate')showRateDisplay(true);
+  if(name==='member')updateMemberDisplay();
+  document.getElementById('setSheet').classList.add('active');
+}
+function closeSetSheet(silent){
+  const body=document.getElementById('setSheetBody'),store=document.getElementById('setStore');
+  if(body&&store)[...body.children].forEach(c=>store.appendChild(c));
+  if(_setOpen==='member'&&document.getElementById('memberEdit').style.display!=='none')toggleMemberEdit();
+  _setOpen=null;
+  document.getElementById('setSheet')?.classList.remove('active');
+  if(!silent)renderSettingsSummary();
+}
+// 一覧の右側に出す、今の状態
+function renderSettingsSummary(){
+  const set=(id,t)=>{const el=document.getElementById(id);if(el)el.textContent=t;};
+  const f=AIRPORT[tripMeta.from],t=AIRPORT[tripMeta.to];
+  set('sv-route',t?`${f?f.code:'---'} → ${t.code}${tripDatesText(tripMeta)?' · '+tripDatesText(tripMeta):''}`:'未設定');
+  const names=members.filter(m=>String(m||'').trim());
+  set('sv-members',names.length?names.join('・'):'未設定');
+  const bal=walletBalance(),codes=CURRENCIES.filter(c=>bal[c.code]!=null);
+  set('sv-wallet',!wallet.on?'使わない':codes.length?codes.map(c=>fmtPlain(c.code,bal[c.code])).join(' · '):'0');
+  set('sv-rate',`$1=¥${Number(exchangeRate).toFixed(0)} · ₩100=¥${Number(krwRate).toFixed(1)}`);
+  const tr=trips.find(x=>x.id===currentTripId);set('sv-name',tr?tr.name:'');
+}
 function toggleMemberEdit(){
   const edit=document.getElementById('memberEdit'),display=document.getElementById('memberDisplay'),btn=document.getElementById('toggleMemberBtn');
   // カードが閉じていたら開く
   const body=document.getElementById('cardMember');
   const header=body.previousElementSibling;
-  if(body.classList.contains('collapsed')){
+  if(header&&body.classList.contains('collapsed')){
     body.classList.remove('collapsed');
     const chev=header.querySelector('.card-chevron');
     if(chev)chev.classList.add('open');
@@ -3557,7 +3622,7 @@ function validateExpenseForm(){
   return true;
 }
 function goToMemberSetup(){
-  showTab('settings');
+  showTab('settings');openSetSheet('member');
   if(document.getElementById('memberEdit').style.display==='none')toggleMemberEdit();
   const first=document.querySelector('#memberList input');if(first)first.focus();
 }
@@ -4395,7 +4460,7 @@ function renderCatSummary(){
   el.innerHTML=html;
 }
 function updateDisplay(){
-  renderQuickRow();renderWalletCard();
+  renderQuickRow();renderWalletCard();renderSettingsSummary();
   updateSettCards();
   updateMemberList();displayExpenses();renderCatSummary();calculateSettlement();renderPersonalViews();updateFooterTotal();renderMeBar();refreshFormHelpers();
 }
