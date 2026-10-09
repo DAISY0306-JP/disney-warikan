@@ -1436,6 +1436,20 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .pt-send>div::-webkit-scrollbar{display:none;}
 .pt-send button{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 10px 0 4px;border-radius:999px;border:1.5px solid #e6e6ea;background:#fff;font-size:12.5px;font-weight:700;color:var(--text);cursor:pointer;}
 .pt-send button .av{width:22px;height:22px;}
+
+/* 先に精算（カード） */
+.presettle-btn{justify-content:flex-start !important;gap:10px !important;min-height:56px !important;padding:8px 12px !important;border:1.5px solid #ececf0 !important;background:#f7f7f9 !important;color:var(--text) !important;text-align:left;}
+.presettle-btn .ps-ic{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:rgb(var(--p-rgb) / .1);display:flex;align-items:center;justify-content:center;}
+.presettle-btn .ps-ic .ti{width:16px;height:16px;stroke:var(--p);}
+.presettle-btn .ps-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.presettle-btn .ps-txt b{font-size:13.5px;font-weight:800;}
+.presettle-btn .ps-txt small{font-size:11.5px;font-weight:600;color:#8a8594;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.presettle-btn .ps-act{flex:0 0 auto;font-size:12px;font-weight:800;color:var(--p);}
+.presettle-btn.on{background:rgba(18,162,106,.06) !important;border-color:rgba(18,162,106,.25) !important;}
+.presettle-btn.on .ps-ic{background:rgba(18,162,106,.12);}
+.presettle-btn.on .ps-ic .ti{stroke:var(--recv);}
+.presettle-btn.on .ps-txt b{color:var(--recv);}
+.presettle-btn.on .ps-act{color:#8a8594;font-weight:700;}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -3891,7 +3905,16 @@ function renderPresettleBtn(){
   b.style.display=can?'flex':'none';
   if(!can)return;
   b.classList.toggle('on',!!e.pre);
-  b.innerHTML=e.pre?`${iconSvg('ok')}先に精算済み${e.pre.d?`（${shortDay(e.pre.d)}）`:''}・取り消す`:`${iconSvg('ok','ti')}この支払いだけ先に精算する`;
+  // どの送金になるかを1行で（例：あやか・みさき → みゆ 各¥60,470）
+  const s=e.pre?e.pre.s:preShares(e),keys=Object.keys(s);
+  const code=keys[0]?.split('>')[2]||normCurrency(e.currency);
+  const froms=keys.map(k=>pname(Number(k.split('>')[0])));
+  const vals=keys.map(k=>s[k]),same=vals.every(v=>roundCur(code,v)===roundCur(code,vals[0]));
+  const flow=keys.length?(same?`${froms.join('・')} → ${pname(e.paidBy)}　${keys.length>1?'各':''}${fmtPlain(code,vals[0])}`
+    :`${keys.map((k,j)=>`${froms[j]} ${fmtPlain(code,vals[j])}`).join('・')} → ${pname(e.paidBy)}`):'';
+  b.innerHTML=e.pre
+    ?`<span class="ps-ic">${iconSvg('ok')}</span><span class="ps-txt"><b>先に精算済み${e.pre.d?`（${shortDay(e.pre.d)}）`:''}</b><small>${esc(flow)}</small></span><span class="ps-act">取り消す</span>`
+    :`<span class="ps-ic">${iconSvg('sync')}</span><span class="ps-txt"><b>この支払いだけ先に精算</b><small>${esc(flow)}</small></span><span class="ps-act">精算する ›</span>`;
 }
 function addSettled(map,sign){
   Object.keys(map).forEach(k=>{
