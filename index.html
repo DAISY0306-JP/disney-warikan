@@ -1459,6 +1459,47 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .pre-open .ps-txt b{font-size:14px;font-weight:800;}
 .pre-open .ps-txt small{font-size:11.5px;color:#8a8594;font-weight:600;}
 .pre-sheet{background:#fff;}
+/* 旅のふりかえり */
+.rv-sheet{background:#fff;max-height:88vh;}
+.rv-hero{position:relative;border-radius:18px;background:rgb(var(--p-rgb) / .07);padding:14px 16px 12px;margin-bottom:14px;text-align:center;}
+.rv-route{font-family:var(--round);font-size:13px;font-weight:800;color:var(--p);letter-spacing:.06em;}
+.rv-name{font-size:12px;color:#8a8594;font-weight:700;margin-top:2px;}
+.rv-total{font-family:var(--round);font-size:34px;font-weight:800;color:var(--p);line-height:1.2;margin-top:6px;}
+.rv-total small{display:block;font-size:11px;color:#8a8594;font-weight:700;}
+.rv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;}
+.rv-stats div{background:#fff;border-radius:12px;padding:7px 4px;display:flex;flex-direction:column;align-items:center;min-width:0;}
+.rv-stats small{font-size:10.5px;color:#8a8594;font-weight:700;white-space:nowrap;}
+.rv-stats b{font-family:var(--round);font-size:15px;font-weight:800;color:var(--text);white-space:nowrap;}
+.rv-sec{font-size:12.5px;font-weight:800;color:#8a8594;margin:16px 2px 8px;letter-spacing:.04em;}
+.rv-cat{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px 8px;margin-bottom:9px;}
+.rv-cat .rv-cn{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:var(--text);min-width:0;}
+.rv-cat .rv-cn .ti,.rv-cat .rv-cn svg{width:16px;height:16px;stroke:var(--cf);flex:0 0 auto;}
+.rv-cat .rv-ca{grid-column:3;font-family:var(--round);font-size:13.5px;font-weight:800;text-align:right;white-space:nowrap;}
+.rv-cat .rv-ca small{font-size:10.5px;color:#8a8594;margin-left:4px;}
+.rv-bar{grid-column:1/-1;height:8px;border-radius:5px;background:#f1f1f4;overflow:hidden;}
+.rv-bar i{display:block;height:100%;border-radius:5px;background:var(--cf,var(--p));}
+.rv-days{display:flex;align-items:flex-end;gap:6px;height:150px;padding:0 2px;overflow-x:auto;}
+.rv-day{flex:1 0 34px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;min-width:34px;}
+.rv-day em{font-style:normal;font-family:var(--round);font-size:10px;font-weight:800;color:#6b6778;white-space:nowrap;}
+.rv-day i{display:block;width:70%;max-width:30px;min-height:3px;border-radius:6px 6px 2px 2px;background:var(--p);}
+.rv-day.out i{background:rgb(var(--p-rgb) / .35);}
+.rv-day.max i{background:var(--p);box-shadow:0 3px 8px rgb(var(--p-rgb) / .35);}
+.rv-day span{font-size:10px;font-weight:700;color:#8a8594;white-space:nowrap;}
+.rv-top{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid #f0f0f3;}
+.rv-top:last-child{border-bottom:none;}
+.rv-rank{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:rgb(var(--p-rgb) / .12);color:var(--p);font-family:var(--round);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.rv-top .pre-main{flex:1;min-width:0;}
+.rv-top .rv-ta{font-family:var(--round);font-weight:800;font-size:14px;white-space:nowrap;}
+.rv-mem{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin-bottom:8px;}
+.rv-mem .rv-mn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;min-width:0;max-width:110px;}
+.rv-mem .rv-mn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rv-mem .av{width:22px;height:22px;flex:0 0 auto;}
+.rv-mem .rv-bar{grid-column:auto;}
+.rv-mem .rv-ma{font-family:var(--round);font-size:13.5px;font-weight:800;white-space:nowrap;}
+.rv-note{font-size:11px;color:#8a8594;text-align:center;margin-top:10px;line-height:1.6;}
+.rv-save{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:46px;margin-top:14px;border:none;border-radius:14px;background:var(--p);color:#fff;font-weight:800;font-size:14.5px;cursor:pointer;}
+.rv-save svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.rv-open{margin:0 0 12px;}
 .pre-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 6px;border:none;border-bottom:1px solid #f0f0f3;background:none;text-align:left;cursor:pointer;color:var(--text);}
 .pre-main{flex:1;min-width:0;display:flex;flex-direction:column;}
 .pre-main b{font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -1479,6 +1520,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .pre-row button{flex:0 0 auto;height:34px;padding:0 12px;border-radius:999px;border:1.5px solid #e6e6ea;background:#fff;color:var(--text);font-size:12.5px;font-weight:800;cursor:pointer;}
 .pre-row.done button{border-color:rgba(18,162,106,.35);color:var(--recv);background:#fff;}
 .pre-row.done .pre-v{color:var(--recv);}
+
+/* 済の行をたたむ */
+.paid-toggle{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:4px 0 8px;padding:10px;border:1.5px dashed #dcdce2;border-radius:14px;background:none;color:#8a8594;font-size:12.5px;font-weight:800;cursor:pointer;}
+.paid-toggle span{transition:transform .2s;}
+.paid-toggle.open span{transform:rotate(180deg);}
+
+.rate-note{display:none;margin:5px 4px 0;font-size:11.5px;font-weight:600;color:#8a8594;}
+.rate-fixed-note{margin-top:8px;line-height:1.6;}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1576,6 +1625,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <button type="button" class="est-toggle" id="estToggle" onclick="toggleEst()" aria-pressed="false">概算</button>
   </span></label>
   <div class="amt-wrap"><button type="button" class="cur-btn" id="curBtn" onclick="cycleCurrency()" aria-label="通貨を切り替え"></button><input type="number" id="expenseAmount" placeholder="0" min="0" max="10000000" step="0.01" inputmode="decimal"></div>
+  <div class="rate-note" id="rateNote"></div>
 </div>
     <div class="input-group"><label>支払った人</label><div class="chip-row" id="paidByChips"></div><select id="paidBy" hidden><option value="">選択</option></select></div>
     <div class="input-group"><label class="label-row"><span>割り勘する人</span><span class="amt-opts"><button type="button" class="mini-link split-link" id="splitLink" onclick="chooseSplitMode()">均等 ▾</button><button type="button" class="mini-link" id="toggleAllBtn" onclick="toggleAllParticipants()">全員を外す</button></span></label><div class="checkbox-group" id="participantsCheckbox"></div></div>
@@ -1603,6 +1653,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
       <span class="card-chevron open">▶</span>
     </div>
     <div class="card-body" id="cardExpenseList">
+      <button type="button" class="pre-open rv-open" id="reviewOpenBtn" onclick="openReview()" hidden><span class="ps-ic"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg></span><span class="ps-txt"><b>旅のふりかえり</b><small id="reviewOpenSub">合計・カテゴリ・日ごとの使い方を見る</small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
       <div class="list-mode-toggle" id="listModeToggle">
         <button data-mode="date" onclick="setListMode('date')">日付順</button>
         <button data-mode="cat" onclick="setListMode('cat')">カテゴリ別</button>
@@ -1728,6 +1779,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
         </div>
         <button class="rate-fetch-btn" id="rateFetchBtn" onclick="fetchLatestRates()">最新レートを取得</button>
         <div class="rate-updated" id="rateUpdatedText"></div>
+        <p class="small rate-fixed-note">支払いの円換算は、記録したときのレートで固定されます。ここでレートを変えると、これから記録する支払いと、精算の目安の円換算に使われます。</p>
         <div class="rate-edit-row" id="rateEditRow">
           <span id="rateEditLabel" style="font-weight:900;">$1 = ¥</span>
           <input type="number" id="rateInput" min="0.01" max="1000" step="0.01" placeholder="例: 150">
@@ -1818,6 +1870,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <div class="sheet-title" id="preSheetTitle">先に精算する支払い</div>
     <div id="preSheetBody"></div>
     <button class="icon-pick-cancel" id="preSheetBack" onclick="closePreSheet()">閉じる</button>
+  </div>
+</div>
+<div class="sheet-overlay" id="reviewSheet" onclick="if(event.target===this)closeReview()">
+  <div class="sheet rv-sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title">旅のふりかえり</div>
+    <div id="reviewBody"></div>
+    <button class="icon-pick-cancel" onclick="closeReview()">閉じる</button>
   </div>
 </div>
 <div class="sheet-overlay" id="tripSheet" onclick="if(event.target===this)closeTripSheet()">
@@ -2543,7 +2603,7 @@ function buildShareCanvas(){
   x.font=`700 34px ${SF}`;x.globalAlpha=.75;x.fillText(`${flightNo(tripMeta)}${tripDatesText(tripMeta)?'  ·  '+tripDatesText(tripMeta):''}`,bx+60,by+205);x.globalAlpha=1;
   const name=(trips.find(z=>z.id===currentTripId)?.name)||'旅行';
   x.fillStyle='#2e2a3d';x.font=`800 50px ${RF}`;x.fillText(name.length>16?name.slice(0,16)+'…':name,bx+56,by+330);
-  let yen=0;expenses.forEach(e=>{yen+=Number(e.amount||0)*yenPer(normCurrency(e.currency));});
+  let yen=0;expenses.forEach(e=>{yen+=expYen(e);});
   const n=members.filter(Boolean).length;
   const cells=[['合計（円換算）',fmtPlain('JPY',yen)],['1人あたり',n>1?fmtPlain('JPY',yen/n):'-'],['メンバー',`${n}人`]];
   cells.forEach(([l,v],i)=>{const cx=bx+56+i*330;x.fillStyle=P;x.globalAlpha=.7;x.font=`700 28px ${SF}`;x.fillText(l,cx,by+420);x.globalAlpha=1;x.fillStyle=i===0?P:'#2e2a3d';x.font=`800 ${i===0?60:46}px ${RF}`;x.fillText(v,cx,by+490);});
@@ -2579,6 +2639,148 @@ async function shareTripImage(){
   }
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download='waritabi.png';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  showToast('画像を保存しました');
+}
+/* ===== 旅のふりかえり ===== */
+// 円換算（記録したときのレート）で、合計・カテゴリ・日ごと・大きかった支払い・メンバーごとの負担をまとめる
+function tripReview(){
+  const S=tripMeta.start,E=tripMeta.end||tripMeta.start;
+  const r={yen:0,count:expenses.length,cats:[],days:[],top:[],mem:[],tripDays:0,inYen:0};
+  const cat={},day={},mem={};
+  expenses.forEach((e,idx)=>{
+    const y=expYen(e);r.yen+=y;
+    const c=e.category||'その他';cat[c]=(cat[c]||0)+y;
+    let k=isDateStr(e.date)?e.date:'none';
+    if(S&&k!=='none'){if(k<S)k='pre';else if(k>E)k='post';}
+    day[k]=(day[k]||0)+y;
+    if(S?(k!=='pre'&&k!=='post'&&k!=='none'):k!=='none')r.inYen+=y;
+    sharesOf(e).forEach(([i,v])=>{mem[i]=(mem[i]||0)+v*expRate(e);});
+  });
+  r.cats=Object.entries(cat).map(([c,y])=>({cat:c,yen:y})).sort((a,b)=>b.yen-a.yen);
+  // 日ごと: 出発前・帰国後はまとめる。旅行中は記録がない日も0で並べる
+  const keys=[];
+  if(S){
+    const d0=new Date(S+'T00:00:00'),n=Math.round((new Date(E+'T00:00:00')-d0)/86400000)+1;r.tripDays=n;
+    if(day.pre)keys.push('pre');
+    if(n<=31)for(let i=0;i<n;i++){const d=new Date(d0);d.setDate(d.getDate()+i);keys.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));}
+    else Object.keys(day).filter(isDateStr).sort().forEach(k=>keys.push(k));
+    if(day.post)keys.push('post');
+  }else{
+    Object.keys(day).filter(isDateStr).sort().forEach(k=>keys.push(k));
+    r.tripDays=keys.length;
+  }
+  if(day.none)keys.push('none');
+  r.days=keys.map(k=>{
+    let label,out=false;
+    if(k==='pre'){label='出発前';out=true;}else if(k==='post'){label='帰国後';out=true;}else if(k==='none'){label='日付なし';out=true;}
+    else if(S)label=`${Math.round((new Date(k+'T00:00:00')-new Date(S+'T00:00:00'))/86400000)+1}日目`;
+    else{const [,m,d]=k.split('-').map(Number);label=`${m}/${d}`;}
+    return{key:k,label,yen:day[k]||0,out};
+  });
+  r.top=expenses.map(e=>({e,yen:expYen(e)})).filter(x=>x.yen>0).sort((a,b)=>b.yen-a.yen).slice(0,3);
+  r.mem=members.map((m,i)=>({i,name:m,yen:mem[i]||0})).filter(x=>x.name);
+  return r;
+}
+const yenShort=n=>n>=10000?(Math.round(n/1000)/10).toLocaleString()+'万':Math.round(n).toLocaleString();
+function renderReviewOpen(){
+  const b=document.getElementById('reviewOpenBtn');if(!b)return;
+  b.hidden=!expenses.length;
+}
+function openReview(){renderReview();document.getElementById('reviewSheet').classList.add('active');}
+function closeReview(){document.getElementById('reviewSheet').classList.remove('active');}
+function renderReview(){
+  const el=document.getElementById('reviewBody');if(!el)return;
+  if(!expenses.length){el.innerHTML='<p class="small" style="text-align:center;padding:16px 0;">まだ記録がありません</p>';return;}
+  const r=tripReview(),f=AIRPORT[tripMeta.from],t=AIRPORT[tripMeta.to];
+  const name=(trips.find(z=>z.id===currentTripId)?.name)||'旅行';
+  const route=t?`${f?f.code:'---'} ✈︎ ${t.code}`:'';
+  const me=getMeIdx(),n=r.mem.length;
+  const avg=r.tripDays?r.inYen/r.tripDays:0;
+  const third=me>=0?['自分の分',fmtPlain('JPY',r.mem.find(x=>x.i===me)?.yen||0)]:['1人あたり',n>1?fmtPlain('JPY',r.yen/n):'-'];
+  let h=`<div class="rv-hero">
+    ${route?`<div class="rv-route">${route}${tripDatesText(tripMeta)?' · '+esc(tripDatesText(tripMeta)):''}</div>`:''}
+    <div class="rv-name">${esc(name)}</div>
+    <div class="rv-total">${symSmall(fmtPlain('JPY',r.yen))}<small>旅の合計（円換算）</small></div>
+    <div class="rv-stats">
+      <div><small>${r.tripDays?`${r.tripDays}日間`:'日数'}</small><b>${r.count}件</b></div>
+      <div><small>1日あたり${tripMeta.start?'（旅行中）':''}</small><b>${r.tripDays?symSmall(fmtPlain('JPY',avg)):'-'}</b></div>
+      <div><small>${third[0]}</small><b>${symSmall(third[1])}</b></div>
+    </div>
+  </div>`;
+  // カテゴリ
+  h+='<div class="rv-sec">カテゴリ別</div>';
+  r.cats.forEach(c=>{const pct=r.yen>0?c.yen/r.yen*100:0;
+    h+=`<div class="rv-cat" style="${catStyle(c.cat)}"><span class="rv-cn">${catLabelHTML(c.cat)}</span><span class="rv-ca">${symSmall(fmtPlain('JPY',c.yen))}<small>${Math.round(pct)}%</small></span><div class="rv-bar"><i style="width:${Math.max(2,pct).toFixed(1)}%"></i></div></div>`;});
+  // 日ごと
+  const mx=Math.max(...r.days.map(d=>d.yen),1),inMax=Math.max(...r.days.filter(d=>!d.out).map(d=>d.yen),0);
+  h+='<div class="rv-sec">日ごと</div><div class="rv-days">';
+  r.days.forEach(d=>{h+=`<div class="rv-day${d.out?' out':''}${!d.out&&d.yen>0&&d.yen===inMax?' max':''}"><em>${d.yen>0?yenShort(d.yen):''}</em><i style="height:${d.yen>0?Math.max(3,d.yen/mx*100).toFixed(1):0}%"></i><span>${esc(d.label)}</span></div>`;});
+  h+='</div>';
+  // 大きかった支払い
+  if(r.top.length){
+    h+='<div class="rv-sec">大きかった支払い</div>';
+    r.top.forEach((x,k)=>{const e=x.e;h+=`<div class="rv-top"><span class="rv-rank">${k+1}</span><span class="pre-main"><b>${esc(e.name||'(無題)')}</b><small>${esc(fmtDay(e.date))} · ${esc(catText(e.category||'その他'))}</small></span><span class="rv-ta">${symSmall(fmtPlain(e.currency,e.amount))}</span></div>`;});
+  }
+  // メンバーごと
+  if(n>1){
+    const mm=Math.max(...r.mem.map(x=>x.yen),1);
+    h+='<div class="rv-sec">メンバーごとの負担</div>';
+    r.mem.forEach(x=>{h+=`<div class="rv-mem"><span class="rv-mn">${avatar(x.i)}<span>${esc(x.name)}${x.i===me?'（自分）':''}</span></span><div class="rv-bar"><i style="width:${Math.max(2,x.yen/mm*100).toFixed(1)}%"></i></div><span class="rv-ma">${symSmall(fmtPlain('JPY',x.yen))}</span></div>`;});
+  }
+  h+=`<p class="rv-note">外貨は記録したときのレートで円に換算しています${r.days.some(d=>d.key==='pre'||d.key==='post')?'<br>1日あたりは旅行中の日だけで計算しています':''}</p>`;
+  h+=`<button type="button" class="rv-save" onclick="shareReviewImage()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>画像で保存</button>`;
+  el.innerHTML=h;
+}
+function buildReviewCanvas(){
+  const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const P=getComputedStyle(document.documentElement).getPropertyValue('--p').trim()||'#ff5a5f';
+  const RF="'M PLUS Rounded 1c',-apple-system,'Hiragino Sans',sans-serif",SF="-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif";
+  const r=tripReview(),f=AIRPORT[tripMeta.from],t=AIRPORT[tripMeta.to];
+  x.fillStyle='#ffffff';x.fillRect(0,0,W,H);
+  // 上: 合計
+  const bx=60,by=56,bw=W-120,bh=360;
+  x.fillStyle='#fff1f1';roundRect(x,bx,by,bw,bh,44);x.fill();
+  x.fillStyle=P;x.font=`800 40px ${RF}`;x.fillText(t?`${f?f.code:'---'} ✈︎ ${t.code}`:'TRIP REVIEW',bx+50,by+70);
+  x.globalAlpha=.7;x.font=`700 28px ${SF}`;x.textAlign='right';x.fillText(tripDatesText(tripMeta)||'',bx+bw-50,by+68);x.textAlign='left';x.globalAlpha=1;
+  const name=(trips.find(z=>z.id===currentTripId)?.name)||'旅行';
+  x.fillStyle='#2e2a3d';x.font=`800 44px ${RF}`;x.fillText(name.length>18?name.slice(0,18)+'…':name,bx+50,by+136);
+  x.fillStyle='#8a8594';x.font=`700 26px ${SF}`;x.fillText('旅の合計（円換算）',bx+50,by+186);
+  x.fillStyle=P;x.font=`800 88px ${RF}`;x.fillText(fmtPlain('JPY',r.yen),bx+46,by+268);
+  const n=r.mem.length,avg=r.tripDays?r.inYen/r.tripDays:0;
+  const cells=[[r.tripDays?`${r.tripDays}日間`:'記録',`${r.count}件`],['1日あたり',r.tripDays?fmtPlain('JPY',avg):'-'],['1人あたり',n>1?fmtPlain('JPY',r.yen/n):'-']];
+  cells.forEach(([l,v],i)=>{const cx=bx+50+i*320;x.fillStyle='#8a8594';x.font=`700 24px ${SF}`;x.fillText(l,cx,by+306);x.fillStyle='#2e2a3d';x.font=`800 36px ${RF}`;x.fillText(v,cx,by+342);});
+  // カテゴリ（上位5）
+  let y=480;x.fillStyle='#8a8594';x.font=`700 30px ${SF}`;x.fillText('カテゴリ別',70,y);y+=18;
+  const cats=r.cats.slice(0,5);
+  cats.forEach(cc=>{const col=catColor(cc.cat),pct=r.yen>0?cc.yen/r.yen:0;
+    x.fillStyle='#2e2a3d';x.font=`700 30px ${SF}`;x.fillText(catText(cc.cat).slice(0,10),70,y+36);
+    x.textAlign='right';x.font=`800 32px ${RF}`;x.fillText(`${fmtPlain('JPY',cc.yen)}`,W-150,y+36);x.fillStyle='#8a8594';x.font=`700 24px ${SF}`;x.fillText(`${Math.round(pct*100)}%`,W-70,y+36);x.textAlign='left';
+    x.fillStyle='#f1f1f4';roundRect(x,70,y+52,W-140,14,7);x.fill();
+    x.fillStyle=col.fg;roundRect(x,70,y+52,Math.max(14,(W-140)*pct),14,7);x.fill();
+    y+=74;});
+  if(r.cats.length>5){x.fillStyle='#8a8594';x.font=`600 24px ${SF}`;x.fillText(`ほか ${r.cats.length-5} カテゴリ`,70,y+20);}
+  y=Math.max(y,498+74*3);
+  // 日ごと
+  y=Math.min(y,498+74*5)+56;x.fillStyle='#8a8594';x.font=`700 30px ${SF}`;x.fillText('日ごと',70,y);
+  const days=r.days.slice(0,14),top=y+20,bottom=H-150,ch=bottom-top;
+  const mx=Math.max(...days.map(d=>d.yen),1),gw=(W-140)/Math.max(days.length,1),bwid=Math.min(56,gw*.6);
+  days.forEach((d,i)=>{const cx=70+gw*i+gw/2,hh=d.yen>0?Math.max(6,d.yen/mx*(ch-34)):0;
+    x.globalAlpha=d.out?.35:1;x.fillStyle=P;if(hh){roundRect(x,cx-bwid/2,bottom-hh,bwid,hh,Math.min(10,bwid/2,hh/2));x.fill();}x.globalAlpha=1;
+    x.textAlign='center';x.fillStyle='#6b6778';x.font=`800 ${gw<80?18:22}px ${RF}`;if(d.yen>0)x.fillText(yenShort(d.yen),cx,bottom-hh-10);
+    x.fillStyle='#8a8594';x.font=`700 ${gw<80?18:22}px ${SF}`;x.fillText(d.label,cx,bottom+30);x.textAlign='left';});
+  x.fillStyle=P;x.font=`800 38px ${RF}`;x.textAlign='center';x.fillText('WARITABI',W/2,H-50);x.fillStyle='#b0aebb';x.font=`600 24px ${SF}`;x.fillText('旅のふりかえり',W/2,H-20);x.textAlign='left';
+  return c;
+}
+async function shareReviewImage(){
+  const c=buildReviewCanvas();
+  const blob=await new Promise(r=>c.toBlob(r,'image/png'));
+  const file=new File([blob],'waritabi-review.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:'旅のふりかえり'});return;}catch(e){if(e&&e.name==='AbortError')return;}
+  }
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='waritabi-review.png';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),4000);
   showToast('画像を保存しました');
 }
@@ -3019,11 +3221,15 @@ function fmtPlain(code,n){
 // 外貨は円換算の目安を添えて表示
 // 画面表示用: 先頭の通貨記号を小さくする
 const symSmall=str=>String(str).replace(/^(-?)([¥$₩])/,'$1<span class="cur">$2</span>');
-function fmtMoney(code,n){
+// 支払いごとの円換算のレート（記録したときのレートで固定。古い記録は今のレート）
+function expRate(e){const c=normCurrency(e.currency);if(c==='JPY')return 1;const r=Number(e.rate);return r>0&&isFinite(r)?r:yenPer(c);}
+const expYen=e=>Number(e.amount||0)*expRate(e);
+const rateNow=c=>c==='JPY'?undefined:Math.round(yenPer(c)*10000)/10000;
+function fmtMoney(code,n,rate){
   code=normCurrency(code);
   const s=symSmall(fmtPlain(code,n));
   if(code==='JPY')return s;
-  const r=yenPer(code);
+  const r=rate||yenPer(code);
   if(!r||!isFinite(r)||r<=0)return s;
   return`${s}<span class="estimate">(≈${fmtPlain('JPY',Number(n||0)*r)})</span>`;
 }
@@ -3225,6 +3431,7 @@ function normalizeData(input){
         if(Object.keys(v).length)out_.split={m:e.split.m,v};
       }
       if(e.est===true)out_.est=true; // 概算（あとで確定額に直す）
+      {const r=Number(e.rate);if(currency!=='JPY'&&isFinite(r)&&r>0&&r<100000)out_.rate=r;} // 記録したときの円換算レート
       if(e.wallet===true)out_.wallet=true; // 共有財布から払った
       // 先に精算した記録（その支払いだけ先に済にした送金）
       if(e.pre&&typeof e.pre==='object'&&e.pre.s&&typeof e.pre.s==='object'){
@@ -3484,7 +3691,7 @@ function toggleAllParticipants(){
   refreshFormHelpers();
 }
 function refreshFormHelpers(){
-  renderDateChip();renderCurBtn();
+  renderDateChip();renderCurBtn();renderRateNote();
   // 支払った人チップ
   const chips=document.getElementById('paidByChips');
   if(chips){
@@ -3720,6 +3927,17 @@ function updateFocusMemberSelect(){
 }
 
 /* ===== 通貨 ===== */
+// 外貨のとき、金額欄の下に円換算と使うレートを出す
+function renderRateNote(){
+  const el=document.getElementById('rateNote');if(!el)return;
+  const c=currentCurrency;if(c==='JPY'){el.textContent='';el.style.display='none';return;}
+  const ed=editingExpenseIdx>=0?expenses[editingExpenseIdx]:null;
+  const r=ed&&normCurrency(ed.currency)===c&&Number(ed.rate)>0?Number(ed.rate):yenPer(c);
+  const amt=validateNum(document.getElementById('expenseAmount').value);
+  const unit=c==='KRW'?`₩100=¥${(r*100).toFixed(2)}`:`$1=¥${r.toFixed(2)}`;
+  el.style.display='block';
+  el.textContent=`${amt?`≈${fmtPlain('JPY',amt*r)}　`:''}${unit} で円換算（このレートで固定）`;
+}
 // 金額欄の通貨ボタン：押すたびに ¥ → ₩ → $ → ¥
 const CUR_CYCLE=['JPY','KRW','USD'];
 function cycleCurrency(){setCurrency(CUR_CYCLE[(CUR_CYCLE.indexOf(currentCurrency)+1)%CUR_CYCLE.length]);}
@@ -4037,6 +4255,7 @@ function addExpense(){
   const sp=formSplit();if(sp){ne.split=sp;const err=splitError(ne);if(err){showToast('⚠ '+err);return;}}
   if(_estOn)ne.est=true;
   if(fromWallet)ne.wallet=true;
+  if(currentCurrency!=='JPY')ne.rate=rateNow(currentCurrency);
   expenses.push(ne);
   markSeen(expenses[expenses.length-1]);
   printReceipt(name,fmtMoney(currentCurrency,amt));
@@ -4062,6 +4281,9 @@ function updateExpense(){
   const ue={...expenses[editingExpenseIdx],name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',date:getFormDate(),paidBy,participants:[...new Set(parts)]};
   const sp=formSplit();if(sp){ue.split=sp;const err=splitError(ue);if(err){showToast('⚠ '+err);return;}}else delete ue.split;
   if(_estOn)ue.est=true;else delete ue.est;
+  const old=expenses[editingExpenseIdx];
+  if(currentCurrency==='JPY')delete ue.rate;
+  else if(normCurrency(old.currency)!==currentCurrency||!(Number(old.rate)>0))ue.rate=rateNow(currentCurrency);
   if(fromWallet)ue.wallet=true;else delete ue.wallet;
   if(ue.pre){
     addSettled(ue.pre.s,-1);
@@ -4149,16 +4371,16 @@ function displayExpenses(){
     const g=groupMap[key];
     if(byDate)g.items.reverse(); // 同じ日の中では新しく追加したものが上
     const tot={};
-    g.items.forEach(({e})=>{ const c=normCurrency(e.currency); tot[c]=(tot[c]||0)+e.amount; });
+    let yenTot=0;g.items.forEach(({e})=>{ const c=normCurrency(e.currency); tot[c]=(tot[c]||0)+e.amount; yenTot+=expYen(e); });
     const totParts=CURRENCIES.filter(c=>tot[c.code]>0).map(c=>fmtPlain(c.code,tot[c.code]));
-    const totStr=totParts.join(' + ')||'¥0';
+    const totStr=totParts.length>1?`≈${fmtPlain('JPY',yenTot)}`:(totParts[0]||'¥0');
     const label=byDate?dayLabel(key):key;
     const gid=`catg_${gi}`;
     html+=`<div class="cat-group"><div class="cat-group-header" onclick="toggleCatGroup('${gid}',this)"><span style="display:flex;align-items:center;gap:8px;"><span class="cat-group-toggle open">▶</span><span class="cat-group-label"${byDate?'':` style="${catStyle(label)}"`}>${byDate?safe(label):catLabelHTML(label)}</span></span><span class="cat-group-total">${totStr}</span></div><div class="cat-group-body" id="${gid}">`;
     g.items.forEach(({e,i})=>{
       const nm=safe(e.name),paid=safe(pname(payerOf(e)));
       const parts=e.participants.map(idx=>safe(members[idx]||`メンバー${idx+1}`)).join(', ');
-      const amt=fmtMoney(e.currency,e.amount);
+      const amt=fmtMoney(e.currency,e.amount,expRate(e));
       const sub=byDate?catLabelHTML(e.category||'その他'):fmtDay(e.date);
       const who=e.participants.length===members.length?`全員（${e.participants.length}人）`:parts;
       const isEd=editingExpenseIdx===i,fresh=_fresh.get(e.id);
@@ -4355,6 +4577,7 @@ function avatar(i){
   const c=memberColors()[i];
   return`<span class="av" style="--a:${c};--a-rgb:${hexToRgb(c)}">${PERSON_SVG}</span>`;
 }
+let _showPaid=false; // 済の行を表示するか
 function calculateSettlement(){
   const txs=getSettlementTx();
   // あなたの精算（ふつうの文で）
@@ -4377,14 +4600,16 @@ function calculateSettlement(){
   }
   // 全員の精算（済にできる）
   const doneCount=txs.filter(t=>settleState(t)==='done').length;
-  const rows=txs.map(t=>{
+  const rowOf=t=>{
     const st=settleState(t),key=settleKey(t);
     return`<div class="settlement-item${st==='done'?' done':''}" data-key="${key}">
       <div class="settlement-text">${avatar(t.from)}${memberName(t.from)} → ${avatar(t.to)}${memberName(t.to)}</div>
       <div class="settlement-amount">${fmtMoney(t.code,t.amount)}</div>
       <span class="sett-stub"><button class="sett-done-btn" onclick="toggleSettled('${key}',${t.amount},this,${st==='done'})">${st==='done'?'✓ 済':'済にする'}</button></span>
     </div>`;
-  }).join('');
+  };
+  const openTx=txs.filter(t=>settleState(t)!=='done'),doneTx=txs.filter(t=>settleState(t)==='done');
+  const rows=openTx.map(rowOf).join('')+(doneTx.length?`<button type="button" class="paid-toggle${_showPaid?' open':''}" onclick="_showPaid=!_showPaid;calculateSettlement()">済 ${doneTx.length}件${_showPaid?'をたたむ':'を表示'}<span>▾</span></button>${_showPaid?doneTx.map(rowOf).join(''):''}`:'');
   const pass=document.getElementById('tripPass');
   const allDone=txs.length>0&&doneCount===txs.length;
   // 旅行中に全部済にしても「精算完了」にはしない（途中精算）。帰国日を過ぎたら完了になる
@@ -4490,7 +4715,7 @@ async function chooseMe(){
   if(picked===null||picked===undefined)return;
   try{localStorage.setItem(meKey(),named[picked].m);}catch(e){}
   if(editingExpenseIdx<0)setPaidBy(named[picked].i);
-  renderMeBar();calculateSettlement();
+  renderMeBar();calculateSettlement();updateFooterTotal();
 }
 function openMySettlement(){
   const me=getMeIdx();
@@ -4529,10 +4754,19 @@ function renderMeBar(){
 
 /* ===== フッター・メイン更新 ===== */
 function updateFooterTotal(){
-  let yen=0;(expenses||[]).forEach(e=>{yen+=Number(e.amount||0)*yenPer(normCurrency(e.currency));});
+  let yen=0;(expenses||[]).forEach(e=>{yen+=expYen(e);});
   const ft=document.getElementById('footerTotal');if(ft)ft.innerHTML=symSmall(fmtPlain('JPY',yen));
   const n=members.filter(Boolean).length,pp=document.getElementById('perPersonTotal');
-  if(pp)pp.innerHTML=n>1&&yen>0?symSmall(fmtPlain('JPY',yen/n)):'-';
+  const me=getMeIdx(),lbl=pp?.previousElementSibling;
+  if(me>=0&&yen>0){
+    // 自分が負担する分（割り方を反映、円換算）
+    let mine=0;expenses.forEach(e=>{sharesOf(e).forEach(([i,v])=>{if(i===me)mine+=v*expRate(e);});});
+    if(lbl)lbl.textContent='自分の分';
+    if(pp)pp.innerHTML=symSmall(fmtPlain('JPY',mine));
+  }else{
+    if(lbl)lbl.textContent='1人あたり';
+    if(pp)pp.innerHTML=n>1&&yen>0?symSmall(fmtPlain('JPY',yen/n)):'-';
+  }
   const mc=document.getElementById('memberCount');if(mc)mc.textContent=n?`${n}人`:'-';
 }
 function renderCatSummary(){
@@ -4582,6 +4816,7 @@ function updateDisplay(){
   renderQuickRow();renderWalletCard();renderSettingsSummary();
   updateSettCards();
   updateMemberList();displayExpenses();renderCatSummary();calculateSettlement();renderPersonalViews();updateFooterTotal();renderMeBar();refreshFormHelpers();
+  renderReviewOpen();if(document.getElementById('reviewSheet')?.classList.contains("active"))renderReview();
 }
 
 /* ===== 保存・読込 ===== */
