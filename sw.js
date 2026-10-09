@@ -32,7 +32,7 @@ self.addEventListener('fetch',e=>{
     e.respondWith((async()=>{
       try{
         const r=await fetch(req);
-        const c=await caches.open(CACHE);c.put('./index.html',r.clone());
+        if(r&&r.ok){const c=await caches.open(CACHE);c.put('./index.html',r.clone());}
         return r;
       }catch(_){
         return (await caches.match('./index.html'))||(await caches.match('./'))||Response.error();

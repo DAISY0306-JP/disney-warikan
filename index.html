@@ -1436,6 +1436,49 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .pt-send>div::-webkit-scrollbar{display:none;}
 .pt-send button{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 10px 0 4px;border-radius:999px;border:1.5px solid #e6e6ea;background:#fff;font-size:12.5px;font-weight:700;color:var(--text);cursor:pointer;}
 .pt-send button .av{width:22px;height:22px;}
+
+/* 先に精算（カード） */
+.presettle-btn{justify-content:flex-start !important;gap:10px !important;min-height:56px !important;padding:8px 12px !important;border:1.5px solid #ececf0 !important;background:#f7f7f9 !important;color:var(--text) !important;text-align:left;}
+.presettle-btn .ps-ic{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:rgb(var(--p-rgb) / .1);display:flex;align-items:center;justify-content:center;}
+.presettle-btn .ps-ic .ti{width:16px;height:16px;stroke:var(--p);}
+.presettle-btn .ps-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.presettle-btn .ps-txt b{font-size:13.5px;font-weight:800;}
+.presettle-btn .ps-txt small{font-size:11.5px;font-weight:600;color:#8a8594;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.presettle-btn .ps-act{flex:0 0 auto;font-size:12px;font-weight:800;color:var(--p);}
+.presettle-btn.on{background:rgba(18,162,106,.06) !important;border-color:rgba(18,162,106,.25) !important;}
+.presettle-btn.on .ps-ic{background:rgba(18,162,106,.12);}
+.presettle-btn.on .ps-ic .ti{stroke:var(--recv);}
+.presettle-btn.on .ps-txt b{color:var(--recv);}
+.presettle-btn.on .ps-act{color:#8a8594;font-weight:700;}
+
+/* 支払いごとに先に精算 */
+.pre-open{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:10px 12px;border-radius:14px;border:1.5px solid #ececf0;background:#fff;text-align:left;cursor:pointer;color:var(--text);}
+.pre-open .ps-ic{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:rgb(var(--p-rgb) / .1);display:flex;align-items:center;justify-content:center;}
+.pre-open .ps-ic .ti{width:16px;height:16px;stroke:var(--p);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.pre-open .ps-txt{flex:1;min-width:0;display:flex;flex-direction:column;}
+.pre-open .ps-txt b{font-size:14px;font-weight:800;}
+.pre-open .ps-txt small{font-size:11.5px;color:#8a8594;font-weight:600;}
+.pre-sheet{background:#fff;}
+.pre-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 6px;border:none;border-bottom:1px solid #f0f0f3;background:none;text-align:left;cursor:pointer;color:var(--text);}
+.pre-main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.pre-main b{font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pre-main small{font-size:11.5px;color:#8a8594;}
+.pre-amt{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:var(--round);font-weight:800;font-size:14px;}
+.pre-st{font-family:inherit;font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:999px;background:rgb(var(--p-rgb) / .1);color:var(--p);}
+.pre-st.done{background:rgba(18,162,106,.1);color:var(--recv);}
+.pre-head{font-family:var(--round);font-size:26px;font-weight:800;color:var(--p);display:flex;flex-direction:column;align-items:center;margin:2px 0 6px;}
+.pre-head small{font-family:inherit;font-size:12px;font-weight:600;color:#8a8594;}
+.pre-help{text-align:center;margin-bottom:10px;line-height:1.6;}
+.pre-row{display:flex;align-items:center;gap:8px;padding:10px 10px;margin-bottom:8px;border-radius:14px;background:#f7f7f9;}
+.pre-row.done{background:rgba(18,162,106,.07);}
+.pre-who{flex:1;min-width:0;display:flex;align-items:center;gap:4px;font-size:13px;}
+.pre-who .av{width:22px;height:22px;}
+.pre-who b{font-weight:700;white-space:nowrap;}
+.pre-who i{font-style:normal;color:#8a8594;margin:0 2px;}
+.pre-v{flex:0 0 auto;font-family:var(--round);font-size:15px;font-weight:800;}
+.pre-row button{flex:0 0 auto;height:34px;padding:0 12px;border-radius:999px;border:1.5px solid #e6e6ea;background:#fff;color:var(--text);font-size:12.5px;font-weight:800;cursor:pointer;}
+.pre-row.done button{border-color:rgba(18,162,106,.35);color:var(--recv);background:#fff;}
+.pre-row.done .pre-v{color:var(--recv);}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1593,6 +1636,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     </div>
     <div class="card-body" id="cardSettlement">
     <div id="settSummary"></div>
+    <button type="button" class="pre-open" id="preOpenBtn" onclick="openPreSheet()"><span class="ps-ic"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.3L4 9M4 4v5h5M4 13a8 8 0 0 0 14.3 4.3L20 15M20 20v-5h-5"/></svg></span><span class="ps-txt"><b>支払いごとに先に精算する</b><small id="preOpenSub">旅の途中で、1つの支払いだけ先に精算できます</small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
     <div id="settlementList"></div>
     <button class="share-result-btn" onclick="shareTripImage()">精算結果を画像でシェア</button>
     <div class="sett-mode-title">精算のしかた</div>
@@ -1766,6 +1810,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <div class="sheet-title" id="setSheetTitle"></div>
     <div id="setSheetBody"></div>
     <button class="icon-pick-cancel" onclick="closeSetSheet()">閉じる</button>
+  </div>
+</div>
+<div class="sheet-overlay" id="preSheet" onclick="if(event.target===this)closePreSheet()">
+  <div class="sheet pre-sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title" id="preSheetTitle">先に精算する支払い</div>
+    <div id="preSheetBody"></div>
+    <button class="icon-pick-cancel" id="preSheetBack" onclick="closePreSheet()">閉じる</button>
   </div>
 </div>
 <div class="sheet-overlay" id="tripSheet" onclick="if(event.target===this)closeTripSheet()">
@@ -2325,7 +2377,7 @@ async function deleteMyAccount(){
     return;
   }
   clearTimeout(_saveTimer);_saveTimer=null;
-  try{['currentTripId','warikanTab','pendingJoin','warikanMembers','warikanExpenses','warikanDeposits'].forEach(k=>localStorage.removeItem(k));Object.keys(localStorage).filter(k=>k.startsWith('warikanMe_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  try{['currentTripId','warikanTab','pendingJoin','warikanMembers','warikanExpenses','warikanDeposits','warikanTripCache'].forEach(k=>localStorage.removeItem(k));Object.keys(localStorage).filter(k=>k.startsWith('warikanMe_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
   try{await sb.auth.signOut();}catch(e){}
   currentUser=null;currentTripId=null;trips=[];
   showLoggedOut('アカウントを削除しました。ご利用ありがとうございました。');
@@ -2333,6 +2385,7 @@ async function deleteMyAccount(){
 async function signOut(){
   if(_saveTimer){clearTimeout(_saveTimer);await saveTripDataNow(false);}
   if(sb)await sb.auth.signOut();
+  try{localStorage.removeItem(CACHE_KEY);}catch(e){}
   currentUser=null;currentTripId=null;trips=[];
   showLoggedOut('ログアウトしました。');
 }
@@ -2730,6 +2783,7 @@ async function selectTrip(id){
   if(!id||!sb)return;
   if(_saveTimer){clearTimeout(_saveTimer);_saveTimer=null;await saveTripDataNow(false);}
   const prev={id:currentTripId,base:_syncBase,rev:_syncRev,share:_shareCode};
+  hideUndo();
   _syncBase=null;_syncRev=null;
   currentTripId=id;localStorage.setItem('currentTripId',id);
   const sel=document.getElementById('tripSelect');if(sel)sel.value=id;
@@ -2776,7 +2830,7 @@ function toSyncView(raw){
   const sm=(raw.settlementMode==='min'||raw.settlementMode==='direct')?raw.settlementMode:settlementMode;
   return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,settlementMode:sm,settled:nd.settled,wallet:nd.wallet,catIcons:normalizeCatIcons(raw.catIcons),tripMeta:normalizeTripMeta(raw.tripMeta),completedAt:isDateStr(raw.completedAt)?raw.completedAt:'',categories:cats};
 }
-function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);writeTripCache({server:raw});}
+function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);writeTripCache({server:raw,local:null,localRev:null});}
 // 電波がないときに開けるよう、最後に開いた旅行をこの端末に残す
 const CACHE_KEY='warikanTripCache';
 function readTripCache(){try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');return c&&typeof c==='object'?c:null;}catch(e){return null;}}
@@ -2796,7 +2850,10 @@ function openFromCache(){
   if(!currentUser)currentUser={id:c.uid,email:c.email};
   trips=Array.isArray(c.trips)&&c.trips.length?c.trips:[{id:c.id,name:'旅行'}];
   currentTripId=c.id;
-  _isApplyingRemote=true;applyDataObject(c.local||c.server);_isApplyingRemote=false;
+  hideUndo();
+  // 自分の変更は、同じ版のサーバーの内容に対するものだけ使う（古い変更で新しい内容を上書きしないように）
+  const useLocal=c.local&&c.localRev===revOf(c.server);
+  _isApplyingRemote=true;applyDataObject(useLocal?c.local:c.server);_isApplyingRemote=false;
   _syncBase=toSyncView(c.server);_syncRev=revOf(c.server);
   renderTripSelect();initAppViews();
   setSyncStatus('機内モード中：前回の内容を表示しています。電波が戻ったら同期します');
@@ -2864,7 +2921,7 @@ async function pullAndMerge(){
   const server=toSyncView(raw),local=toSyncView(getDataObject());
   const base=_syncBase||local;
   if(!sameJSON(server,base))applyRemoteView(sameJSON(local,base)?server:mergeSync(base,local,server));
-  _syncBase=server;_syncRev=revOf(raw);writeTripCache({server:raw});
+  _syncBase=server;_syncRev=revOf(raw);writeTripCache({server:raw,local:null,localRev:null});
   return true;
 }
 async function saveTripDataNow(showDone=false){
@@ -2928,6 +2985,7 @@ window.addEventListener('online',()=>{
   showToast('☁️ 電波が戻りました。同期します');
   sb.auth.getSession().then(({data})=>{
     if(data?.session)currentUser=data.session.user;
+    else{showLoggedOut('ログインの期限が切れました。もう一度ログインしてください（入力した内容はこの端末に残っています）');return;}
     if(!sameJSON(toSyncView(getDataObject()),_syncBase))saveTripDataNow(false);else pollRemote();
   }).catch(()=>{});
 });
@@ -3189,6 +3247,7 @@ function normalizeData(input){
     if(Array.isArray(w.carry))out.wallet.carry=w.carry.slice(0,50).filter(x=>x&&typeof x==='object'&&validateNum(x.amount)>0).map(x=>({name:sanitize(x.name||'').trim(),currency:normCurrency(x.currency),amount:validateNum(x.amount)}));
     if(out.wallet.ins.length||expensesUseWallet(out.expenses))out.wallet.on=true;
   }
+  if(expensesUseWallet(out.expenses))out.wallet.on=true;
   if(Array.isArray(input.deposits)){
     out.deposits=input.deposits.slice(0,MAX_DEPOSITS).filter(d=>d&&typeof d==='object').map(d=>{
       const holder=clampInt(d.holder,0,mLen-1),from=clampInt(d.from,0,mLen-1),amount=validateNum(d.amount),currency=normCurrency(d.currency);
@@ -3360,7 +3419,7 @@ function updateMemberSelects(){
     div.appendChild(cb);div.appendChild(lbl);pc.appendChild(div);
   });
   const sel=document.getElementById('paidBy');
-  sel.value=(prevPayer!==''&&Number(prevPayer)<members.length)?prevPayer:String(defaultPayer());
+  sel.value=prevPayer==='W'&&wallet.on?'W':(prevPayer!==''&&Number(prevPayer)<members.length)?prevPayer:String(defaultPayer());
   refreshFormHelpers();
 }
 
@@ -3550,12 +3609,14 @@ async function importCarry(){
   }
   const k=await appChoose('どの旅行の残りを引き継ぎますか？',rows.map(r=>r.name));
   const r=k==null?null:rows[k];if(!r)return;
+  const tag=`${r.name}の残り`.slice(0,40);
+  if((wallet.ins||[]).some(x=>x.note===tag)){showToast(`⚠ 「${r.name}」の残りはもう引き継いでいます`);return;}
   const ins=[],miss=[];
   r.carry.forEach(c=>{
     const i=members.findIndex(m=>String(m||'').trim()===String(c.name||'').trim());
     const amount=validateNum(c.amount);if(!amount)return;
     if(i<0){miss.push(c.name);return;}
-    ins.push({id:'w'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),by:i,amount,currency:normCurrency(c.currency),note:`${r.name}の残り`.slice(0,40),date:todayStr()});
+    ins.push({id:'w'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),by:i,amount,currency:normCurrency(c.currency),note:tag,date:todayStr()});
   });
   if(!ins.length){showToast('⚠ 同じ名前のメンバーがいません');return;}
   wallet={...wallet,on:true,ins:[...(wallet.ins||[]),...ins]};
@@ -3869,6 +3930,51 @@ function applyQuick(k){
   document.querySelectorAll('#quickRow .quick-chip').forEach((b,i)=>b.classList.toggle('active',i===k));
 }
 /* ===== この支払いだけ先に精算 ===== */
+// 先に精算できる支払い（財布払い以外で、支払った人のほかに参加者がいるもの）
+const canPre=e=>!e.wallet&&e.participants.some(p=>p!==e.paidBy);
+// その支払いで、先に精算した人数 / 対象の人数
+function preProgress(e){const all=Object.keys(preShares(e)),done=all.filter(k=>e.pre&&e.pre.s&&k in e.pre.s);return{done:done.length,all:all.length};}
+let _preId=null;
+function openPreSheet(id){_preId=id||null;renderPreSheet();document.getElementById('preSheet').classList.add('active');}
+function closePreSheet(){
+  if(_preId){_preId=null;renderPreSheet();return;} // 詳しい画面からは一覧に戻る
+  document.getElementById('preSheet').classList.remove('active');
+}
+function renderPreSheet(){
+  const body=document.getElementById('preSheetBody'),title=document.getElementById('preSheetTitle'),back=document.getElementById('preSheetBack');
+  if(!body)return;
+  const e=_preId?expenses.find(x=>x.id===_preId):null;
+  if(!e){
+    _preId=null;title.textContent='どの支払いを先に精算しますか？';back.textContent='閉じる';
+    const list=expenses.filter(canPre).slice().reverse();
+    body.innerHTML=list.length?list.map(x=>{
+      const pr=preProgress(x),st=pr.done===0?'':pr.done===pr.all?'<span class="pre-st done">先に精算済み</span>':`<span class="pre-st">${pr.done}/${pr.all}人 済</span>`;
+      return`<button type="button" class="pre-item" onclick="openPreSheet('${esc(x.id)}')"><span class="item-ic">${itemIconSvg(x.name,x.category)}</span><span class="pre-main"><b>${safe(x.name)}</b><small>${memberName(x.paidBy)}が支払い · ${shortDay(x.date)}</small></span><span class="pre-amt">${fmtPlain(normCurrency(x.currency),x.amount)}${st}</span></button>`;
+    }).join(''):'<p class="small" style="text-align:center;padding:16px;">先に精算できる支払いがありません</p>';
+    return;
+  }
+  title.textContent=e.name;back.textContent='‹ 支払いの一覧に戻る';
+  const c=normCurrency(e.currency),sh=preShares(e),keys=Object.keys(sh);
+  const n=e.participants.length;
+  body.innerHTML=`<div class="pre-head">${fmtPlain(c,e.amount)}<small>${memberName(e.paidBy)}が支払い · ${e.split?(e.split.m==='ratio'?'比率で':'金額指定で'):`${n}人で均等に`}割り勘</small></div>
+    <p class="small pre-help">払い終わった人から「済にする」を押してください。精算タブの送金から差し引かれます。</p>
+    ${keys.map(k=>{
+      const [f,t]=k.split('>').map(Number),done=!!(e.pre&&e.pre.s&&k in e.pre.s);
+      return`<div class="pre-row${done?' done':''}"><span class="pre-who">${avatar(f)}<b>${memberName(f)}</b><i>→</i>${avatar(t)}<b>${memberName(t)}</b></span><span class="pre-v">${fmtPlain(c,sh[k])}</span><button type="button" onclick="togglePreKey('${esc(e.id)}','${k}')">${done?'✓ 済':'済にする'}</button></div>`;
+    }).join('')}`;
+}
+// 1人ずつ「済」にする・取り消す
+function togglePreKey(id,k){
+  const i=expenses.findIndex(x=>x.id===id);if(i<0)return;
+  const e=expenses[i],sh=preShares(e);if(!(k in sh))return;
+  const cur={...((e.pre&&e.pre.s)||{})},ne={...e};
+  if(k in cur){addSettled({[k]:cur[k]},-1);delete cur[k];showToast('「済」を取り消しました');}
+  else{cur[k]=sh[k];addSettled({[k]:sh[k]},1);showToast('✅ 済にしました');}
+  if(Object.keys(cur).length)ne.pre={d:(e.pre&&e.pre.d)||todayStr(),s:cur};else delete ne.pre;
+  expenses[i]=ne;markSeen(ne);
+  saveData();updateDisplay();renderMeBar();renderPreSheet();
+  if(!(k in (e.pre?.s||{})))afterSettleChange(true);
+}
 // 支払った人以外の各メンバーが、支払った人に自分の分を払う送金
 function preShares(e){
   const c=normCurrency(e.currency),s={};
@@ -3878,11 +3984,20 @@ function preShares(e){
 function renderPresettleBtn(){
   const b=document.getElementById('presettleBtn');if(!b)return;
   const e=editingExpenseIdx>=0?expenses[editingExpenseIdx]:null;
-  const can=e&&!e.wallet&&e.participants.some(p=>p!==e.paidBy);
-  b.style.display=can?'flex':'none';
+  const can=false; // 先に精算は精算タブの「支払いごとに先に精算する」から
+  b.style.display='none';
   if(!can)return;
   b.classList.toggle('on',!!e.pre);
-  b.innerHTML=e.pre?`${iconSvg('ok')}先に精算済み${e.pre.d?`（${shortDay(e.pre.d)}）`:''}・取り消す`:`${iconSvg('ok','ti')}この支払いだけ先に精算する`;
+  // どの送金になるかを1行で（例：あやか・みさき → みゆ 各¥60,470）
+  const s=e.pre?e.pre.s:preShares(e),keys=Object.keys(s);
+  const code=keys[0]?.split('>')[2]||normCurrency(e.currency);
+  const froms=keys.map(k=>pname(Number(k.split('>')[0])));
+  const vals=keys.map(k=>s[k]),same=vals.every(v=>roundCur(code,v)===roundCur(code,vals[0]));
+  const flow=keys.length?(same?`${froms.join('・')} → ${pname(e.paidBy)}　${keys.length>1?'各':''}${fmtPlain(code,vals[0])}`
+    :`${keys.map((k,j)=>`${froms[j]} ${fmtPlain(code,vals[j])}`).join('・')} → ${pname(e.paidBy)}`):'';
+  b.innerHTML=e.pre
+    ?`<span class="ps-ic">${iconSvg('ok')}</span><span class="ps-txt"><b>先に精算済み${e.pre.d?`（${shortDay(e.pre.d)}）`:''}</b><small>${esc(flow)}</small></span><span class="ps-act">取り消す</span>`
+    :`<span class="ps-ic">${iconSvg('sync')}</span><span class="ps-txt"><b>この支払いだけ先に精算</b><small>${esc(flow)}</small></span><span class="ps-act">精算する ›</span>`;
 }
 function addSettled(map,sign){
   Object.keys(map).forEach(k=>{
@@ -3893,7 +4008,7 @@ function addSettled(map,sign){
 async function togglePresettle(){
   const i=editingExpenseIdx,e=expenses[i];if(!e)return;
   if(e.pre){
-    const ok=await openConfirm('先に精算を取り消す',`「${e.name}」の先に精算した分を、まだ払っていない状態に戻しますか？`,{okText:'取り消す'});if(!ok)return;
+    const ok=await openConfirm('先に精算を取り消す',`「${e.name}」の先に精算した分を、まだ払っていない状態に戻しますか？`,{okText:'取り消す'});if(!ok||expenses[i]!==e)return;
     addSettled(e.pre.s,-1);
     const ne={...expenses[i]};delete ne.pre;expenses[i]=ne;
     saveData();updateDisplay();renderMeBar();renderPresettleBtn();showToast('先に精算を取り消しました');
@@ -3948,6 +4063,11 @@ function updateExpense(){
   const sp=formSplit();if(sp){ue.split=sp;const err=splitError(ue);if(err){showToast('⚠ '+err);return;}}else delete ue.split;
   if(_estOn)ue.est=true;else delete ue.est;
   if(fromWallet)ue.wallet=true;else delete ue.wallet;
+  if(ue.pre){
+    addSettled(ue.pre.s,-1);
+    if(ue.wallet){delete ue.pre;showToast('財布から払った支払いにしたので、先に精算を取り消しました');}
+    else{const s2=preShares(ue);if(Object.keys(s2).length){addSettled(s2,1);ue.pre={...ue.pre,s:s2};}else delete ue.pre;}
+  }
   expenses[editingExpenseIdx]=ue;
   markSeen(expenses[editingExpenseIdx]);
   clearExpenseForm();saveData();updateDisplay();showToast('✅ 支払いを更新しました');
@@ -3973,9 +4093,12 @@ async function deleteExpense(i){
   const removed=expenses[i];
   if(removed.pre)addSettled(removed.pre.s,-1);
   expenses.splice(i,1);saveData();updateDisplay();
+  const undoTrip=currentTripId;
   showUndo(`「${removed.name}」を削除しました`,()=>{
-    if(expenses.some(x=>x.id===removed.id))return;
-    expenses.splice(Math.min(i,expenses.length),0,removed);
+    if(currentTripId!==undoTrip||expenses.some(x=>x.id===removed.id))return;
+    const pos=Math.min(i,expenses.length);
+    expenses.splice(pos,0,removed);
+    if(editingExpenseIdx>=pos)editingExpenseIdx++;
     if(removed.pre)addSettled(removed.pre.s,1);
     markSeen(removed);saveData();updateDisplay();renderMeBar();showToast('✅ 元に戻しました');
   });
@@ -4040,7 +4163,7 @@ function displayExpenses(){
       const who=e.participants.length===members.length?`全員（${e.participants.length}人）`:parts;
       const isEd=editingExpenseIdx===i,fresh=_fresh.get(e.id);
       const freshTag=fresh?`<span class="fresh-tag">${fresh==='new'?'NEW':'更新'}</span>`:'';
-      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}<span class="item-ic">${itemIconSvg(e.name,e.category)}</span>${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip${e.wallet?' wal':''}"><b>${paid}</b> ${e.wallet?'から':'が支払い'}</span><span class="expense-meta-chip">${who}${e.split?(e.split.m==='ratio'?' · 比率':' · 金額指定'):''}</span>${e.est?'<span class="expense-meta-chip est">概算</span>':''}${e.pre?'<span class="expense-meta-chip pre">先に精算済み</span>':''}<span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">削除</button></div></div>`;
+      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}<span class="item-ic">${itemIconSvg(e.name,e.category)}</span>${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip${e.wallet?' wal':''}"><b>${paid}</b> ${e.wallet?'から':'が支払い'}</span><span class="expense-meta-chip">${who}${e.split?(e.split.m==='ratio'?' · 比率':' · 金額指定'):''}</span>${e.est?'<span class="expense-meta-chip est">概算</span>':''}${e.pre?(()=>{const pr=preProgress(e);return`<span class="expense-meta-chip pre">${pr.done>=pr.all?'先に精算済み':`先に精算 ${pr.done}/${pr.all}人`}</span>`;})():''}<span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">削除</button></div></div>`;
     });
     html+='</div></div>';
   });
@@ -4197,6 +4320,12 @@ function toggleSettled(key,amount,btn,isPaid){
   let tear=null;
   if(isPaid){
     delete settled[key];showToast('「済」を取り消しました');
+    expenses=expenses.map(e=>{
+      if(!e.pre||!e.pre.s||!(key in e.pre.s))return e;
+      const s2={...e.pre.s};delete s2[key];const ne={...e};
+      if(Object.keys(s2).length)ne.pre={...e.pre,s:s2};else delete ne.pre;
+      return ne;
+    });
   }else{
     settled[key]=(Number(settled[key])||0)+amount;showToast('✅ 済にしました');
     tear=btn?prepareTear(btn):null;
@@ -4267,6 +4396,10 @@ function calculateSettlement(){
     else if(!complete&&completedAt){completedAt='';saveData();}
   }
   renderPassProgress();
+  const pb=document.getElementById('preOpenBtn');
+  if(pb){const can=expenses.filter(canPre);pb.style.display=can.length?'flex':'none';
+    const started=can.filter(x=>x.pre).length;document.getElementById('preOpenSub').textContent=started?`${started}件の支払いを先に精算しています`:'旅の途中で、1つの支払いだけ先に精算できます';}
+  if(document.getElementById('preSheet')?.classList.contains('active'))renderPreSheet();
   const walNote=txs.some(t=>isWallet(t.from)||isWallet(t.to))?`<div class="wal-note">${avatar(walletIdx())}「共有財布 → 人」は財布から取り出して渡す、「人 → 共有財布」は財布にお金を入れる、という意味です</div>`:'';
   const estN=expenses.filter(e=>e.est).length;
   const estNote=estN?`<div class="est-note">${iconSvg('warn')}概算の支払いが ${estN}件あります。確定額に直してから精算すると安心です</div>`:'';
@@ -4463,7 +4596,7 @@ function saveData(){
     localStorage.setItem('warikanCats',JSON.stringify(_cats));
   }catch(e){console.warn(e);}
   if(_isApplyingRemote)return;
-  writeTripCache({local:getDataObject()});
+  if(_syncBase)writeTripCache({local:getDataObject(),localRev:_syncRev}); // 旅行の読み込み中は残さない
   if(sb&&currentTripId&&currentUser){
     clearTimeout(_saveTimer);
     _saveTimer=setTimeout(()=>saveTripDataNow(false),700);
