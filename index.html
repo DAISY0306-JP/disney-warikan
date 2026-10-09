@@ -1484,6 +1484,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .paid-toggle{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:4px 0 8px;padding:10px;border:1.5px dashed #dcdce2;border-radius:14px;background:none;color:#8a8594;font-size:12.5px;font-weight:800;cursor:pointer;}
 .paid-toggle span{transition:transform .2s;}
 .paid-toggle.open span{transform:rotate(180deg);}
+
+.rate-note{display:none;margin:5px 4px 0;font-size:11.5px;font-weight:600;color:#8a8594;}
+.rate-fixed-note{margin-top:8px;line-height:1.6;}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1581,6 +1584,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <button type="button" class="est-toggle" id="estToggle" onclick="toggleEst()" aria-pressed="false">概算</button>
   </span></label>
   <div class="amt-wrap"><button type="button" class="cur-btn" id="curBtn" onclick="cycleCurrency()" aria-label="通貨を切り替え"></button><input type="number" id="expenseAmount" placeholder="0" min="0" max="10000000" step="0.01" inputmode="decimal"></div>
+  <div class="rate-note" id="rateNote"></div>
 </div>
     <div class="input-group"><label>支払った人</label><div class="chip-row" id="paidByChips"></div><select id="paidBy" hidden><option value="">選択</option></select></div>
     <div class="input-group"><label class="label-row"><span>割り勘する人</span><span class="amt-opts"><button type="button" class="mini-link split-link" id="splitLink" onclick="chooseSplitMode()">均等 ▾</button><button type="button" class="mini-link" id="toggleAllBtn" onclick="toggleAllParticipants()">全員を外す</button></span></label><div class="checkbox-group" id="participantsCheckbox"></div></div>
@@ -1733,6 +1737,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
         </div>
         <button class="rate-fetch-btn" id="rateFetchBtn" onclick="fetchLatestRates()">最新レートを取得</button>
         <div class="rate-updated" id="rateUpdatedText"></div>
+        <p class="small rate-fixed-note">支払いの円換算は、記録したときのレートで固定されます。ここでレートを変えると、これから記録する支払いと、精算の目安の円換算に使われます。</p>
         <div class="rate-edit-row" id="rateEditRow">
           <span id="rateEditLabel" style="font-weight:900;">$1 = ¥</span>
           <input type="number" id="rateInput" min="0.01" max="1000" step="0.01" placeholder="例: 150">
@@ -2548,7 +2553,7 @@ function buildShareCanvas(){
   x.font=`700 34px ${SF}`;x.globalAlpha=.75;x.fillText(`${flightNo(tripMeta)}${tripDatesText(tripMeta)?'  ·  '+tripDatesText(tripMeta):''}`,bx+60,by+205);x.globalAlpha=1;
   const name=(trips.find(z=>z.id===currentTripId)?.name)||'旅行';
   x.fillStyle='#2e2a3d';x.font=`800 50px ${RF}`;x.fillText(name.length>16?name.slice(0,16)+'…':name,bx+56,by+330);
-  let yen=0;expenses.forEach(e=>{yen+=Number(e.amount||0)*yenPer(normCurrency(e.currency));});
+  let yen=0;expenses.forEach(e=>{yen+=expYen(e);});
   const n=members.filter(Boolean).length;
   const cells=[['合計（円換算）',fmtPlain('JPY',yen)],['1人あたり',n>1?fmtPlain('JPY',yen/n):'-'],['メンバー',`${n}人`]];
   cells.forEach(([l,v],i)=>{const cx=bx+56+i*330;x.fillStyle=P;x.globalAlpha=.7;x.font=`700 28px ${SF}`;x.fillText(l,cx,by+420);x.globalAlpha=1;x.fillStyle=i===0?P:'#2e2a3d';x.font=`800 ${i===0?60:46}px ${RF}`;x.fillText(v,cx,by+490);});
@@ -3024,11 +3029,15 @@ function fmtPlain(code,n){
 // 外貨は円換算の目安を添えて表示
 // 画面表示用: 先頭の通貨記号を小さくする
 const symSmall=str=>String(str).replace(/^(-?)([¥$₩])/,'$1<span class="cur">$2</span>');
-function fmtMoney(code,n){
+// 支払いごとの円換算のレート（記録したときのレートで固定。古い記録は今のレート）
+function expRate(e){const c=normCurrency(e.currency);if(c==='JPY')return 1;const r=Number(e.rate);return r>0&&isFinite(r)?r:yenPer(c);}
+const expYen=e=>Number(e.amount||0)*expRate(e);
+const rateNow=c=>c==='JPY'?undefined:Math.round(yenPer(c)*10000)/10000;
+function fmtMoney(code,n,rate){
   code=normCurrency(code);
   const s=symSmall(fmtPlain(code,n));
   if(code==='JPY')return s;
-  const r=yenPer(code);
+  const r=rate||yenPer(code);
   if(!r||!isFinite(r)||r<=0)return s;
   return`${s}<span class="estimate">(≈${fmtPlain('JPY',Number(n||0)*r)})</span>`;
 }
@@ -3230,6 +3239,7 @@ function normalizeData(input){
         if(Object.keys(v).length)out_.split={m:e.split.m,v};
       }
       if(e.est===true)out_.est=true; // 概算（あとで確定額に直す）
+      {const r=Number(e.rate);if(currency!=='JPY'&&isFinite(r)&&r>0&&r<100000)out_.rate=r;} // 記録したときの円換算レート
       if(e.wallet===true)out_.wallet=true; // 共有財布から払った
       // 先に精算した記録（その支払いだけ先に済にした送金）
       if(e.pre&&typeof e.pre==='object'&&e.pre.s&&typeof e.pre.s==='object'){
@@ -3489,7 +3499,7 @@ function toggleAllParticipants(){
   refreshFormHelpers();
 }
 function refreshFormHelpers(){
-  renderDateChip();renderCurBtn();
+  renderDateChip();renderCurBtn();renderRateNote();
   // 支払った人チップ
   const chips=document.getElementById('paidByChips');
   if(chips){
@@ -3725,6 +3735,17 @@ function updateFocusMemberSelect(){
 }
 
 /* ===== 通貨 ===== */
+// 外貨のとき、金額欄の下に円換算と使うレートを出す
+function renderRateNote(){
+  const el=document.getElementById('rateNote');if(!el)return;
+  const c=currentCurrency;if(c==='JPY'){el.textContent='';el.style.display='none';return;}
+  const ed=editingExpenseIdx>=0?expenses[editingExpenseIdx]:null;
+  const r=ed&&normCurrency(ed.currency)===c&&Number(ed.rate)>0?Number(ed.rate):yenPer(c);
+  const amt=validateNum(document.getElementById('expenseAmount').value);
+  const unit=c==='KRW'?`₩100=¥${(r*100).toFixed(2)}`:`$1=¥${r.toFixed(2)}`;
+  el.style.display='block';
+  el.textContent=`${amt?`≈${fmtPlain('JPY',amt*r)}　`:''}${unit} で円換算（このレートで固定）`;
+}
 // 金額欄の通貨ボタン：押すたびに ¥ → ₩ → $ → ¥
 const CUR_CYCLE=['JPY','KRW','USD'];
 function cycleCurrency(){setCurrency(CUR_CYCLE[(CUR_CYCLE.indexOf(currentCurrency)+1)%CUR_CYCLE.length]);}
@@ -4042,6 +4063,7 @@ function addExpense(){
   const sp=formSplit();if(sp){ne.split=sp;const err=splitError(ne);if(err){showToast('⚠ '+err);return;}}
   if(_estOn)ne.est=true;
   if(fromWallet)ne.wallet=true;
+  if(currentCurrency!=='JPY')ne.rate=rateNow(currentCurrency);
   expenses.push(ne);
   markSeen(expenses[expenses.length-1]);
   printReceipt(name,fmtMoney(currentCurrency,amt));
@@ -4067,6 +4089,9 @@ function updateExpense(){
   const ue={...expenses[editingExpenseIdx],name,amount:amt,currency:currentCurrency,category:_currentCat||'その他',date:getFormDate(),paidBy,participants:[...new Set(parts)]};
   const sp=formSplit();if(sp){ue.split=sp;const err=splitError(ue);if(err){showToast('⚠ '+err);return;}}else delete ue.split;
   if(_estOn)ue.est=true;else delete ue.est;
+  const old=expenses[editingExpenseIdx];
+  if(currentCurrency==='JPY')delete ue.rate;
+  else if(normCurrency(old.currency)!==currentCurrency||!(Number(old.rate)>0))ue.rate=rateNow(currentCurrency);
   if(fromWallet)ue.wallet=true;else delete ue.wallet;
   if(ue.pre){
     addSettled(ue.pre.s,-1);
@@ -4154,9 +4179,8 @@ function displayExpenses(){
     const g=groupMap[key];
     if(byDate)g.items.reverse(); // 同じ日の中では新しく追加したものが上
     const tot={};
-    g.items.forEach(({e})=>{ const c=normCurrency(e.currency); tot[c]=(tot[c]||0)+e.amount; });
+    let yenTot=0;g.items.forEach(({e})=>{ const c=normCurrency(e.currency); tot[c]=(tot[c]||0)+e.amount; yenTot+=expYen(e); });
     const totParts=CURRENCIES.filter(c=>tot[c.code]>0).map(c=>fmtPlain(c.code,tot[c.code]));
-    const yenTot=CURRENCIES.reduce((a,c)=>a+(tot[c.code]||0)*yenPer(c.code),0);
     const totStr=totParts.length>1?`≈${fmtPlain('JPY',yenTot)}`:(totParts[0]||'¥0');
     const label=byDate?dayLabel(key):key;
     const gid=`catg_${gi}`;
@@ -4164,7 +4188,7 @@ function displayExpenses(){
     g.items.forEach(({e,i})=>{
       const nm=safe(e.name),paid=safe(pname(payerOf(e)));
       const parts=e.participants.map(idx=>safe(members[idx]||`メンバー${idx+1}`)).join(', ');
-      const amt=fmtMoney(e.currency,e.amount);
+      const amt=fmtMoney(e.currency,e.amount,expRate(e));
       const sub=byDate?catLabelHTML(e.category||'その他'):fmtDay(e.date);
       const who=e.participants.length===members.length?`全員（${e.participants.length}人）`:parts;
       const isEd=editingExpenseIdx===i,fresh=_fresh.get(e.id);
@@ -4538,13 +4562,13 @@ function renderMeBar(){
 
 /* ===== フッター・メイン更新 ===== */
 function updateFooterTotal(){
-  let yen=0;(expenses||[]).forEach(e=>{yen+=Number(e.amount||0)*yenPer(normCurrency(e.currency));});
+  let yen=0;(expenses||[]).forEach(e=>{yen+=expYen(e);});
   const ft=document.getElementById('footerTotal');if(ft)ft.innerHTML=symSmall(fmtPlain('JPY',yen));
   const n=members.filter(Boolean).length,pp=document.getElementById('perPersonTotal');
   const me=getMeIdx(),lbl=pp?.previousElementSibling;
   if(me>=0&&yen>0){
     // 自分が負担する分（割り方を反映、円換算）
-    let mine=0;expenses.forEach(e=>{sharesOf(e).forEach(([i,v])=>{if(i===me)mine+=v*yenPer(normCurrency(e.currency));});});
+    let mine=0;expenses.forEach(e=>{sharesOf(e).forEach(([i,v])=>{if(i===me)mine+=v*expRate(e);});});
     if(lbl)lbl.textContent='自分の分';
     if(pp)pp.innerHTML=symSmall(fmtPlain('JPY',mine));
   }else{
