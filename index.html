@@ -1450,6 +1450,35 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .presettle-btn.on .ps-ic .ti{stroke:var(--recv);}
 .presettle-btn.on .ps-txt b{color:var(--recv);}
 .presettle-btn.on .ps-act{color:#8a8594;font-weight:700;}
+
+/* 支払いごとに先に精算 */
+.pre-open{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:10px 12px;border-radius:14px;border:1.5px solid #ececf0;background:#fff;text-align:left;cursor:pointer;color:var(--text);}
+.pre-open .ps-ic{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:rgb(var(--p-rgb) / .1);display:flex;align-items:center;justify-content:center;}
+.pre-open .ps-ic .ti{width:16px;height:16px;stroke:var(--p);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.pre-open .ps-txt{flex:1;min-width:0;display:flex;flex-direction:column;}
+.pre-open .ps-txt b{font-size:14px;font-weight:800;}
+.pre-open .ps-txt small{font-size:11.5px;color:#8a8594;font-weight:600;}
+.pre-sheet{background:#fff;}
+.pre-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 6px;border:none;border-bottom:1px solid #f0f0f3;background:none;text-align:left;cursor:pointer;color:var(--text);}
+.pre-main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.pre-main b{font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pre-main small{font-size:11.5px;color:#8a8594;}
+.pre-amt{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:var(--round);font-weight:800;font-size:14px;}
+.pre-st{font-family:inherit;font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:999px;background:rgb(var(--p-rgb) / .1);color:var(--p);}
+.pre-st.done{background:rgba(18,162,106,.1);color:var(--recv);}
+.pre-head{font-family:var(--round);font-size:26px;font-weight:800;color:var(--p);display:flex;flex-direction:column;align-items:center;margin:2px 0 6px;}
+.pre-head small{font-family:inherit;font-size:12px;font-weight:600;color:#8a8594;}
+.pre-help{text-align:center;margin-bottom:10px;line-height:1.6;}
+.pre-row{display:flex;align-items:center;gap:8px;padding:10px 10px;margin-bottom:8px;border-radius:14px;background:#f7f7f9;}
+.pre-row.done{background:rgba(18,162,106,.07);}
+.pre-who{flex:1;min-width:0;display:flex;align-items:center;gap:4px;font-size:13px;}
+.pre-who .av{width:22px;height:22px;}
+.pre-who b{font-weight:700;white-space:nowrap;}
+.pre-who i{font-style:normal;color:#8a8594;margin:0 2px;}
+.pre-v{flex:0 0 auto;font-family:var(--round);font-size:15px;font-weight:800;}
+.pre-row button{flex:0 0 auto;height:34px;padding:0 12px;border-radius:999px;border:1.5px solid #e6e6ea;background:#fff;color:var(--text);font-size:12.5px;font-weight:800;cursor:pointer;}
+.pre-row.done button{border-color:rgba(18,162,106,.35);color:var(--recv);background:#fff;}
+.pre-row.done .pre-v{color:var(--recv);}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -1607,6 +1636,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     </div>
     <div class="card-body" id="cardSettlement">
     <div id="settSummary"></div>
+    <button type="button" class="pre-open" id="preOpenBtn" onclick="openPreSheet()"><span class="ps-ic"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.3L4 9M4 4v5h5M4 13a8 8 0 0 0 14.3 4.3L20 15M20 20v-5h-5"/></svg></span><span class="ps-txt"><b>支払いごとに先に精算する</b><small id="preOpenSub">旅の途中で、1つの支払いだけ先に精算できます</small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
     <div id="settlementList"></div>
     <button class="share-result-btn" onclick="shareTripImage()">精算結果を画像でシェア</button>
     <div class="sett-mode-title">精算のしかた</div>
@@ -1780,6 +1810,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <div class="sheet-title" id="setSheetTitle"></div>
     <div id="setSheetBody"></div>
     <button class="icon-pick-cancel" onclick="closeSetSheet()">閉じる</button>
+  </div>
+</div>
+<div class="sheet-overlay" id="preSheet" onclick="if(event.target===this)closePreSheet()">
+  <div class="sheet pre-sheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title" id="preSheetTitle">先に精算する支払い</div>
+    <div id="preSheetBody"></div>
+    <button class="icon-pick-cancel" id="preSheetBack" onclick="closePreSheet()">閉じる</button>
   </div>
 </div>
 <div class="sheet-overlay" id="tripSheet" onclick="if(event.target===this)closeTripSheet()">
@@ -3892,6 +3930,51 @@ function applyQuick(k){
   document.querySelectorAll('#quickRow .quick-chip').forEach((b,i)=>b.classList.toggle('active',i===k));
 }
 /* ===== この支払いだけ先に精算 ===== */
+// 先に精算できる支払い（財布払い以外で、支払った人のほかに参加者がいるもの）
+const canPre=e=>!e.wallet&&e.participants.some(p=>p!==e.paidBy);
+// その支払いで、先に精算した人数 / 対象の人数
+function preProgress(e){const all=Object.keys(preShares(e)),done=all.filter(k=>e.pre&&e.pre.s&&k in e.pre.s);return{done:done.length,all:all.length};}
+let _preId=null;
+function openPreSheet(id){_preId=id||null;renderPreSheet();document.getElementById('preSheet').classList.add('active');}
+function closePreSheet(){
+  if(_preId){_preId=null;renderPreSheet();return;} // 詳しい画面からは一覧に戻る
+  document.getElementById('preSheet').classList.remove('active');
+}
+function renderPreSheet(){
+  const body=document.getElementById('preSheetBody'),title=document.getElementById('preSheetTitle'),back=document.getElementById('preSheetBack');
+  if(!body)return;
+  const e=_preId?expenses.find(x=>x.id===_preId):null;
+  if(!e){
+    _preId=null;title.textContent='どの支払いを先に精算しますか？';back.textContent='閉じる';
+    const list=expenses.filter(canPre).slice().reverse();
+    body.innerHTML=list.length?list.map(x=>{
+      const pr=preProgress(x),st=pr.done===0?'':pr.done===pr.all?'<span class="pre-st done">先に精算済み</span>':`<span class="pre-st">${pr.done}/${pr.all}人 済</span>`;
+      return`<button type="button" class="pre-item" onclick="openPreSheet('${esc(x.id)}')"><span class="item-ic">${itemIconSvg(x.name,x.category)}</span><span class="pre-main"><b>${safe(x.name)}</b><small>${memberName(x.paidBy)}が支払い · ${shortDay(x.date)}</small></span><span class="pre-amt">${fmtPlain(normCurrency(x.currency),x.amount)}${st}</span></button>`;
+    }).join(''):'<p class="small" style="text-align:center;padding:16px;">先に精算できる支払いがありません</p>';
+    return;
+  }
+  title.textContent=e.name;back.textContent='‹ 支払いの一覧に戻る';
+  const c=normCurrency(e.currency),sh=preShares(e),keys=Object.keys(sh);
+  const n=e.participants.length;
+  body.innerHTML=`<div class="pre-head">${fmtPlain(c,e.amount)}<small>${memberName(e.paidBy)}が支払い · ${e.split?(e.split.m==='ratio'?'比率で':'金額指定で'):`${n}人で均等に`}割り勘</small></div>
+    <p class="small pre-help">払い終わった人から「済にする」を押してください。精算タブの送金から差し引かれます。</p>
+    ${keys.map(k=>{
+      const [f,t]=k.split('>').map(Number),done=!!(e.pre&&e.pre.s&&k in e.pre.s);
+      return`<div class="pre-row${done?' done':''}"><span class="pre-who">${avatar(f)}<b>${memberName(f)}</b><i>→</i>${avatar(t)}<b>${memberName(t)}</b></span><span class="pre-v">${fmtPlain(c,sh[k])}</span><button type="button" onclick="togglePreKey('${esc(e.id)}','${k}')">${done?'✓ 済':'済にする'}</button></div>`;
+    }).join('')}`;
+}
+// 1人ずつ「済」にする・取り消す
+function togglePreKey(id,k){
+  const i=expenses.findIndex(x=>x.id===id);if(i<0)return;
+  const e=expenses[i],sh=preShares(e);if(!(k in sh))return;
+  const cur={...((e.pre&&e.pre.s)||{})},ne={...e};
+  if(k in cur){addSettled({[k]:cur[k]},-1);delete cur[k];showToast('「済」を取り消しました');}
+  else{cur[k]=sh[k];addSettled({[k]:sh[k]},1);showToast('✅ 済にしました');}
+  if(Object.keys(cur).length)ne.pre={d:(e.pre&&e.pre.d)||todayStr(),s:cur};else delete ne.pre;
+  expenses[i]=ne;markSeen(ne);
+  saveData();updateDisplay();renderMeBar();renderPreSheet();
+  if(!(k in (e.pre?.s||{})))afterSettleChange(true);
+}
 // 支払った人以外の各メンバーが、支払った人に自分の分を払う送金
 function preShares(e){
   const c=normCurrency(e.currency),s={};
@@ -3901,8 +3984,8 @@ function preShares(e){
 function renderPresettleBtn(){
   const b=document.getElementById('presettleBtn');if(!b)return;
   const e=editingExpenseIdx>=0?expenses[editingExpenseIdx]:null;
-  const can=e&&!e.wallet&&e.participants.some(p=>p!==e.paidBy);
-  b.style.display=can?'flex':'none';
+  const can=false; // 先に精算は精算タブの「支払いごとに先に精算する」から
+  b.style.display='none';
   if(!can)return;
   b.classList.toggle('on',!!e.pre);
   // どの送金になるかを1行で（例：あやか・みさき → みゆ 各¥60,470）
@@ -4080,7 +4163,7 @@ function displayExpenses(){
       const who=e.participants.length===members.length?`全員（${e.participants.length}人）`:parts;
       const isEd=editingExpenseIdx===i,fresh=_fresh.get(e.id);
       const freshTag=fresh?`<span class="fresh-tag">${fresh==='new'?'NEW':'更新'}</span>`:'';
-      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}<span class="item-ic">${itemIconSvg(e.name,e.category)}</span>${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip${e.wallet?' wal':''}"><b>${paid}</b> ${e.wallet?'から':'が支払い'}</span><span class="expense-meta-chip">${who}${e.split?(e.split.m==='ratio'?' · 比率':' · 金額指定'):''}</span>${e.est?'<span class="expense-meta-chip est">概算</span>':''}${e.pre?'<span class="expense-meta-chip pre">先に精算済み</span>':''}<span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">削除</button></div></div>`;
+      html+=`<div class="expense-item${isEd?' is-editing':''}${fresh?' is-fresh':''}"><div class="expense-color-bar"></div><div class="expense-body" onclick="startEditExpense(${i})"><div class="expense-header"><div class="expense-title">${freshTag}<span class="item-ic">${itemIconSvg(e.name,e.category)}</span>${nm}</div><div class="expense-amount">${amt}</div></div><div class="expense-meta"><span class="expense-meta-chip${e.wallet?' wal':''}"><b>${paid}</b> ${e.wallet?'から':'が支払い'}</span><span class="expense-meta-chip">${who}${e.split?(e.split.m==='ratio'?' · 比率':' · 金額指定'):''}</span>${e.est?'<span class="expense-meta-chip est">概算</span>':''}${e.pre?(()=>{const pr=preProgress(e);return`<span class="expense-meta-chip pre">${pr.done>=pr.all?'先に精算済み':`先に精算 ${pr.done}/${pr.all}人`}</span>`;})():''}<span class="expense-meta-chip${byDate?' cat':''}"${byDate?` style="${catStyle(e.category||'その他')}"`:''}>${sub}</span></div></div><div class="expense-actions"><button class="expense-action-edit" onclick="startEditExpense(${i})">編集</button><button class="expense-action-delete" onclick="deleteExpense(${i})">削除</button></div></div>`;
     });
     html+='</div></div>';
   });
@@ -4313,6 +4396,10 @@ function calculateSettlement(){
     else if(!complete&&completedAt){completedAt='';saveData();}
   }
   renderPassProgress();
+  const pb=document.getElementById('preOpenBtn');
+  if(pb){const can=expenses.filter(canPre);pb.style.display=can.length?'flex':'none';
+    const started=can.filter(x=>x.pre).length;document.getElementById('preOpenSub').textContent=started?`${started}件の支払いを先に精算しています`:'旅の途中で、1つの支払いだけ先に精算できます';}
+  if(document.getElementById('preSheet')?.classList.contains('active'))renderPreSheet();
   const walNote=txs.some(t=>isWallet(t.from)||isWallet(t.to))?`<div class="wal-note">${avatar(walletIdx())}「共有財布 → 人」は財布から取り出して渡す、「人 → 共有財布」は財布にお金を入れる、という意味です</div>`:'';
   const estN=expenses.filter(e=>e.est).length;
   const estNote=estN?`<div class="est-note">${iconSvg('warn')}概算の支払いが ${estN}件あります。確定額に直してから精算すると安心です</div>`:'';
