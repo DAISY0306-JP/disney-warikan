@@ -1479,6 +1479,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .pre-row button{flex:0 0 auto;height:34px;padding:0 12px;border-radius:999px;border:1.5px solid #e6e6ea;background:#fff;color:var(--text);font-size:12.5px;font-weight:800;cursor:pointer;}
 .pre-row.done button{border-color:rgba(18,162,106,.35);color:var(--recv);background:#fff;}
 .pre-row.done .pre-v{color:var(--recv);}
+
+/* 済の行をたたむ */
+.paid-toggle{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:4px 0 8px;padding:10px;border:1.5px dashed #dcdce2;border-radius:14px;background:none;color:#8a8594;font-size:12.5px;font-weight:800;cursor:pointer;}
+.paid-toggle span{transition:transform .2s;}
+.paid-toggle.open span{transform:rotate(180deg);}
 </style>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
@@ -4151,7 +4156,8 @@ function displayExpenses(){
     const tot={};
     g.items.forEach(({e})=>{ const c=normCurrency(e.currency); tot[c]=(tot[c]||0)+e.amount; });
     const totParts=CURRENCIES.filter(c=>tot[c.code]>0).map(c=>fmtPlain(c.code,tot[c.code]));
-    const totStr=totParts.join(' + ')||'¥0';
+    const yenTot=CURRENCIES.reduce((a,c)=>a+(tot[c.code]||0)*yenPer(c.code),0);
+    const totStr=totParts.length>1?`≈${fmtPlain('JPY',yenTot)}`:(totParts[0]||'¥0');
     const label=byDate?dayLabel(key):key;
     const gid=`catg_${gi}`;
     html+=`<div class="cat-group"><div class="cat-group-header" onclick="toggleCatGroup('${gid}',this)"><span style="display:flex;align-items:center;gap:8px;"><span class="cat-group-toggle open">▶</span><span class="cat-group-label"${byDate?'':` style="${catStyle(label)}"`}>${byDate?safe(label):catLabelHTML(label)}</span></span><span class="cat-group-total">${totStr}</span></div><div class="cat-group-body" id="${gid}">`;
@@ -4355,6 +4361,7 @@ function avatar(i){
   const c=memberColors()[i];
   return`<span class="av" style="--a:${c};--a-rgb:${hexToRgb(c)}">${PERSON_SVG}</span>`;
 }
+let _showPaid=false; // 済の行を表示するか
 function calculateSettlement(){
   const txs=getSettlementTx();
   // あなたの精算（ふつうの文で）
@@ -4377,14 +4384,16 @@ function calculateSettlement(){
   }
   // 全員の精算（済にできる）
   const doneCount=txs.filter(t=>settleState(t)==='done').length;
-  const rows=txs.map(t=>{
+  const rowOf=t=>{
     const st=settleState(t),key=settleKey(t);
     return`<div class="settlement-item${st==='done'?' done':''}" data-key="${key}">
       <div class="settlement-text">${avatar(t.from)}${memberName(t.from)} → ${avatar(t.to)}${memberName(t.to)}</div>
       <div class="settlement-amount">${fmtMoney(t.code,t.amount)}</div>
       <span class="sett-stub"><button class="sett-done-btn" onclick="toggleSettled('${key}',${t.amount},this,${st==='done'})">${st==='done'?'✓ 済':'済にする'}</button></span>
     </div>`;
-  }).join('');
+  };
+  const openTx=txs.filter(t=>settleState(t)!=='done'),doneTx=txs.filter(t=>settleState(t)==='done');
+  const rows=openTx.map(rowOf).join('')+(doneTx.length?`<button type="button" class="paid-toggle${_showPaid?' open':''}" onclick="_showPaid=!_showPaid;calculateSettlement()">済 ${doneTx.length}件${_showPaid?'をたたむ':'を表示'}<span>▾</span></button>${_showPaid?doneTx.map(rowOf).join(''):''}`:'');
   const pass=document.getElementById('tripPass');
   const allDone=txs.length>0&&doneCount===txs.length;
   // 旅行中に全部済にしても「精算完了」にはしない（途中精算）。帰国日を過ぎたら完了になる
@@ -4490,7 +4499,7 @@ async function chooseMe(){
   if(picked===null||picked===undefined)return;
   try{localStorage.setItem(meKey(),named[picked].m);}catch(e){}
   if(editingExpenseIdx<0)setPaidBy(named[picked].i);
-  renderMeBar();calculateSettlement();
+  renderMeBar();calculateSettlement();updateFooterTotal();
 }
 function openMySettlement(){
   const me=getMeIdx();
@@ -4532,7 +4541,16 @@ function updateFooterTotal(){
   let yen=0;(expenses||[]).forEach(e=>{yen+=Number(e.amount||0)*yenPer(normCurrency(e.currency));});
   const ft=document.getElementById('footerTotal');if(ft)ft.innerHTML=symSmall(fmtPlain('JPY',yen));
   const n=members.filter(Boolean).length,pp=document.getElementById('perPersonTotal');
-  if(pp)pp.innerHTML=n>1&&yen>0?symSmall(fmtPlain('JPY',yen/n)):'-';
+  const me=getMeIdx(),lbl=pp?.previousElementSibling;
+  if(me>=0&&yen>0){
+    // 自分が負担する分（割り方を反映、円換算）
+    let mine=0;expenses.forEach(e=>{sharesOf(e).forEach(([i,v])=>{if(i===me)mine+=v*yenPer(normCurrency(e.currency));});});
+    if(lbl)lbl.textContent='自分の分';
+    if(pp)pp.innerHTML=symSmall(fmtPlain('JPY',mine));
+  }else{
+    if(lbl)lbl.textContent='1人あたり';
+    if(pp)pp.innerHTML=n>1&&yen>0?symSmall(fmtPlain('JPY',yen/n)):'-';
+  }
   const mc=document.getElementById('memberCount');if(mc)mc.textContent=n?`${n}人`:'-';
 }
 function renderCatSummary(){
