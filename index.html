@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="style.css?v=8520300f">
+<link rel="stylesheet" href="style.css?v=526b8fd1">
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512-v2.png?v=2">
@@ -109,7 +109,7 @@
     <span class="date-chip" id="dateChip"><span id="dateChipText">今日</span> ▾<input type="date" id="expenseDate" aria-label="日付" onchange="renderDateChip()" onclick="try{this.showPicker()}catch(e){}"></span>
     <button type="button" class="est-toggle" id="estToggle" onclick="toggleEst()" aria-pressed="false">概算</button>
   </span></label>
-  <div class="amt-wrap"><button type="button" class="cur-btn" id="curBtn" onclick="cycleCurrency()" aria-label="通貨を切り替え"></button><input type="number" id="expenseAmount" placeholder="0" min="0" max="10000000" step="0.01" inputmode="decimal"></div>
+  <div class="amt-wrap"><button type="button" class="cur-btn" id="curBtn" onclick="cycleCurrency()" aria-label="通貨を切り替え"></button><input type="number" id="expenseAmount" placeholder="0" min="0" max="10000000000" step="0.01" inputmode="decimal"></div>
   <div class="rate-note" id="rateNote"></div>
 </div>
     <div class="input-group"><label>支払った人</label><div class="chip-row" id="paidByChips"></div><select id="paidBy" hidden><option value="">選択</option></select></div>
@@ -254,20 +254,13 @@
     <div class="set-block" id="setBlock-wallet" data-title="共有財布"><div id="walletBody"></div></div>
     <div class="set-block" id="setBlock-rate" data-title="為替レート">
       <div id="rateDisplay" class="rate-display">
-        <div class="rate-row">
-          <span id="rateText-USD">$1 = ¥150.00</span>
-          <button class="btn-bluegray-sm" onclick="toggleRateEdit('USD')">変更</button>
-        </div>
-        <div class="rate-row" style="margin-top:8px;">
-          <span id="rateText-KRW">₩100 = ¥11.00</span>
-          <button class="btn-bluegray-sm" onclick="toggleRateEdit('KRW')">変更</button>
-        </div>
+        <div id="rateRows"></div>
         <button class="rate-fetch-btn" id="rateFetchBtn" onclick="fetchLatestRates()">最新レートを取得</button>
         <div class="rate-updated" id="rateUpdatedText"></div>
         <p class="small rate-fixed-note">支払いの円換算は、記録したときのレートで固定されます。ここでレートを変えると、これから記録する支払いと、精算の目安の円換算に使われます。</p>
         <div class="rate-edit-row" id="rateEditRow">
           <span id="rateEditLabel" style="font-weight:900;">$1 = ¥</span>
-          <input type="number" id="rateInput" min="0.01" max="1000" step="0.01" placeholder="例: 150">
+          <input type="number" id="rateInput" min="0.01" max="100000" step="0.01" placeholder="例: 150">
           <button class="rate-save-btn" onclick="applyRate()">確定</button>
           <button class="rate-cancel-btn" onclick="cancelRateEdit()">キャンセル</button>
         </div>
@@ -485,6 +478,6 @@
   <button class="tab-btn" data-tab="settings" onclick="showTab('settings')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></span><span>設定</span></button>
 </nav>
 
-<script src="app.js?v=dedb7da3"></script>
+<script src="app.js?v=08bd9fcd"></script>
 
 </body></html>

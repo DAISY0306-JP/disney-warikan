@@ -11,13 +11,31 @@ let catIcons={};
 let tripMeta={from:'HND',to:'',start:'',end:''}; // 出発地・行き先（空港コード）と日程
 let completedAt=''; // 全員の精算が終わった日 // カテゴリごとに選んだアイコン { カテゴリ名: アイコン名 } // 精算済みの送金: { 'from>to>通貨': 済にしたときの金額 }
 let exchangeRate=150,krwRate=11,settlementMode='direct'; // exchangeRate: $1あたりの円 / krwRate: ₩100あたりの円
+// unit: レートを表示するときの単位（₩100=¥11 のように）/ def: レートを取得していないときの目安（1単位あたりの円）
 const CURRENCIES=[
-  {code:'JPY',label:'円',sym:'¥',dec:0},
-  {code:'USD',label:'ドル',sym:'$',dec:2},
-  {code:'KRW',label:'ウォン',sym:'₩',dec:0},
+  {code:'JPY',label:'円',sym:'¥',dec:0,unit:1,def:1},
+  {code:'USD',label:'ドル',sym:'$',dec:2,unit:1,def:150},
+  {code:'KRW',label:'ウォン',sym:'₩',dec:0,unit:100,def:0.11},
+  {code:'EUR',label:'ユーロ',sym:'€',dec:2,unit:1,def:170},
+  {code:'GBP',label:'ポンド',sym:'£',dec:2,unit:1,def:200},
+  {code:'TWD',label:'台湾ドル',sym:'NT$',dec:0,unit:1,def:4.8},
+  {code:'HKD',label:'香港ドル',sym:'HK$',dec:2,unit:1,def:19.5},
+  {code:'MOP',label:'パタカ',sym:'MOP$',dec:2,unit:1,def:19},
+  {code:'CNY',label:'人民元',sym:'元',dec:2,unit:1,def:21},
+  {code:'THB',label:'バーツ',sym:'฿',dec:0,unit:1,def:4.6},
+  {code:'VND',label:'ドン',sym:'₫',dec:0,unit:1000,def:0.0058},
+  {code:'PHP',label:'ペソ',sym:'₱',dec:0,unit:1,def:2.6},
+  {code:'SGD',label:'シンガポールドル',sym:'S$',dec:2,unit:1,def:117},
+  {code:'MYR',label:'リンギット',sym:'RM',dec:2,unit:1,def:35},
+  {code:'IDR',label:'ルピア',sym:'Rp',dec:0,unit:1000,def:0.0092},
+  {code:'AUD',label:'豪ドル',sym:'A$',dec:2,unit:1,def:98},
 ];
 const CUR=Object.fromEntries(CURRENCIES.map(c=>[c.code,c]));
 const normCurrency=c=>CUR[c]?c:'JPY';
+const CUR_RE=CURRENCIES.map(c=>c.code).join('|');
+// 行き先の国（空港の国旗）→ その国の通貨
+const FLAG_CUR={'🇯🇵':'JPY','🇰🇷':'KRW','🇹🇼':'TWD','🇭🇰':'HKD','🇲🇴':'MOP','🇨🇳':'CNY','🇹🇭':'THB','🇻🇳':'VND','🇵🇭':'PHP','🇸🇬':'SGD','🇲🇾':'MYR','🇮🇩':'IDR','🇺🇸':'USD','🇫🇷':'EUR','🇮🇹':'EUR','🇪🇸':'EUR','🇩🇪':'EUR','🇫🇮':'EUR','🇬🇧':'GBP','🇦🇺':'AUD'};
+let rates={}; // USD・KRW 以外の円換算レート { EUR: 1ユーロあたりの円, ... }
 let editingExpenseIdx=-1,editingDepositIdx=-1;
 const DEFAULT_TRIP_NAME='NEW_TRIP';
 const FALLBACK_CAT='その他';
@@ -293,6 +311,9 @@ function saveTripInfo(){
   tripMeta=normalizeTripMeta({from:document.getElementById('tiFrom').value,to:document.getElementById('tiTo').value,
     start:document.getElementById('tiStart').value,end:document.getElementById('tiEnd').value});
   closeTripInfo();saveData();renderPassRoute();updateDisplay();showToast('旅の情報を保存しました');
+  // 行き先の通貨のレートをまだ取っていなければ、取りに行く（オフラインなら目安のまま）
+  const d=destCurrency();
+  if(d&&d!=='USD'&&d!=='KRW'&&!(rates[d]>0)&&navigator.onLine!==false)fetchLatestRates({silent:true,code:d});
 }
 function normalizeCatIcons(o){
   const out={};
@@ -434,7 +455,7 @@ async function deleteMyAccount(){
     return;
   }
   clearTimeout(_saveTimer);_saveTimer=null;
-  try{['currentTripId','warikanTab','pendingJoin','warikanMembers','warikanExpenses','warikanDeposits','warikanTripCache'].forEach(k=>localStorage.removeItem(k));Object.keys(localStorage).filter(k=>k.startsWith('warikanMe_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  try{['currentTripId','warikanTab','pendingJoin','warikanMembers','warikanExpenses','warikanDeposits','warikanTripCache','warikanNameHist'].forEach(k=>localStorage.removeItem(k));Object.keys(localStorage).filter(k=>k.startsWith('warikanMe_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
   try{await sb.auth.signOut();}catch(e){}
   currentUser=null;currentTripId=null;trips=[];
   showLoggedOut('アカウントを削除しました。ご利用ありがとうございました。');
@@ -467,7 +488,7 @@ async function showLoggedIn(){
   startRemotePolling();
 }
 function getDataObject(){
-  return {members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,catIcons,tripMeta,completedAt,wallet,categories:_cats,updatedAt:new Date().toISOString()};
+  return {members,expenses,deposits,exchangeRate,krwRate,rates,settlementMode,settled,catIcons,tripMeta,completedAt,wallet,categories:_cats,updatedAt:new Date().toISOString()};
 }
 function getBlankTripData(){
   return {
@@ -477,6 +498,7 @@ function getBlankTripData(){
     wallet:{on:false,ins:[],carry:[]},
     exchangeRate:150,
     krwRate:11,
+    rates:{},
     settled:{},
     settlementMode:'direct',
     categories:[...DEFAULT_CATEGORIES],
@@ -489,12 +511,13 @@ function getBlankTripData(){
 function applyDataObject(raw){
   raw=raw||{};
   const nd=normalizeData(raw);
-  members=nd.members;expenses=nd.expenses;deposits=nd.deposits;exchangeRate=nd.exchangeRate;krwRate=nd.krwRate;settled=nd.settled;wallet=nd.wallet;
+  members=nd.members;expenses=nd.expenses;deposits=nd.deposits;exchangeRate=nd.exchangeRate;krwRate=nd.krwRate;rates=nd.rates;settled=nd.settled;wallet=nd.wallet;
   if(raw.settlementMode==='min'||raw.settlementMode==='direct')settlementMode=raw.settlementMode;
   _cats=normalizeCats(raw.categories);
   catIcons=normalizeCatIcons(raw.catIcons);
   tripMeta=normalizeTripMeta(raw.tripMeta);
   completedAt=isDateStr(raw.completedAt)?raw.completedAt:'';
+  seedNameHist(expenses);
   if(!_cats.includes(_currentCat))_currentCat=_cats.includes(FALLBACK_CAT)?FALLBACK_CAT:_cats[0];
 }
 async function loadTrips(){
@@ -874,6 +897,14 @@ async function getShareCode(){
   if(code){_shareCode=code;renderShareArea();}
   return code;
 }
+// 精算の金額をタップでコピー（送金アプリに貼れるよう、記号やカンマなしの数字）
+const COPY_SVG='<svg class="copy-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg>';
+function copyAmtHTML(code,amount){return`<button type="button" class="copy-amt" onclick="event.stopPropagation();copyAmount('${normCurrency(code)}',${Number(amount)})" aria-label="金額をコピー">${fmtMoney(code,amount)}${COPY_SVG}</button>`;}
+function copyAmount(code,amount){
+  const c=CUR[normCurrency(code)],n=Math.abs(Number(amount)||0);
+  const text=c.dec?n.toFixed(c.dec):String(Math.round(n));
+  return copyText(text,`${fmtPlain(code,n)} をコピーしました`);
+}
 async function copyText(text,doneMsg){
   try{
     if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);showToast(doneMsg);return true;}
@@ -1017,7 +1048,7 @@ async function selectTrip(id){
  * data_json.rev を版番号として使い、保存時に「自分が最後に読んだ版」のときだけ上書きする。
  * 他の人が先に保存していた場合は、最新を取り直して支払い1件ごとにマージしてから保存し直す。
  */
-const SYNC_KEYS=['members','expenses','deposits','exchangeRate','krwRate','settlementMode','settled','catIcons','tripMeta','completedAt','wallet','categories'];
+const SYNC_KEYS=['members','expenses','deposits','exchangeRate','krwRate','rates','settlementMode','settled','catIcons','tripMeta','completedAt','wallet','categories'];
 let _syncBase=null,_syncRev=null,_saving=false,_saveAgain=false,_pollTimer=null;
 const sameJSON=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const revOf=raw=>Number.isFinite(raw?.rev)?raw.rev:null;
@@ -1027,7 +1058,7 @@ function toSyncView(raw){
   const nd=normalizeData(raw);
   const cats=normalizeCats(raw.categories);
   const sm=(raw.settlementMode==='min'||raw.settlementMode==='direct')?raw.settlementMode:settlementMode;
-  return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,settlementMode:sm,settled:nd.settled,wallet:nd.wallet,catIcons:normalizeCatIcons(raw.catIcons),tripMeta:normalizeTripMeta(raw.tripMeta),completedAt:isDateStr(raw.completedAt)?raw.completedAt:'',categories:cats};
+  return{members:nd.members,expenses:nd.expenses,deposits:nd.deposits,exchangeRate:nd.exchangeRate,krwRate:nd.krwRate,rates:nd.rates,settlementMode:sm,settled:nd.settled,wallet:nd.wallet,catIcons:normalizeCatIcons(raw.catIcons),tripMeta:normalizeTripMeta(raw.tripMeta),completedAt:isDateStr(raw.completedAt)?raw.completedAt:'',categories:cats};
 }
 function setSyncBase(raw){_syncBase=toSyncView(raw);_syncRev=revOf(raw);writeTripCache({server:raw,local:null,localRev:null});}
 // 電波がないときに開けるよう、最後に開いた旅行をこの端末に残す
@@ -1199,7 +1230,7 @@ function startRemotePolling(){
 const sanitize=s=>String(s??'').substring(0,MAX_STRING_LEN);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safe=s=>esc(sanitize(s));
-const validateNum=(n,min=0,max=10000000)=>{const v=parseFloat(n);return!isNaN(v)&&v>=min&&v<=max?v:null;};
+const validateNum=(n,min=0,max=10000000000)=>{const v=parseFloat(n);return!isNaN(v)&&v>=min&&v<=max?v:null;};
 function clampInt(n,min,max){const v=Number.isFinite(n)?Math.trunc(n):parseInt(n,10);if(!Number.isFinite(v))return null;if(v<min||v>max)return null;return v;}
 
 /* ===== フォーマット ===== */
@@ -1207,7 +1238,33 @@ function clampInt(n,min,max){const v=Number.isFinite(n)?Math.trunc(n):parseInt(n
 function yenPer(code){
   if(code==='USD')return exchangeRate;
   if(code==='KRW')return krwRate/100;
-  return 1;
+  const c=CUR[code];if(!c||code==='JPY')return 1;
+  const r=Number(rates[code]);return r>0&&isFinite(r)?r:c.def;
+}
+// 「₩100=¥11.00」のような表記
+function rateLabel(code,r=yenPer(code)){
+  const c=CUR[code];
+  const y=r*c.unit,yd=y>=100?y.toFixed(1):y.toFixed(2);
+  return`${c.sym}${c.unit.toLocaleString()}=¥${yd}`;
+}
+// 行き先の通貨（行き先が未設定・日本なら null）
+function destCurrency(){
+  const a=AIRPORTS.find(x=>x[0]===tripMeta.to);
+  const c=a?FLAG_CUR[a[3]]:null;
+  return c&&c!=='JPY'?c:null;
+}
+// この旅行で選べる通貨：円・行き先の通貨・もう使っている通貨（行き先が未設定なら円・ドル・ウォン）
+function activeCurrencies(){
+  const set=new Set(['JPY']);
+  const d=destCurrency();
+  if(d)set.add(d);else{set.add('USD');set.add('KRW');}
+  (expenses||[]).forEach(e=>set.add(normCurrency(e.currency)));
+  ((wallet&&wallet.ins)||[]).forEach(x=>set.add(normCurrency(x.currency)));
+  ((wallet&&wallet.carry)||[]).forEach(x=>set.add(normCurrency(x.currency)));
+  const list=CURRENCIES.filter(c=>set.has(c.code));
+  // 円のつぎに行き先の通貨
+  if(d){const i=list.findIndex(c=>c.code===d);list.splice(1,0,...list.splice(i,1));}
+  return list;
 }
 // 金額を通貨記号付きで表示（換算なし）
 function fmtPlain(code,n){
@@ -1217,11 +1274,12 @@ function fmtPlain(code,n){
 }
 // 外貨は円換算の目安を添えて表示
 // 画面表示用: 先頭の通貨記号を小さくする
-const symSmall=str=>String(str).replace(/^(-?)([¥$₩])/,'$1<span class="cur">$2</span>');
+const SYM_RE=new RegExp('^(-?)('+[...new Set(CURRENCIES.map(c=>c.sym))].sort((a,b)=>b.length-a.length).map(x=>x.replace(/[$]/g,'\\$')).join('|')+')');
+const symSmall=str=>String(str).replace(SYM_RE,'$1<span class="cur">$2</span>');
 // 支払いごとの円換算のレート（記録したときのレートで固定。古い記録は今のレート）
 function expRate(e){const c=normCurrency(e.currency);if(c==='JPY')return 1;const r=Number(e.rate);return r>0&&isFinite(r)?r:yenPer(c);}
 const expYen=e=>Number(e.amount||0)*expRate(e);
-const rateNow=c=>c==='JPY'?undefined:Math.round(yenPer(c)*10000)/10000;
+const rateNow=c=>c==='JPY'?undefined:Number(yenPer(c).toPrecision(6));
 function fmtMoney(code,n,rate){
   code=normCurrency(code);
   const s=symSmall(fmtPlain(code,n));
@@ -1320,25 +1378,25 @@ function closeConfirm(){
 /* ===== 為替レート ===== */
 let _rateEditCode='USD';
 function toggleRateEdit(code){
-  code=code==='KRW'?'KRW':'USD';
-  const row=document.getElementById('rateEditRow'),inp=document.getElementById('rateInput');
+  code=CUR[code]&&code!=='JPY'?code:'USD';
+  const row=document.getElementById('rateEditRow'),inp=document.getElementById('rateInput'),c=CUR[code];
   if(row.classList.contains('visible')&&_rateEditCode===code){cancelRateEdit();return;}
   _rateEditCode=code;
-  document.getElementById('rateEditLabel').textContent=code==='KRW'?'₩100 = ¥':'$1 = ¥';
-  inp.placeholder=code==='KRW'?'例: 11':'例: 150';
-  inp.value=code==='KRW'?krwRate:exchangeRate;row.classList.add('visible');inp.focus();inp.select();
+  document.getElementById('rateEditLabel').textContent=`${c.sym}${c.unit.toLocaleString()} = ¥`;
+  inp.placeholder='例: '+Number((c.def*c.unit).toPrecision(3));
+  inp.value=Number((yenPer(code)*c.unit).toPrecision(6));row.classList.add('visible');inp.focus();inp.select();
 }
 function cancelRateEdit(){document.getElementById('rateEditRow').classList.remove('visible');}
 function applyRate(){
-  const min=_rateEditCode==='KRW'?0.01:1;
-  const v=validateNum(document.getElementById('rateInput').value,min,1000);
-  if(!v){showToast(`⚠ ${min}〜1000 の数値を入力してください`);return;}
-  if(_rateEditCode==='KRW')krwRate=v;else exchangeRate=v;
-  localStorage.setItem('rateUpdatedAt',new Date().toISOString());saveData();showRateDisplay(true);cancelRateEdit();updateDisplay();showToast('為替レートを更新しました');
+  const code=_rateEditCode,unit=CUR[code].unit,min=code==='USD'?1:0.01;
+  const v=validateNum(document.getElementById('rateInput').value,min,100000);
+  if(!v){showToast(`⚠ ${min}〜100000 の数値を入力してください`);return;}
+  if(code==='KRW')krwRate=v;else if(code==='USD')exchangeRate=v;else rates={...rates,[code]:v/unit};
+  localStorage.setItem('rateUpdatedAt',new Date().toISOString());saveData();cancelRateEdit();updateDisplay();showRateDisplay(true);showToast('為替レートを更新しました');
 }
 // 無料の為替API（APIキー不要）。1つ目が失敗したら2つ目を試す
 const RATE_SOURCES=[
-  {url:'https://api.frankfurter.dev/v1/latest?base=JPY&symbols=USD,KRW',pick:j=>({rates:j.rates,date:j.date})},
+  {url:'https://api.frankfurter.dev/v1/latest?base=JPY',pick:j=>({rates:j.rates,date:j.date})},
   {url:'https://open.er-api.com/v6/latest/JPY',pick:j=>({rates:j.rates,date:j.time_last_update_unix?localDateStr(new Date(j.time_last_update_unix*1000)):''})},
 ];
 // レートは平日に1日1回発表されるので、発表日を曜日つきで示す
@@ -1347,30 +1405,35 @@ function rateDateNote(date){
   const when=date===todayStr()?'今日':fmtDay(date);
   return`${when}発表の最新レートです（平日に1日1回更新。土日・祝日や今日の発表前は、直前の平日の分になります）`;
 }
-async function fetchLatestRates(){
+// すべての通貨のレートをまとめて取得（1つ目のAPIにない通貨は2つ目から）
+async function fetchLatestRates(opts={}){
   const btn=document.getElementById('rateFetchBtn');
   if(btn){btn.disabled=true;btn.textContent='取得中...';}
   try{
+    const need=CURRENCIES.filter(c=>c.code!=='JPY').map(c=>c.code),got={};let date='';
     for(const src of RATE_SOURCES){
+      if(need.every(c=>got[c]))break;
       try{
         const res=await fetch(src.url,{cache:'no-store'});
         if(!res.ok)continue;
-        const {rates,date}=src.pick(await res.json());
-        const usd=Number(rates?.USD),krw=Number(rates?.KRW);
-        if(!(usd>0)||!(krw>0))continue;
-        // APIは「1円 = 何ドル/何ウォン」なので逆数にする
-        const newUsd=Math.round(100/usd)/100,newKrw=Math.round(10000/krw)/100;
-        if(!validateNum(newUsd,1,1000)||!validateNum(newKrw,0.01,1000))continue;
-        exchangeRate=newUsd;krwRate=newKrw;
-        const stamp=new Date().toISOString();
-        try{localStorage.setItem('rateUpdatedAt',stamp);}catch(e){}
-        saveData();showRateDisplay(true);cancelRateEdit();updateDisplay();
-        const t=document.getElementById('rateUpdatedText');if(t)t.textContent=rateDateNote(date);
-        showToast('最新レートに更新しました');
-        return;
+        const p=src.pick(await res.json());
+        need.forEach(c=>{
+          // APIは「1円 = 何ドル」なので逆数にする
+          const v=Number(p.rates?.[c]);
+          if(!got[c]&&v>0&&isFinite(v)){const y=1/v;if(y>0&&y<100000)got[c]=y;}
+        });
+        if(!date)date=p.date||'';
       }catch(e){console.warn('rate fetch failed',src.url,e);}
     }
-    showToast('⚠ レートを取得できませんでした');
+    if(!Object.keys(got).length){if(!opts.silent)showToast('⚠ レートを取得できませんでした');return false;}
+    if(got.USD)exchangeRate=Math.round(got.USD*100)/100;
+    if(got.KRW)krwRate=Math.round(got.KRW*10000)/100;
+    const nr={...rates};Object.keys(got).forEach(c=>{if(c!=='USD'&&c!=='KRW')nr[c]=Number(got[c].toPrecision(6));});rates=nr;
+    try{localStorage.setItem('rateUpdatedAt',new Date().toISOString());}catch(e){}
+    saveData();cancelRateEdit();updateDisplay();showRateDisplay(true);
+    const t=document.getElementById('rateUpdatedText');if(t)t.textContent=rateDateNote(date);
+    showToast(opts.silent&&opts.code?`${CUR[opts.code].label}の最新レートを取得しました`:'最新レートに更新しました');
+    return true;
   }finally{
     if(btn){btn.disabled=false;btn.textContent='最新レートを取得';}
   }
@@ -1379,9 +1442,13 @@ async function fetchLatestRates(){
 function flapHTML(text,animate){
   return`<span class="flaps">${[...String(text)].map((ch,i)=>`<span class="flap${animate?' flip':''}"${animate?` style="animation-delay:${i*45}ms"`:''}>${esc(ch)}</span>`).join('')}</span>`;
 }
+// この旅行で使う外貨のレートを並べる
 function showRateDisplay(animate){
-  const u=document.getElementById('rateText-USD');if(u)u.innerHTML=`<span class="rate-flag">USD</span><span class="rate-eq">$1 =</span>${flapHTML('¥'+exchangeRate.toFixed(2),animate)}`;
-  const k=document.getElementById('rateText-KRW');if(k)k.innerHTML=`<span class="rate-flag">KRW</span><span class="rate-eq">₩100 =</span>${flapHTML('¥'+krwRate.toFixed(2),animate)}`;
+  const box=document.getElementById('rateRows');if(!box)return;
+  const list=activeCurrencies().filter(c=>c.code!=='JPY');
+  box.innerHTML=list.map(c=>{const y=yenPer(c.code)*c.unit,yd=y>=100?y.toFixed(1):y.toFixed(2);
+    return`<div class="rate-row"><span id="rateText-${c.code}"><span class="rate-flag">${c.code}</span><span class="rate-eq">${c.sym}${c.unit.toLocaleString()} =</span>${flapHTML('¥'+yd,animate)}</span><button class="btn-bluegray-sm" onclick="toggleRateEdit('${c.code}')">変更</button></div>`;}).join('')
+    ||'<p class="small">外貨は使っていません</p>';
 }
 
 /* ===== 日付・ID ===== */
@@ -1404,7 +1471,7 @@ function legacyExpenseId(e){
 
 /* ===== データ正規化 ===== */
 function normalizeData(input){
-  const out={members:[''],expenses:[],deposits:[],exchangeRate,krwRate,settled:{},wallet:{on:false,ins:[],carry:[]}};
+  const out={members:[''],expenses:[],deposits:[],exchangeRate,krwRate,rates:{},settled:{},wallet:{on:false,ins:[],carry:[]}};
   if(!input||typeof input!=='object')return out;
   if(Array.isArray(input.members)){const m=input.members.slice(0,MAX_MEMBERS).map(x=>sanitize(x));out.members=m.length?m:[''];}
   const mLen=out.members.length;
@@ -1424,7 +1491,7 @@ function normalizeData(input){
       const out_={id,name,amount,currency,category,date,paidBy,participants,timestamp};
       // 割り方（比率・金額指定）
       if(e.split&&typeof e.split==='object'&&(e.split.m==='ratio'||e.split.m==='amount')&&e.split.v&&typeof e.split.v==='object'){
-        const v={};participants.forEach(p=>{const x=Number(e.split.v[p]);if(e.split.v[p]!=null&&e.split.v[p]!==''&&isFinite(x)&&x>=0&&x<=10000000)v[p]=x;});
+        const v={};participants.forEach(p=>{const x=Number(e.split.v[p]);if(e.split.v[p]!=null&&e.split.v[p]!==''&&isFinite(x)&&x>=0&&x<=10000000000)v[p]=x;});
         if(Object.keys(v).length)out_.split={m:e.split.m,v};
       }
       if(e.est===true)out_.est=true; // 概算（あとで確定額に直す）
@@ -1433,7 +1500,7 @@ function normalizeData(input){
       // 先に精算した記録（その支払いだけ先に済にした送金）
       if(e.pre&&typeof e.pre==='object'&&e.pre.s&&typeof e.pre.s==='object'){
         const ps={};
-        Object.keys(e.pre.s).forEach(k=>{const m=/^(\d+)>(\d+)>(JPY|USD|KRW)$/.exec(k),v=Number(e.pre.s[k]);if(m&&+m[1]<mLen&&+m[2]<mLen&&m[1]!==m[2]&&isFinite(v)&&v>0)ps[k]=v;});
+        Object.keys(e.pre.s).forEach(k=>{const m=new RegExp(`^(\\d+)>(\\d+)>(${CUR_RE})$`).exec(k),v=Number(e.pre.s[k]);if(m&&+m[1]<mLen&&+m[2]<mLen&&m[1]!==m[2]&&isFinite(v)&&v>0)ps[k]=v;});
         if(Object.keys(ps).length)out_.pre={d:isDateStr(e.pre.d)?e.pre.d:'',s:ps};
       }
       return out_;
@@ -1460,10 +1527,12 @@ function normalizeData(input){
     }).filter(Boolean);
   }
   const r=validateNum(input.exchangeRate,1,1000);if(r)out.exchangeRate=r;
+  out.rates={};
+  if(input.rates&&typeof input.rates==='object')CURRENCIES.forEach(c=>{if(c.code==='JPY'||c.code==='USD'||c.code==='KRW')return;const v=Number(input.rates[c.code]);if(isFinite(v)&&v>0&&v<100000)out.rates[c.code]=v;});
   const rk=validateNum(input.krwRate,0.01,1000);if(rk)out.krwRate=rk;
   if(input.settled&&typeof input.settled==='object'){
     Object.keys(input.settled).sort().forEach(k=>{
-      const m=/^(\d+|W)>(\d+|W)>(JPY|USD|KRW)$/.exec(k),v=Number(input.settled[k]);
+      const m=new RegExp(`^(\\d+|W)>(\\d+|W)>(${CUR_RE})$`).exec(k),v=Number(input.settled[k]);
       const okI=x=>x==='W'||Number(x)<mLen;
       if(m&&m[1]!==m[2]&&okI(m[1])&&okI(m[2])&&isFinite(v)&&v>0)out.settled[k]=v;
     });
@@ -1485,7 +1554,7 @@ function initAppViews(){
   if(!members.length)members=[''];
   renderPassRoute();
   renderTripName();
-  ['expenseName','expenseAmount'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.dataset.bound){el.dataset.bound='1';el.addEventListener('input',()=>{el.classList.remove('invalid');refreshFormHelpers();});}});
+  ['expenseName','expenseAmount'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.dataset.bound){el.dataset.bound='1';el.addEventListener('input',()=>{el.classList.remove('invalid');refreshFormHelpers();if(id==='expenseName')renderQuickRow();});}});
   const dateInput=document.getElementById('expenseDate');if(dateInput&&!dateInput.value)dateInput.value=todayStr();
   updateMemberSelects();updateMemberDisplay();updateFocusMemberSelect();showRateDisplay();
   updateSettCards();
@@ -1526,7 +1595,7 @@ function renderSettingsSummary(){
   set('sv-members',names.length?names.join('・'):'未設定');
   const bal=walletBalance(),codes=CURRENCIES.filter(c=>bal[c.code]!=null);
   set('sv-wallet',!wallet.on?'使わない':codes.length?codes.map(c=>fmtPlain(c.code,bal[c.code])).join(' · '):'0');
-  set('sv-rate',`$1=¥${Number(exchangeRate).toFixed(0)} · ₩100=¥${Number(krwRate).toFixed(1)}`);
+  set('sv-rate',activeCurrencies().filter(c=>c.code!=='JPY').slice(0,2).map(c=>rateLabel(c.code)).join(' · ')||'円のみ');
   const tr=trips.find(x=>x.id===currentTripId);set('sv-name',tr?tr.name:'');
 }
 function toggleMemberEdit(){
@@ -1750,7 +1819,7 @@ function renderWalletCard(){
   const balHTML=codes.length?codes.map(c=>`<div class="wal-bal${bal[c.code]<0?' neg':''}"><span>${c.label}</span><b>${fmtMoney(c.code,bal[c.code])}</b></div>`).join(''):'<div class="small">まだお金が入っていません</div>';
   const ins=(wallet.ins||[]).map(x=>`<div class="wal-in">${avatar(x.by)}<span class="wal-in-name">${memberName(x.by)}${x.note?`<small>${safe(x.note)}</small>`:''}</span><b>${fmtPlain(x.currency,x.amount)}</b><button onclick="removeWalletIn('${esc(x.id)}')" aria-label="削除">×</button></div>`).join('');
   const memOpts=members.map((m,i)=>`<option value="${i}">${memberName(i)}</option>`).join('');
-  const curOpts=CURRENCIES.map(c=>`<option value="${c.code}"${c.code===(codes[0]?.code||'KRW')?' selected':''}>${c.label}</option>`).join('');
+  const curOpts=activeCurrencies().map(c=>`<option value="${c.code}"${c.code===(codes[0]?.code||destCurrency()||'KRW')?' selected':''}>${c.label}</option>`).join('');
   box.innerHTML=`
     <div class="wal-head"><span class="wal-ic">${avatar(walletIdx())}</span><div class="wal-bals">${balHTML}</div></div>
     <div class="wal-sub">財布に入れたお金</div>
@@ -1931,13 +2000,18 @@ function renderRateNote(){
   const ed=editingExpenseIdx>=0?expenses[editingExpenseIdx]:null;
   const r=ed&&normCurrency(ed.currency)===c&&Number(ed.rate)>0?Number(ed.rate):yenPer(c);
   const amt=validateNum(document.getElementById('expenseAmount').value);
-  const unit=c==='KRW'?`₩100=¥${(r*100).toFixed(2)}`:`$1=¥${r.toFixed(2)}`;
+  const unit=rateLabel(c,r);
   el.style.display='block';
   el.textContent=`${amt?`≈${fmtPlain('JPY',amt*r)}　`:''}${unit} で円換算（このレートで固定）`;
 }
-// 金額欄の通貨ボタン：押すたびに ¥ → ₩ → $ → ¥
-const CUR_CYCLE=['JPY','KRW','USD'];
-function cycleCurrency(){setCurrency(CUR_CYCLE[(CUR_CYCLE.indexOf(currentCurrency)+1)%CUR_CYCLE.length]);}
+// 金額欄の通貨ボタン：押すたびに、この旅行で使う通貨を順に切り替える（円 → 行き先の通貨 → …）
+function cycleCurrency(){const l=activeCurrencies().map(c=>c.code);setCurrency(l[(l.indexOf(currentCurrency)+1)%l.length]);}
+// 選んでいる通貨がこの旅行で使わないもの（行き先を変えたなど）なら、行き先の通貨に戻す
+function fitCurrency(){
+  if(editingExpenseIdx>=0)return;
+  const l=activeCurrencies().map(c=>c.code);
+  if(!l.includes(currentCurrency))setCurrency(destCurrency()||'JPY');
+}
 function renderCurBtn(){const b=document.getElementById('curBtn');if(b){const c=CUR[currentCurrency];b.innerHTML=`<b>${c.sym}</b><small>${c.label}</small>`;}}
 // 日付のボタン：今日なら「今日」、ほかは「10/7（水）」
 function renderDateChip(){
@@ -2104,6 +2178,38 @@ const ITEM_ICON_RULES=[
 ];
 function itemIconKey(name,cat){const n=String(name||'');const hit=ITEM_ICON_RULES.find(([re])=>re.test(n));return hit?hit[1]:catIconKey(cat||FALLBACK_CAT);}
 const itemIconSvg=(name,cat)=>iconSvgByKey(itemIconKey(name,cat));
+// ほかの旅行で使った項目名（この端末に保存）{ 名前: {c:カテゴリ, n:回数, t:最後に使った時刻} }
+const NAME_HIST_KEY='warikanNameHist';
+function readNameHist(){try{const o=JSON.parse(localStorage.getItem(NAME_HIST_KEY)||'{}');return o&&typeof o==='object'?o:{};}catch(e){return{};}}
+function rememberName(name,cat){
+  name=String(name||'').trim();if(!name)return;
+  const h=readNameHist(),cur=h[name]||{n:0};
+  h[name]={c:String(cat||''),n:(cur.n||0)+1,t:Date.now()};
+  const keys=Object.keys(h);
+  if(keys.length>200)keys.sort((a,b)=>(h[a].t||0)-(h[b].t||0)).slice(0,keys.length-200).forEach(k=>delete h[k]);
+  try{localStorage.setItem(NAME_HIST_KEY,JSON.stringify(h));}catch(e){}
+}
+// 開いた旅行の項目名も覚えておく（まだ覚えていない名前だけ）
+function seedNameHist(list){
+  const h=readNameHist();let ch=false;
+  (list||[]).forEach(e=>{const n=String(e.name||'').trim();if(n&&!h[n]){h[n]={c:String(e.category||''),n:1,t:0};ch=true;}});
+  if(ch){const keys=Object.keys(h);if(keys.length>200)keys.sort((x,y)=>(h[x].t||0)-(h[y].t||0)).slice(0,keys.length-200).forEach(k=>delete h[k]);try{localStorage.setItem(NAME_HIST_KEY,JSON.stringify(h));}catch(e){}}
+}
+// ひらがな・カタカナ・大文字小文字の違いを無視して比べる
+const kanaKey=s=>String(s||'').trim().toLowerCase().replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+// 入力中の文字に合う項目名（この旅行 → ほかの旅行 → よく使う名前）
+function nameMatches(text){
+  const q=kanaKey(text);if(!q)return[];
+  const seen=new Set(),out=[];
+  const add=x=>{const k=kanaKey(x.name);if(seen.has(k)||k===q||!k.includes(q))return;seen.add(k);out.push(x);};
+  const map=new Map();
+  expenses.forEach((e,i)=>{const key=String(e.name||'').trim();if(!key)return;const c=map.get(key)||{name:key,count:0,last:-1,e:null};c.count++;c.last=i;c.e=e;map.set(key,c);});
+  [...map.values()].sort((a,b)=>b.count-a.count||b.last-a.last).forEach(add);
+  const h=readNameHist();
+  Object.keys(h).sort((a,b)=>(h[b].n||0)-(h[a].n||0)||(h[b].t||0)-(h[a].t||0)).forEach(name=>add({name,count:h[name].n||1,e:null,cat:_cats.includes(h[name].c)?h[name].c:FALLBACK_CAT,hist:true}));
+  for(const[name,icons]of QUICK_PRESETS){let cat=FALLBACK_CAT;for(const ic of icons){const c=_cats.find(c=>catIconKey(c)===ic);if(c){cat=c;break;}}add({name,count:0,e:null,cat});}
+  return out.slice(0,8);
+}
 function quickItems(){
   const map=new Map();
   expenses.forEach((e,i)=>{
@@ -2124,9 +2230,13 @@ function quickItems(){
 function renderQuickRow(){
   const row=document.getElementById('quickRow');if(!row)return;
   if(editingExpenseIdx>=0||!members.some(m=>String(m||'').trim())){row.innerHTML='';row.style.display='none';return;}
-  const items=quickItems();
+  // 入力中は、その文字に合う名前だけを出す（合うものがなければ隠す）
+  const typed=document.getElementById('expenseName')?.value||'';
+  const base=quickItems(),exact=base.some(q=>kanaKey(q.name)===kanaKey(typed));
+  const items=typed.trim()&&!exact?nameMatches(typed):base;
+  const on=kanaKey(typed);
   row.style.display=items.length?'flex':'none';
-  row.innerHTML=items.map((q,k)=>`<button type="button" class="quick-chip${q.count?'':' preset'}" onclick="applyQuick(${k})">${itemIconSvg(q.name,q.e?q.e.category:q.cat)}${safe(q.name)}</button>`).join('');
+  row.innerHTML=items.map((q,k)=>`<button type="button" class="quick-chip${q.count&&!q.hist?'':' preset'}${on&&kanaKey(q.name)===on?' active':''}" onclick="applyQuick(${k})">${itemIconSvg(q.name,q.e?q.e.category:q.cat)}${safe(q.name)}</button>`).join('');
   row._items=items;
 }
 // 金額以外（項目名・カテゴリ・通貨・割り勘する人）を前回と同じにする
@@ -2253,7 +2363,7 @@ function addExpense(){
   if(_estOn)ne.est=true;
   if(fromWallet)ne.wallet=true;
   if(currentCurrency!=='JPY')ne.rate=rateNow(currentCurrency);
-  expenses.push(ne);
+  expenses.push(ne);rememberName(ne.name,ne.category);
   markSeen(expenses[expenses.length-1]);
   printReceipt(name,fmtMoney(currentCurrency,amt));
   clearExpenseForm();saveData();updateDisplay();showToast('✅ 支払いを追加しました');
@@ -2445,7 +2555,7 @@ function setSettlementMode(mode){
 function paidTransfers(){
   const out=[];
   Object.keys(settled||{}).forEach(k=>{
-    const m=/^(\d+|W)>(\d+|W)>(JPY|USD|KRW)$/.exec(k),v=Number(settled[k]);
+    const m=new RegExp(`^(\\d+|W)>(\\d+|W)>(${CUR_RE})$`).exec(k),v=Number(settled[k]);
     if(!m||!isFinite(v)||v<=0)return;
     const f=decIdx(m[1]),t=decIdx(m[2]);
     if(f!==t&&f<=walletIdx()&&t<=walletIdx())out.push({from:f,to:t,code:m[3],amount:v,paid:true});
@@ -2586,7 +2696,7 @@ function calculateSettlement(){
       const mine=txs.filter(t=>t.from===me||t.to===me);
       const lines=mine.map(t=>{
         const done=settleState(t)==='done';
-        const amt=fmtMoney(t.code,t.amount);
+        const amt=copyAmtHTML(t.code,t.amount);
         const text=t.from===me
           ?`<b>${memberName(t.to)}</b> に <span class="pay">${amt}</span> 払う`
           :`<b>${memberName(t.from)}</b> から <span class="recv">${amt}</span> 受け取る`;
@@ -2601,7 +2711,7 @@ function calculateSettlement(){
     const st=settleState(t),key=settleKey(t);
     return`<div class="settlement-item${st==='done'?' done':''}" data-key="${key}">
       <div class="settlement-text">${avatar(t.from)}${memberName(t.from)} → ${avatar(t.to)}${memberName(t.to)}</div>
-      <div class="settlement-amount">${fmtMoney(t.code,t.amount)}</div>
+      <div class="settlement-amount">${copyAmtHTML(t.code,t.amount)}</div>
       <span class="sett-stub"><button class="sett-done-btn" onclick="toggleSettled('${key}',${t.amount},this,${st==='done'})">${st==='done'?'✓ 済':'済にする'}</button></span>
     </div>`;
   };
@@ -2770,7 +2880,7 @@ function renderCatSummary(){
   const el=document.getElementById('catSummaryContent');
   if(!el)return;
   if(!expenses.length){el.innerHTML='<p style="text-align:center;color:var(--muted);padding:8px;">まだ記録がありません</p>';return;}
-  const BAR_COLORS={JPY:'var(--p)',USD:'rgb(var(--p-rgb) / .6)',KRW:'rgb(var(--p-rgb) / .35)'};
+  const BAR_COLORS=new Proxy({JPY:'var(--p)'},{get:(o,k)=>o[k]||'rgb(var(--p-rgb) / .5)'});
   const catMap={},totals={},counts={};
   expenses.forEach(e=>{
     const cat=e.category||'その他',c=normCurrency(e.currency);
@@ -2813,6 +2923,7 @@ function updateDisplay(){
   renderQuickRow();renderWalletCard();renderSettingsSummary();
   updateSettCards();
   updateMemberList();displayExpenses();renderCatSummary();calculateSettlement();renderPersonalViews();updateFooterTotal();renderMeBar();refreshFormHelpers();
+  fitCurrency();showRateDisplay();
   renderReviewOpen();if(document.getElementById('reviewSheet')?.classList.contains("active"))renderReview();
 }
 
@@ -2846,7 +2957,7 @@ function loadData(){
 
 /* ===== エクスポート・インポート ===== */
 function exportData(){
-  const d={members,expenses,deposits,exchangeRate,krwRate,settlementMode,settled,catIcons,tripMeta,completedAt,wallet,categories:_cats,exportDate:new Date().toISOString()};
+  const d={members,expenses,deposits,exchangeRate,krwRate,rates,settlementMode,settled,catIcons,tripMeta,completedAt,wallet,categories:_cats,exportDate:new Date().toISOString()};
   const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');
   a.href=u;a.download='warikan_'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(u);
 }
