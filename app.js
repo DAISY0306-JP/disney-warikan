@@ -54,7 +54,9 @@ function catColor(cat){
   let h=0;for(const ch of String(cat))h=(h*31+ch.charCodeAt(0))>>>0;
   const [bg,fg]=CAT_PALETTE[h%CAT_PALETTE.length];return{bg,fg};
 }
-const catStyle=cat=>{const c=catColor(cat);return`--cb:${c.bg};--cf:${c.fg}`;};
+const isDark=()=>document.documentElement.getAttribute('data-theme')==='dark';
+// ダークモードでは、淡い背景の代わりにカテゴリの色を薄く敷く
+const catStyle=cat=>{const c=catColor(cat);return isDark()?`--cb:rgb(${hexToRgb(c.fg)} / .2);--cf:${c.fg}`:`--cb:${c.bg};--cf:${c.fg}`;};
 // カテゴリのアイコン（絵文字の代わりに、アプリと同じ線のアイコン。色はカテゴリの色）
 const CAT_ICON_PATHS={
   meal:'<path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/>',
@@ -486,6 +488,41 @@ async function showLoggedIn(){
   await loadTrips();
   await joinPendingInvite();
   startRemotePolling();
+  maybeShowGuide();
+}
+/* ===== 使い方・旅の準備 ===== */
+// 初めて使う端末では、ログインしたあとに使い方を1回だけ出す
+function maybeShowGuide(){
+  let seen=false;try{seen=localStorage.getItem('warikanGuideSeen')==='1';}catch(e){}
+  if(!seen)setTimeout(openGuide,400);
+}
+function openGuide(){document.getElementById('guideSheet').classList.add('active');}
+function closeGuide(){
+  document.getElementById('guideSheet').classList.remove('active');
+  try{localStorage.setItem('warikanGuideSeen','1');}catch(e){}
+}
+// 新しい旅行（まだ記録がない）では、記録タブの上に準備のチェックリストを出す
+const setupHideKey=()=>`warikanSetupHide_${currentTripId||'local'}`;
+function setupSteps(){
+  const named=members.filter(m=>String(m||'').trim()).length;
+  let invited=false;try{invited=localStorage.getItem(`warikanInvited_${currentTripId||'local'}`)==='1';}catch(e){}
+  return[
+    {done:named>=2,label:'メンバーを登録',sub:named?`${named}人`:'一緒に行く人の名前',act:"openSetSheet('member')"},
+    {done:!!tripMeta.to,label:'行き先と日程を決める',sub:'通貨やカウントダウンに使います',act:'openTripInfo()'},
+    {done:invited,label:'友達を招待',sub:'いっしょに記録できます（あとからでも大丈夫）',act:'shareInviteLink()'},
+  ];
+}
+function markInvited(){try{localStorage.setItem(`warikanInvited_${currentTripId||'local'}`,'1');}catch(e){}}
+function hideSetup(){try{localStorage.setItem(setupHideKey(),'1');}catch(e){}renderSetupCard();}
+function renderSetupCard(){
+  const el=document.getElementById('setupCard');if(!el)return;
+  let hidden=false;try{hidden=localStorage.getItem(setupHideKey())==='1';}catch(e){}
+  const steps=setupSteps(),left=steps.filter(x=>!x.done).length;
+  if(hidden||expenses.length||!left){el.innerHTML='';return;}
+  const CHECK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  el.innerHTML=`<div class="setup-card"><div class="setup-head"><b>旅の準備</b><span>${steps.length-left} / ${steps.length}</span><button type="button" class="setup-x" onclick="hideSetup()" aria-label="閉じる">×</button></div>
+    ${steps.map(x=>`<button type="button" class="setup-step${x.done?' done':''}" onclick="${x.act}"><span class="setup-ck">${x.done?CHECK:''}</span><span class="setup-txt"><b>${x.label}</b><small>${esc(x.sub)}</small></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`).join('')}
+  </div>`;
 }
 function getDataObject(){
   return {members,expenses,deposits,exchangeRate,krwRate,rates,settlementMode,settled,catIcons,tripMeta,completedAt,wallet,categories:_cats,updatedAt:new Date().toISOString()};
@@ -913,6 +950,7 @@ async function copyText(text,doneMsg){
   return false;
 }
 async function shareInviteLink(){
+  markInvited();renderSetupCard();
   const code=await getShareCode();if(!code)return;
   const trip=trips.find(t=>t.id===currentTripId);
   const url=inviteUrl(code);
@@ -1586,9 +1624,22 @@ function closeSetSheet(silent){
   document.getElementById('setSheet')?.classList.remove('active');
   if(!silent)renderSettingsSummary();
 }
+/* ===== 表示（自動・ライト・ダーク） ===== */
+const THEME_LABEL={auto:'自動',light:'ライト',dark:'ダーク'};
+function themePref(){let t='auto';try{t=localStorage.getItem('warikanTheme')||'auto';}catch(e){}return THEME_LABEL[t]?t:'auto';}
+async function chooseTheme(){
+  const keys=Object.keys(THEME_LABEL);
+  const i=await appChoose('表示',keys.map(k=>THEME_LABEL[k]),{message:'この端末での見た目を選びます。「自動」は端末の設定（ライト・ダーク）に合わせます',current:keys.indexOf(themePref())});
+  if(i===null||i===undefined)return;
+  try{localStorage.setItem('warikanTheme',keys[i]);}catch(e){}
+  if(window.applyTheme)window.applyTheme();
+  updateDisplay();renderPassRoute();
+}
+window.onThemeChange=()=>{try{updateDisplay();renderPassRoute();}catch(e){}};
 // 一覧の右側に出す、今の状態
 function renderSettingsSummary(){
   const set=(id,t)=>{const el=document.getElementById(id);if(el)el.textContent=t;};
+  set('sv-theme',THEME_LABEL[themePref()]);
   const f=AIRPORT[tripMeta.from],t=AIRPORT[tripMeta.to];
   set('sv-route',t?`${f?f.code:'---'} → ${t.code}${tripDatesText(tripMeta)?' · '+tripDatesText(tripMeta):''}`:'未設定');
   const names=members.filter(m=>String(m||'').trim());
@@ -2923,7 +2974,7 @@ function updateDisplay(){
   renderQuickRow();renderWalletCard();renderSettingsSummary();
   updateSettCards();
   updateMemberList();displayExpenses();renderCatSummary();calculateSettlement();renderPersonalViews();updateFooterTotal();renderMeBar();refreshFormHelpers();
-  fitCurrency();showRateDisplay();
+  fitCurrency();showRateDisplay();renderSetupCard();
   renderReviewOpen();if(document.getElementById('reviewSheet')?.classList.contains("active"))renderReview();
 }
 

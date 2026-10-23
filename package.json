@@ -1,0 +1,11 @@
+{
+  "name": "waritabi",
+  "private": true,
+  "description": "WARITABI のテスト用。アプリ本体はビルド不要（index.html・style.css・app.js をそのまま公開）",
+  "scripts": {
+    "test": "node tests/run.js"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}

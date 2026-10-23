@@ -1,0 +1,17 @@
+const {launch}=require('../lib');
+(async()=>{const b=await launch();
+const p=await b.newPage({ignoreHTTPSErrors:true,viewport:{width:390,height:844},deviceScaleFactor:2});
+await p.goto('file://'+process.argv[2]);await p.waitForTimeout(1500);
+const r=await p.evaluate(()=>{const o=[];const ok=(n,c)=>o.push((c?'PASS ':'FAIL ')+n);
+  document.getElementById('authShell').style.display='none';
+  const T=()=>document.getElementById('toast');
+  showToast('✅ 支払いを追加しました');ok('ok icon',T().querySelector('svg.ok')&&T().textContent==='支払いを追加しました');
+  showToast('⚠️ 読み込みに失敗しました');ok('warn icon',T().querySelector('svg.warn')&&T().textContent==='読み込みに失敗しました');
+  showToast('☁️ 同期しました');ok('cloud',T().querySelector('svg.cloud')&&T().textContent==='同期しました');
+  showToast('「済」を取り消しました');ok('plain',!T().querySelector('svg')&&T().textContent==='「済」を取り消しました');
+  showToast('<b>x</b>');ok('escaped',!T().querySelector('b'));
+  setSyncStatus('☁️ 同期済み: 12:00');ok('sync status',document.getElementById('syncStatus').textContent==='同期済み: 12:00');
+  return o;});
+console.log(r.join('\n'));
+await p.evaluate(()=>showToast('✅ 支払いを追加しました'));await p.waitForTimeout(250);await p.screenshot({path:process.argv[3]+'/toast.png',clip:{x:0,y:620,width:390,height:224}});
+await b.close();})();

@@ -1,0 +1,10 @@
+const {launch}=require('../lib');
+(async()=>{const b=await launch();
+const p=await b.newPage({ignoreHTTPSErrors:true,viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+p.on('pageerror',e=>{if(!/supabase is not defined/.test(e.message))console.log('ERR',e.message)});
+await p.goto('file://'+process.argv[2]);await p.waitForTimeout(3000);
+await p.evaluate(()=>{document.getElementById('authShell').style.display='none';currentTripId='t1';applyDataObject({members:['みゆ','あやか','みさき']});initAppViews();showTab('add');window.__pc=chooseSplitMode();});
+await p.waitForTimeout(500);await p.screenshot({path:process.argv[3]+'/dlg-split.png',timeout:90000});
+const r=await p.evaluate(async()=>{document.querySelectorAll('#dlgChoices button')[2].click();await window.__pc;
+  const a=_splitMode==='amount';const pc=appChoose('テスト',['A','B']);const grid=!document.getElementById('dlgChoices').classList.contains('list');document.getElementById('dlgCancel').click();await pc;return a&&grid;});
+console.log(r?'PASS split choose + other dialogs unchanged':'FAIL');await b.close();})();

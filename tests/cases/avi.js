@@ -1,0 +1,41 @@
+const {launch}=require('../lib');
+(async()=>{const b=await launch();
+const ctx=await b.newContext({ignoreHTTPSErrors:true,viewport:{width:393,height:852},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+const p=await ctx.newPage();
+p.on('pageerror',e=>{if(!/supabase is not defined/.test(e.message))console.log('ERR',e.message)});
+await p.goto('file://'+process.argv[2]);await p.waitForTimeout(3000);
+const D=process.argv[3];
+const r=await p.evaluate(async()=>{const o=[];const ok=(n,c)=>o.push((c?'PASS ':'FAIL ')+n);
+  localStorage.clear();document.getElementById('authShell').style.display='none';
+  const t0=todayStr(),add=(d,n)=>{const x=new Date(d+'T00:00:00');x.setDate(x.getDate()+n);return`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;};
+  trips=[{id:'t1',name:'ソウル🇰🇷'},{id:'t2',name:'フロリダディズニー',meta:{from:'NRT',to:'MCO',start:'2026-03-07',end:'2026-03-15'},done:'2026-03-20'},{id:'t3',name:'台湾',meta:{from:'HND',to:'TSA',start:add(t0,20),end:add(t0,23)}},{id:'t4',name:'未定の旅'}];currentTripId='t1';
+  applyDataObject({members:['みゆ','あやか','みさき'],tripMeta:{from:'HND',to:'GMP',start:add(t0,-1),end:add(t0,2)},categories:['🍽 食事','🚃 交通','✈️航空券','その他'],expenses:[{id:'e1',name:'アシアナ航空',amount:181410,currency:'JPY',category:'✈️航空券',date:t0,paidBy:0,participants:[0,1,2]}]});
+  localStorage.setItem('warikanMe_t1','みゆ');renderTripSelect();initAppViews();showTab('add');
+  // 1
+  const pf=document.getElementById('passPerf');
+  ok('progress flight: '+document.getElementById('pfStatus').textContent,pf.classList.contains('on')&&pf.dataset.phase==='flight'&&document.getElementById('pfStatus').textContent==='IN FLIGHT · Day 2/4'&&+pf.style.getPropertyValue('--pf')>0.25&&+pf.style.getPropertyValue('--pf')<0.5);
+  ok('phase', tripPhase({start:add(t0,3),end:add(t0,5)},'').key==='checkin'&&tripPhase({start:add(t0,-5),end:add(t0,-2)},'').key==='arrived'&&tripPhase({start:'2026-01-01'},'2026-01-02').key==='done'&&tripPhase({start:''},'').key==='none');
+  tripMeta.start=add(t0,3);tripMeta.end=add(t0,5);renderPassRoute();
+  ok('boarding: '+document.getElementById('pfStatus').textContent,document.getElementById('pfStatus').textContent==='BOARDING · あと3日'&&+pf.style.getPropertyValue('--pf')===0);
+  tripMeta.start='';renderPassRoute();ok('no dates hides',!pf.classList.contains('on'));
+  tripMeta.start=add(t0,-1);tripMeta.end=add(t0,2);renderPassRoute();
+  // 3
+  ok('barcode',document.querySelectorAll('#passBarcode rect').length>8);
+  sb={};currentUser={id:'u'};window.getShareCode=async()=>'AB12CD34';
+  await openBoardingPass();
+  ok('bp open',document.getElementById('bpOverlay').classList.contains('active')&&document.querySelector('.bp-route').textContent.includes('GMP')&&/GATE\d+/.test(document.querySelector('.bp-grid').textContent)&&document.getElementById('bpCode').textContent==='共有コード AB12CD34');
+  ok('qr svg',!!document.querySelector('#bpQr svg path')&&document.querySelector('#bpQr svg path').getAttribute('d').length>500);
+  ok('seats in bp',document.querySelectorAll('.bp-pax > span').length===3);
+  closeBoardingPass();openTripSheet();ok('trip sheet back to passes',document.querySelectorAll('#tripSheetList .mini-pass').length===4&&!document.querySelector('.board'));
+  return o;});
+console.log(r.join('\n'));
+await p.waitForTimeout(400);await p.screenshot({path:D+'/av-board.png'});
+await p.evaluate(()=>{closeTripSheet();openBoardingPass();});await p.waitForTimeout(800);await p.screenshot({path:D+'/av-bp.png'});
+await p.evaluate(()=>{closeBoardingPass();});await p.waitForTimeout(300);await p.screenshot({path:D+'/av-add.png'});
+// 6 offline
+await ctx.setOffline(true);await p.waitForTimeout(500);
+console.log((await p.evaluate(()=>document.getElementById('offlineBar').classList.contains('show')))?'PASS offline bar':'FAIL offline bar');
+await p.screenshot({path:D+'/av-offline.png',clip:{x:0,y:0,width:393,height:200}});
+await ctx.setOffline(false);await p.waitForTimeout(500);
+console.log((await p.evaluate(()=>!document.getElementById('offlineBar').classList.contains('show')))?'PASS online again':'FAIL online again');
+await b.close();})();
