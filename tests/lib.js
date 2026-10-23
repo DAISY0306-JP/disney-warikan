@@ -1,7 +1,9 @@
 // テスト共通: Chromium の起動
 // - playwright はこのリポジトリの node_modules、なければグローバルのものを使う
 // - HTTPS_PROXY があればプロキシ経由（Claude の作業環境用）
-// - 本番の Supabase には通信しない（テストのデータが本番に行かないように）
+// - 本番の Supabase には通信しない（テストのデータが本番に行かないように）。
+//   Supabase のライブラリ自体も読み込ませない（環境によって読み込めたり読み込めなかったりすると、
+//   結果が変わるため。Supabase が必要なテストは、自分で偽物を入れる）
 const path=require('path');
 function loadPlaywright(){
   try{return require('playwright');}catch(e){}
@@ -9,7 +11,7 @@ function loadPlaywright(){
   return require(path.join(g,'playwright'));
 }
 const {chromium}=loadPlaywright();
-const blockBackend=t=>t.route(/supabase\.co/,r=>r.abort());
+const blockBackend=t=>t.route(/supabase\.co|@supabase\/supabase-js/,r=>r.abort());
 async function launch(opts={}){
   const o={};
   if(process.env.HTTPS_PROXY&&!opts.noProxy)o.proxy={server:process.env.HTTPS_PROXY};
