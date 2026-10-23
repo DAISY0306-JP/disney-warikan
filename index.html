@@ -13,7 +13,23 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="style.css?v=526b8fd1">
+<link rel="stylesheet" href="style.css?v=c23fdc31">
+<link rel="stylesheet" href="dark.css?v=62dd36e7">
+<meta name="theme-color" content="#ffffff">
+<script>
+// 表示（自動・ライト・ダーク）を、画面が出る前に決める
+(function(){
+  var mq=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');
+  function apply(){
+    var t='auto';try{t=localStorage.getItem('warikanTheme')||'auto';}catch(e){}
+    var dark=t==='dark'||(t==='auto'&&mq&&mq.matches);
+    document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+    var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',dark?'#131218':'#ffffff');
+  }
+  window.applyTheme=apply;apply();
+  if(mq&&mq.addEventListener)mq.addEventListener('change',function(){apply();if(window.onThemeChange)window.onThemeChange();});
+})();
+</script>
 
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512-v2.png?v=2">
@@ -77,6 +93,8 @@
 
   <!-- ===== 記録タブ ===== -->
   <div class="tab-panel" data-tab="add">
+  <!-- 旅の準備（新しい旅行のときだけ） -->
+  <div id="setupCard"></div>
   <!-- 支払い記録 -->
 
   <div class="card">
@@ -230,10 +248,12 @@
     <button type="button" class="set-row" onclick="openSetSheet('sync')"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.3L4 9M4 4v5h5M4 13a8 8 0 0 0 14.3 4.3L20 15M20 20v-5h-5"/></svg></span><span class="set-lbl">同期・バックアップ</span><span class="set-val" id="sv-sync"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
 
-  <div class="set-title">アカウント</div>
+  <div class="set-title">アカウント・表示</div>
   <div class="set-list">
     <div class="set-row set-row-static"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span class="set-lbl set-email" id="loginUserText">-</span><button class="set-logout" onclick="signOut()">ログアウト</button></div>
     <button type="button" class="set-row" onclick="openSetSheet('account')"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><span class="set-lbl">パスワード・プライバシー</span><span class="set-val" id="sv-acc">削除もここ</span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button type="button" class="set-row" onclick="chooseTheme()"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></span><span class="set-lbl">表示</span><span class="set-val" id="sv-theme"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button type="button" class="set-row" onclick="openGuide()"><span class="set-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.4M12 17h.01"/></svg></span><span class="set-lbl">使い方</span><span class="set-val"></span><svg class="set-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
 
   <div class="settings-note">データはログインアカウントに保存されます。念のため、「同期・バックアップ」からバックアップ（JSON ファイル）を保存しておくこともできます。</div>
@@ -340,6 +360,19 @@
     <div class="sheet-title" id="setSheetTitle"></div>
     <div id="setSheetBody"></div>
     <button class="icon-pick-cancel" onclick="closeSetSheet()">閉じる</button>
+  </div>
+</div>
+<div class="sheet-overlay" id="guideSheet" onclick="if(event.target===this)closeGuide()">
+  <div class="sheet guide-sheet">
+    <div class="sheet-grip"></div>
+    <div class="guide-hero"><b>WARITABI へようこそ</b><small>旅行の立て替えを、みんなで記録して精算するアプリです</small></div>
+    <ol class="guide-steps">
+      <li><span class="g-num">1</span><span class="g-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></span><span class="g-txt"><b>準備する</b><small>設定タブで、メンバーと行き先・日程を決めます。招待リンクを送ると、友達もいっしょに記録できます</small></span></li>
+      <li><span class="g-num">2</span><span class="g-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span><span class="g-txt"><b>払ったら記録</b><small>記録タブで、項目名・金額・払った人・割り勘する人を入れます。外貨はそのときのレートで円換算します</small></span></li>
+      <li><span class="g-num">3</span><span class="g-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg></span><span class="g-txt"><b>最後に精算</b><small>精算タブに、誰が誰にいくら払えばいいかが出ます。払ったら「済にする」を押します</small></span></li>
+    </ol>
+    <p class="guide-tip">搭乗券の「自分を選ぶ」で自分を選ぶと、自分がいくら払う・受け取るかが上に出ます</p>
+    <button class="btn btn-primary guide-ok" onclick="closeGuide()">はじめる</button>
   </div>
 </div>
 <div class="sheet-overlay" id="preSheet" onclick="if(event.target===this)closePreSheet()">
@@ -478,6 +511,6 @@
   <button class="tab-btn" data-tab="settings" onclick="showTab('settings')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></span><span>設定</span></button>
 </nav>
 
-<script src="app.js?v=08bd9fcd"></script>
+<script src="app.js?v=041d9c5b"></script>
 
 </body></html>

@@ -10,7 +10,7 @@ import hashlib, pathlib, re
 root = pathlib.Path(__file__).resolve().parent.parent
 index = root / 'index.html'
 html = index.read_text(encoding='utf-8')
-for name in ('style.css', 'app.js'):
+for name in ('style.css', 'dark.css', 'app.js'):
     v = hashlib.sha1((root / name).read_bytes()).hexdigest()[:8]
     html = re.sub(re.escape(name) + r'\?v=[0-9a-f]+', f'{name}?v={v}', html)
     print(f'{name}?v={v}')
